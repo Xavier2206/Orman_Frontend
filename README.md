@@ -1,94 +1,83 @@
 # ORMAN Frontend
 
-Frontend público de ORMAN, una plataforma familiar para presentar propiedades y unidades disponibles en alquiler. El proyecto se desarrolla de forma incremental y, en su estado actual, contiene únicamente la base técnica generada con Angular.
+Frontend público de ORMAN, una plataforma familiar para presentar propiedades y unidades disponibles en alquiler. El proyecto se desarrolla por fases con Angular y una organización por funcionalidades.
 
 ## Estado actual
 
 - Fase 00 — Planificación e inspección: completada.
 - Fase 01 — Creación del proyecto Angular: completada.
-- Próximo paso recomendado: Fase 02 — Estructura base del frontend, pendiente de autorización.
+- Fase 02 — Estructura base del frontend: completada.
+- Próximo paso recomendado: Fase 03, únicamente después de recibir autorización expresa.
 
-La landing page, Tailwind CSS, los temas y los componentes funcionales todavía no se han implementado.
+La aplicación dispone de una landing temporal en `/` para comprobar el enrutamiento. La landing definitiva, Tailwind CSS, los temas y los componentes funcionales todavía no se han implementado.
 
-## Tecnologías instaladas
+## Tecnologías
 
-- Angular 22.0.7.
-- Angular CLI 22.0.7.
-- TypeScript 6.0.3 con configuración estricta.
-- Angular Router 22.0.7.
-- Componentes standalone.
-- Ejecución zoneless.
-- CSS global y CSS por componente.
-- Vitest 4.1.10 para pruebas unitarias.
-- npm 11.16.0.
+- Angular 22.
+- Angular Router.
+- TypeScript con configuración estricta.
+- Componentes standalone y ejecución zoneless.
+- CSS nativo, sin SCSS.
+- Vitest para pruebas unitarias y de integración.
 
 ## Requisitos
 
-- Node.js compatible con Angular 22. El entorno de creación utilizó Node.js 24.18.0.
+- Node.js compatible con Angular 22.
 - npm 11 o una versión compatible.
-- Git.
 
 ## Instalación
 
 Desde la carpeta `orman-frontend`:
 
-```bash
+```powershell
 npm install
 ```
 
 ## Ejecución local
 
-```bash
+```powershell
 npm start
 ```
 
-Angular mostrará la dirección local del servidor de desarrollo en la terminal.
+La vista pública estará disponible en `http://localhost:4200/`.
 
 ## Comandos disponibles
 
-```bash
+```powershell
 npm start
 npm run build
 npm test -- --watch=false
 npm run watch
 ```
 
-## Estructura actual
+## Estructura actual de la aplicación
 
 ```text
-orman-frontend/
-├── public/
-│   └── favicon.ico
-├── src/
-│   ├── app/
-│   │   ├── app.component.css
-│   │   ├── app.component.html
-│   │   ├── app.component.spec.ts
-│   │   ├── app.component.ts
-│   │   ├── app.config.ts
-│   │   └── app.routes.ts
-│   ├── index.html
-│   ├── main.ts
-│   └── styles.css
-├── docs/
-│   ├── fases/
-│   ├── theory/
-│   ├── README.md
-│   └── CHANGELOG.md
-├── angular.json
-├── package.json
-└── tsconfig.json
+src/app/
+├── features/
+│   └── public/
+│       └── landing/
+│           ├── landing.component.css
+│           ├── landing.component.html
+│           ├── landing.component.spec.ts
+│           └── landing.component.ts
+├── app.component.css
+├── app.component.html
+├── app.component.spec.ts
+├── app.component.ts
+├── app.config.ts
+└── app.routes.ts
 ```
 
-Las carpetas de arquitectura `core`, `shared`, `layouts` y `features` se incorporarán únicamente cuando sean necesarias.
+La organización es por funcionalidades. `core`, `shared` y `layouts` se crearán solo cuando contengan elementos con responsabilidades reales; no existen como carpetas vacías.
 
-## Temas
+## Enrutamiento
 
-ORMAN tendrá posteriormente tres temas basados en variables CSS semánticas: ORMAN, noche y día. El sistema de temas todavía no existe y corresponde a una fase futura.
+La ruta `/` carga de forma diferida `LandingComponent`, ubicado en `features/public/landing`. El componente raíz funciona únicamente como contenedor de `router-outlet`.
 
 ## Documentación
 
-El índice y estado documental se encuentran en [docs/README.md](docs/README.md). Los cambios efectivamente realizados se registran en [docs/CHANGELOG.md](docs/CHANGELOG.md).
+El índice documental se encuentra en [docs/README.md](docs/README.md). La ejecución de esta fase está registrada en [docs/fases/02-estructura-frontend.md](docs/fases/02-estructura-frontend.md).
 
 ## Alcance
 
