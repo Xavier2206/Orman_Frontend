@@ -2,6 +2,33 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-22 — Fase 04
+
+### Añadido
+
+- Tres temas visuales: ORMAN, Noche y Día.
+- Tokens CSS semánticos y exposición a utilidades de Tailwind CSS 4 con `@theme inline`.
+- Modelo, constantes y servicio singleton de temas basado en Angular Signals.
+- Inicialización temprana mediante `provideAppInitializer`.
+- Persistencia validada con la clave `orman-theme` de `localStorage`.
+- Selector accesible de tres botones y sus pruebas.
+- Pruebas unitarias del servicio y ampliación de las pruebas de la landing.
+- Documentación de implementación y fundamentos de variables CSS y temas.
+
+### Cambiado
+
+- Landing temporal convertida en una demostración mínima del sistema de temas.
+- Elemento raíz configurado en español y con el tema ORMAN inicial.
+- README principal e índice documental actualizados al estado real de la Fase 04.
+
+### Verificado
+
+- Compilación de producción satisfactoria con 216.63 kB iniciales y 11.17 kB de CSS global.
+- Cuatro archivos de prueba y 16 pruebas satisfactorias.
+- Respuesta HTTP 200 en `/`.
+- Generación de utilidades semánticas y selectores para los tres valores de `data-theme`.
+- Ausencia de SCSS y de `tailwind.config.js`.
+
 ## 2026-07-22 — Fase 03
 
 ### Añadido

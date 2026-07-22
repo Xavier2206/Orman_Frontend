@@ -1,6 +1,20 @@
 <main
-  class="grid min-h-screen place-content-center gap-3 bg-slate-100 px-6 text-center text-slate-900"
+  class="grid min-h-screen place-content-center bg-page px-6 py-12 text-content transition-colors duration-200 motion-reduce:transition-none"
 >
-  <h1 class="text-4xl font-bold tracking-wider">ORMAN</h1>
-  <p class="text-base text-slate-600">Frontend público en construcción.</p>
+  <section class="grid w-full max-w-lg gap-6 text-center" aria-labelledby="landing-title">
+    <div class="grid gap-2">
+      <h1 id="landing-title" class="text-4xl font-bold tracking-wider text-accent">ORMAN</h1>
+      <p class="text-base text-content">Frontend público en construcción.</p>
+      <p class="text-sm text-muted">Selecciona un modo visual.</p>
+    </div>
+    
+    <app-theme-selector/>
+
+    <article
+      class="rounded-lg border border-theme-border bg-card p-5 text-left shadow-md transition-colors duration-200 motion-reduce:transition-none"
+    >
+      <h2 class="font-semibold text-content">Tema activo</h2>
+      <p class="mt-1 text-muted" aria-live="polite">{{ activeThemeLabel() }}</p>
+    </article>
+  </section>
 </main>

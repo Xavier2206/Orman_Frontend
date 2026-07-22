@@ -22,8 +22,14 @@ describe('LandingComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('h1')?.textContent).toContain('ORMAN');
-    expect(element.querySelector('p')?.textContent).toContain(
-      'Frontend público en construcción.',
-    );
+    expect(element.querySelector('p')?.textContent).toContain('Frontend público en construcción.');
+  });
+
+  it('should render the theme selector and active theme', () => {
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('app-theme-selector')).toBeTruthy();
+    expect(element.textContent).toContain('Tema activo');
+    expect(element.textContent).toContain('ORMAN');
   });
 });

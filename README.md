@@ -1,61 +1,45 @@
 # ORMAN Frontend
 
-Frontend público de ORMAN, una plataforma familiar para presentar propiedades y unidades disponibles en alquiler. El proyecto se desarrolla por fases con Angular y una organización por funcionalidades.
+Frontend público de ORMAN, desarrollado por fases con Angular y una organización por funcionalidades.
 
 ## Estado actual
 
-- Fase 00 — Planificación e inspección: completada.
-- Fase 01 — Creación del proyecto Angular: completada.
-- Fase 02 — Estructura base del frontend: completada.
-- Fase 03 — Instalación y configuración de Tailwind CSS: completada.
-- Próxima fase prevista: Fase 04, pendiente de autorización expresa.
+- Fases 00 a 04 completadas.
+- Ruta pública `/` con carga diferida.
+- Demostración temporal del sistema de temas ORMAN, Noche y Día.
+- Selección persistente mediante `localStorage`.
+- Próxima fase pendiente de autorización expresa.
 
-La aplicación dispone de una landing temporal en `/` para comprobar el enrutamiento y el procesamiento de utilidades Tailwind. La landing definitiva y el sistema de tres temas todavía no se han implementado.
+La landing actual solo demuestra la infraestructura visual. No es la landing pública definitiva.
 
 ## Tecnologías
 
 - Angular 22.0.7 y Angular Router.
 - TypeScript 6.0.3 con configuración estricta.
-- Componentes standalone y ejecución zoneless.
-- Tailwind CSS 4.3.3.
-- `@tailwindcss/postcss` 4.3.3 y PostCSS 8.5.22.
-- CSS nativo, sin SCSS.
-- Vitest 4.1.10 para pruebas unitarias y de integración.
+- Componentes standalone, Signals y ejecución zoneless.
+- Tailwind CSS 4.3.3 con `@tailwindcss/postcss` 4.3.3.
+- Variables CSS semánticas y `data-theme`.
+- CSS nativo, sin SCSS ni `tailwind.config.js`.
+- Vitest 4.1.10.
 
-## Configuración de Tailwind CSS
+## Temas disponibles
 
-Se intentó primero el procedimiento automatizado recomendado por Angular, `ng add tailwindcss`, pero Angular CLI 22.0.7 detectó el paquete y no encontró schematics compatibles. Se aplicó entonces la alternativa manual de la misma guía oficial:
+- `orman`: tema predeterminado con la paleta navy y dorada original.
+- `dark`: modo Noche.
+- `light`: modo Día.
 
-```powershell
-npm install --save-dev tailwindcss @tailwindcss/postcss postcss
-```
+`ThemeService` conserva el tema activo en un Signal de solo lectura, aplica `data-theme` sobre `document.documentElement` y guarda la elección válida con la clave `orman-theme`.
 
-La integración utiliza `.postcssrc.json` con el plugin `@tailwindcss/postcss` y la importación global:
-
-```css
-@import "tailwindcss";
-```
-
-No existe un `tailwind.config.js` tradicional porque Tailwind CSS 4 no lo necesita para esta configuración inicial.
-
-## Requisitos e instalación
-
-- Node.js compatible con Angular 22.
-- npm 11 o una versión compatible.
+## Instalación y ejecución
 
 Desde la carpeta `orman-frontend`:
 
 ```powershell
 npm install
-```
-
-## Ejecución local
-
-```powershell
 npm start
 ```
 
-La vista pública estará disponible en `http://localhost:4200/`.
+La aplicación estará disponible en `http://localhost:4200/`.
 
 ## Comandos disponibles
 
@@ -66,30 +50,28 @@ npm test -- --watch=false
 npm run watch
 ```
 
-## Estructura actual de la aplicación
+## Estructura relevante
 
 ```text
 src/app/
-├── features/
-│   └── public/
-│       └── landing/
-│           ├── landing.component.html
-│           ├── landing.component.spec.ts
-│           └── landing.component.ts
-├── app.component.css
-├── app.component.html
-├── app.component.spec.ts
-├── app.component.ts
-├── app.config.ts
-└── app.routes.ts
+├── core/theme/
+│   ├── theme.constants.ts
+│   ├── theme.model.ts
+│   ├── theme.service.spec.ts
+│   └── theme.service.ts
+├── features/public/landing/
+└── shared/components/theme-selector/
+    ├── theme-selector.component.html
+    ├── theme-selector.component.spec.ts
+    └── theme-selector.component.ts
 ```
 
-La organización es por funcionalidades. `core`, `shared` y `layouts` se crearán solo cuando contengan elementos con responsabilidades reales.
+Los tokens de las tres paletas viven en `src/styles/themes.css`. `src/styles.css` los expone a Tailwind CSS 4 mediante `@theme inline` para utilidades como `bg-page`, `text-content`, `text-muted`, `bg-accent` y `border-theme-border`.
 
 ## Documentación
 
-El índice documental se encuentra en [docs/README.md](docs/README.md). La integración está registrada en [docs/fases/03-configuracion-tailwind.md](docs/fases/03-configuracion-tailwind.md).
+El índice se encuentra en [docs/README.md](docs/README.md). La implementación de temas está documentada en [docs/fases/04-sistema-de-temas.md](docs/fases/04-sistema-de-temas.md).
 
 ## Alcance
 
-Este repositorio contiene exclusivamente el frontend. No incluye backend, autenticación, administración, persistencia ni integración con una API.
+El repositorio contiene exclusivamente el frontend. En la fase actual no se implementaron backend, autenticación, panel administrativo, API ni landing pública definitiva.

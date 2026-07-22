@@ -1,0 +1,25 @@
+<div
+  class="grid grid-cols-3 gap-1 rounded-lg border border-theme-border bg-surface p-1 shadow-sm transition-colors duration-200 motion-reduce:transition-none"
+  role="group"
+  aria-label="Seleccionar tema visual"
+>
+  @for (theme of themes; track theme.name) {
+    <button
+      type="button"
+      class="min-h-11 rounded-md border px-3 py-2 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none"
+      [class.border-accent]="activeTheme() === theme.name"
+      [class.bg-accent]="activeTheme() === theme.name"
+      [class.text-accent-contrast]="activeTheme() === theme.name"
+      [class.border-transparent]="activeTheme() !== theme.name"
+      [class.bg-card]="activeTheme() !== theme.name"
+      [class.text-content]="activeTheme() !== theme.name"
+      [attr.aria-pressed]="activeTheme() === theme.name"
+      (click)="selectTheme(theme.name)"
+    >
+      {{ theme.label }}
+      @if (activeTheme() === theme.name) {
+        <span class="sr-only"> (activo)</span>
+      }
+    </button>
+  }
+</div>
