@@ -7,25 +7,41 @@ Frontend público de ORMAN, una plataforma familiar para presentar propiedades y
 - Fase 00 — Planificación e inspección: completada.
 - Fase 01 — Creación del proyecto Angular: completada.
 - Fase 02 — Estructura base del frontend: completada.
-- Próximo paso recomendado: Fase 03, únicamente después de recibir autorización expresa.
+- Fase 03 — Instalación y configuración de Tailwind CSS: completada.
+- Próxima fase prevista: Fase 04, pendiente de autorización expresa.
 
-La aplicación dispone de una landing temporal en `/` para comprobar el enrutamiento. La landing definitiva, Tailwind CSS, los temas y los componentes funcionales todavía no se han implementado.
+La aplicación dispone de una landing temporal en `/` para comprobar el enrutamiento y el procesamiento de utilidades Tailwind. La landing definitiva y el sistema de tres temas todavía no se han implementado.
 
 ## Tecnologías
 
-- Angular 22.
-- Angular Router.
-- TypeScript con configuración estricta.
+- Angular 22.0.7 y Angular Router.
+- TypeScript 6.0.3 con configuración estricta.
 - Componentes standalone y ejecución zoneless.
+- Tailwind CSS 4.3.3.
+- `@tailwindcss/postcss` 4.3.3 y PostCSS 8.5.22.
 - CSS nativo, sin SCSS.
-- Vitest para pruebas unitarias y de integración.
+- Vitest 4.1.10 para pruebas unitarias y de integración.
 
-## Requisitos
+## Configuración de Tailwind CSS
+
+Se intentó primero el procedimiento automatizado recomendado por Angular, `ng add tailwindcss`, pero Angular CLI 22.0.7 detectó el paquete y no encontró schematics compatibles. Se aplicó entonces la alternativa manual de la misma guía oficial:
+
+```powershell
+npm install --save-dev tailwindcss @tailwindcss/postcss postcss
+```
+
+La integración utiliza `.postcssrc.json` con el plugin `@tailwindcss/postcss` y la importación global:
+
+```css
+@import "tailwindcss";
+```
+
+No existe un `tailwind.config.js` tradicional porque Tailwind CSS 4 no lo necesita para esta configuración inicial.
+
+## Requisitos e instalación
 
 - Node.js compatible con Angular 22.
 - npm 11 o una versión compatible.
-
-## Instalación
 
 Desde la carpeta `orman-frontend`:
 
@@ -57,7 +73,6 @@ src/app/
 ├── features/
 │   └── public/
 │       └── landing/
-│           ├── landing.component.css
 │           ├── landing.component.html
 │           ├── landing.component.spec.ts
 │           └── landing.component.ts
@@ -69,15 +84,11 @@ src/app/
 └── app.routes.ts
 ```
 
-La organización es por funcionalidades. `core`, `shared` y `layouts` se crearán solo cuando contengan elementos con responsabilidades reales; no existen como carpetas vacías.
-
-## Enrutamiento
-
-La ruta `/` carga de forma diferida `LandingComponent`, ubicado en `features/public/landing`. El componente raíz funciona únicamente como contenedor de `router-outlet`.
+La organización es por funcionalidades. `core`, `shared` y `layouts` se crearán solo cuando contengan elementos con responsabilidades reales.
 
 ## Documentación
 
-El índice documental se encuentra en [docs/README.md](docs/README.md). La ejecución de esta fase está registrada en [docs/fases/02-estructura-frontend.md](docs/fases/02-estructura-frontend.md).
+El índice documental se encuentra en [docs/README.md](docs/README.md). La integración está registrada en [docs/fases/03-configuracion-tailwind.md](docs/fases/03-configuracion-tailwind.md).
 
 ## Alcance
 

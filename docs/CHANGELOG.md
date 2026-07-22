@@ -2,6 +2,34 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-22 — Fase 03
+
+### Añadido
+
+- Tailwind CSS 4.3.3 como dependencia de desarrollo.
+- `@tailwindcss/postcss` 4.3.3 y PostCSS 8.5.22.
+- Configuración oficial de PostCSS en `.postcssrc.json`.
+- Importación global de Tailwind CSS en `src/styles.css`.
+- Documentación de ejecución y fundamentos de Tailwind CSS.
+
+### Cambiado
+
+- Landing temporal adaptada a utilidades Tailwind neutras.
+- `LandingComponent` dejó de referenciar una hoja CSS propia innecesaria.
+- README principal e índice documental actualizados al estado de la Fase 03.
+
+### Eliminado
+
+- `landing.component.css`, porque toda la prueba visual temporal se expresa con utilidades Tailwind y el archivo habría quedado vacío.
+
+### Verificado
+
+- Compilación de producción satisfactoria con un bundle global de estilos de 5.13 kB.
+- Dos archivos de prueba y cinco pruebas satisfactorias.
+- Respuesta HTTP 200 del servidor de desarrollo en `/`.
+- Reglas generadas para utilidades como `min-h-screen`, `bg-slate-100`, `text-4xl` y `font-bold` en el CSS compilado.
+- Ausencia de SCSS y de un archivo `tailwind.config.js` tradicional.
+
 ## 2026-07-21 — Fase 02
 
 ### Añadido
