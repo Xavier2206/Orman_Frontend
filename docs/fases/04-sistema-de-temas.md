@@ -36,51 +36,51 @@ El atributo vive en `document.documentElement` y admite `orman`, `dark` o `light
 
 ### ORMAN
 
-| Rol | Valor |
-| --- | --- |
-| page | `#000F1F` |
-| surface | `#021427` |
-| card | `#062238` |
-| card-hover | `#0A2B45` |
-| text | `#E7EDF3` |
-| text-muted | `#AEBBC7` |
-| accent | `#D4A94E` |
-| accent-hover | `#E0BB68` |
-| accent-contrast | `#000F1F` |
-| border | `rgba(212, 169, 78, 0.25)` |
-| overlay | `rgba(0, 15, 31, 0.72)` |
+| Rol             | Valor                      |
+| --------------- | -------------------------- |
+| page            | `#000F1F`                  |
+| surface         | `#021427`                  |
+| card            | `#062238`                  |
+| card-hover      | `#0A2B45`                  |
+| text            | `#E7EDF3`                  |
+| text-muted      | `#AEBBC7`                  |
+| accent          | `#D4A94E`                  |
+| accent-hover    | `#E0BB68`                  |
+| accent-contrast | `#000F1F`                  |
+| border          | `rgba(212, 169, 78, 0.25)` |
+| overlay         | `rgba(0, 15, 31, 0.72)`    |
 
 ### Noche
 
-| Rol | Valor |
-| --- | --- |
-| page | `#080808` |
-| surface | `#111111` |
-| card | `#191919` |
-| card-hover | `#232323` |
-| text | `#F5F5F5` |
-| text-muted | `#B8B8B8` |
-| accent | `#D4A94E` |
-| accent-hover | `#E0BB68` |
-| accent-contrast | `#080808` |
-| border | `rgba(212, 169, 78, 0.22)` |
-| overlay | `rgba(0, 0, 0, 0.72)` |
+| Rol             | Valor                      |
+| --------------- | -------------------------- |
+| page            | `#080808`                  |
+| surface         | `#111111`                  |
+| card            | `#191919`                  |
+| card-hover      | `#232323`                  |
+| text            | `#F5F5F5`                  |
+| text-muted      | `#B8B8B8`                  |
+| accent          | `#D4A94E`                  |
+| accent-hover    | `#E0BB68`                  |
+| accent-contrast | `#080808`                  |
+| border          | `rgba(212, 169, 78, 0.22)` |
+| overlay         | `rgba(0, 0, 0, 0.72)`      |
 
 ### Día
 
-| Rol | Valor |
-| --- | --- |
-| page | `#FFFFFF` |
-| surface | `#F4F6F8` |
-| card | `#FFFFFF` |
-| card-hover | `#F8FAFC` |
-| text | `#000F1F` |
-| text-muted | `#52606D` |
-| accent | `#D4A94E` |
-| accent-hover | `#BF9134` |
-| accent-contrast | `#000F1F` |
-| border | `#D9E0E6` |
-| overlay | `rgba(0, 15, 31, 0.16)` |
+| Rol             | Valor                   |
+| --------------- | ----------------------- |
+| page            | `#FFFFFF`               |
+| surface         | `#F4F6F8`               |
+| card            | `#FFFFFF`               |
+| card-hover      | `#F8FAFC`               |
+| text            | `#000F1F`               |
+| text-muted      | `#52606D`               |
+| accent          | `#D4A94E`               |
+| accent-hover    | `#BF9134`               |
+| accent-contrast | `#000F1F`               |
+| border          | `#D9E0E6`               |
+| overlay         | `rgba(0, 15, 31, 0.16)` |
 
 Los tres comparten `success: #16A34A`, `warning: #D97706`, `danger: #DC2626` y `focus: #D4A94E`.
 

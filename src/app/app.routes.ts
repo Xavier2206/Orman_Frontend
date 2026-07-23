@@ -4,8 +4,18 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/public/landing/landing.component').then(
-        (component) => component.LandingComponent,
+      import('./layouts/public-layout/public-layout.component').then(
+        (component) => component.PublicLayoutComponent,
       ),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('./features/public/landing/landing.component').then(
+            (component) => component.LandingComponent,
+          ),
+      },
+    ],
   },
 ];

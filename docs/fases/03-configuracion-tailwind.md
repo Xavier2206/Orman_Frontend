@@ -92,7 +92,7 @@ Archivo eliminado:
 `src/styles.css` contiene:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 No se añadieron las directivas del flujo de Tailwind 3.
@@ -167,11 +167,23 @@ No había un navegador integrado disponible en la sesión para una captura visua
 El CSS compilado contiene, entre otras, estas reglas:
 
 ```css
-.min-h-screen{min-height:100vh}
-.place-content-center{place-content:center}
-.bg-slate-100{background-color:var(--color-slate-100)}
-.text-4xl{font-size:var(--text-4xl);line-height:var(--tw-leading, var(--text-4xl--line-height))}
-.font-bold{--tw-font-weight:var(--font-weight-bold);font-weight:var(--font-weight-bold)}
+.min-h-screen {
+  min-height: 100vh;
+}
+.place-content-center {
+  place-content: center;
+}
+.bg-slate-100 {
+  background-color: var(--color-slate-100);
+}
+.text-4xl {
+  font-size: var(--text-4xl);
+  line-height: var(--tw-leading, var(--text-4xl--line-height));
+}
+.font-bold {
+  --tw-font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold);
+}
 ```
 
 ## 17. Vulnerabilidades reportadas por npm

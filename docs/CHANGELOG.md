@@ -2,6 +2,54 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-22 — Fase 04.1
+
+### Añadido
+
+- Estructura mínima `public/images/` para recursos de marca, hero, propiedades y reemplazos visuales.
+- README general y README específico en cada carpeta para conservar y documentar la estructura vacía.
+- Convenciones de nombres, formatos, uso desde Angular, accesibilidad, privacidad y optimización previa.
+- Documento de ejecución de la fase intermedia.
+
+### Cambiado
+
+- README principal e índice documental actualizados con la estructura de recursos públicos.
+
+### Verificado
+
+- Existencia de las cuatro carpetas previstas y de sus archivos README.
+- Ausencia de archivos de imagen artificiales, subcarpetas adicionales, paquetes nuevos, SCSS y operaciones Git.
+- Compilación y pruebas registradas en el documento de fase.
+
+## 2026-07-22 — Fase 05
+
+### Añadido
+
+- Layout público standalone con encabezado, `router-outlet`, contenido principal y footer.
+- Encabezado responsive con marca, navegación interna, selector de temas y botón visual de login.
+- Menú móvil accesible controlado mediante Angular Signal.
+- Hero inicial con acciones internas y composición visual local sin fotografías ni estadísticas.
+- Marcadores temporales para propiedades, funcionamiento y contacto.
+- Footer público con navegación interna y copyright de 2026.
+- Enlace de salto al contenido y desplazamiento suave condicionado por `prefers-reduced-motion`.
+- Pruebas unitarias de layout, header, hero y footer.
+- Documentación de implementación y fundamentos de layouts y composición.
+
+### Cambiado
+
+- Ruta `/` convertida en una ruta de layout con una landing hija, ambas con carga diferida.
+- Landing temporal reemplazada por la estructura pública inicial y sus pruebas.
+- Prueba de integración del componente raíz adaptada a la composición layout/landing.
+- README principal e índice documental actualizados al estado real de la Fase 05.
+
+### Verificado
+
+- Compilación de producción satisfactoria con 224.32 kB iniciales.
+- Ocho archivos de prueba y 29 pruebas satisfactorias, incluidas las pruebas de temas existentes.
+- Respuesta HTTP 200 en `/` y liberación posterior del puerto 4200.
+- Contenido esperado comprobado mediante pruebas e inspección de plantillas al no existir navegador integrado disponible.
+- Ausencia de SCSS y de `tailwind.config.js`.
+
 ## 2026-07-22 — Fase 04
 
 ### Añadido

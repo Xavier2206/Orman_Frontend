@@ -18,18 +18,23 @@ describe('LandingComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render the temporary public content', () => {
+  it('should render the hero', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('h1')?.textContent).toContain('ORMAN');
-    expect(element.querySelector('p')?.textContent).toContain('Frontend público en construcción.');
+    expect(element.querySelector('app-hero-section')).toBeTruthy();
+    expect(element.querySelector('h1')?.textContent).toContain(
+      'Encuentra el espacio ideal para ti',
+    );
   });
 
-  it('should render the theme selector and active theme', () => {
+  it('should render the temporary sections and expected text', () => {
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('app-theme-selector')).toBeTruthy();
-    expect(element.textContent).toContain('Tema activo');
-    expect(element.textContent).toContain('ORMAN');
+    expect(element.querySelector('#propiedades')).toBeTruthy();
+    expect(element.querySelector('#como-funciona')).toBeTruthy();
+    expect(element.querySelector('#contacto')).toBeTruthy();
+    expect(element.textContent).toContain('Espacios disponibles');
+    expect(element.textContent).toContain('¿Cómo funciona ORMAN?');
+    expect(element.textContent).toContain('El formulario de contacto se incorporará');
   });
 });

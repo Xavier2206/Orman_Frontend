@@ -1,0 +1,143 @@
+<header
+  class="sticky top-0 z-40 border-b border-theme-border bg-page/95 text-content shadow-sm backdrop-blur transition-colors duration-200 motion-reduce:transition-none"
+>
+  <div
+    class="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
+  >
+    <a
+      href="#inicio"
+      class="flex min-h-11 items-center gap-3 rounded-lg"
+      aria-label="ORMAN, ir al inicio"
+    >
+      <span
+        class="grid size-11 place-items-center rounded-xl border border-theme-border bg-card font-bold text-accent"
+      >
+        O
+      </span>
+      <span>
+        <span class="block text-lg font-bold tracking-widest text-content">ORMAN</span>
+        <span class="block text-xs text-muted">Gestión de propiedades</span>
+      </span>
+    </a>
+
+    <nav class="hidden lg:block" aria-label="Navegación principal">
+      <ul class="flex items-center gap-1">
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-card"
+            href="#inicio"
+            >Inicio</a
+          >
+        </li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-card"
+            href="#propiedades"
+            >Propiedades</a
+          >
+        </li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-card"
+            href="#como-funciona"
+            >Cómo funciona</a
+          >
+        </li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-card"
+            href="#contacto"
+            >Contacto</a
+          >
+        </li>
+      </ul>
+    </nav>
+
+    <div class="hidden items-center gap-3 lg:flex">
+      <app-theme-selector />
+      <button
+        type="button"
+        class="min-h-11 rounded-lg border border-accent px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-accent-contrast motion-reduce:transition-none"
+        aria-label="Iniciar sesión, disponible próximamente"
+      >
+        Iniciar sesión
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content lg:hidden"
+      aria-label="Abrir o cerrar menú de navegación"
+      aria-controls="mobile-navigation"
+      [attr.aria-expanded]="isMenuOpen()"
+      (click)="toggleMenu()"
+    >
+      <svg
+        class="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        @if (isMenuOpen()) {
+          <path d="M6 6l12 12M18 6 6 18" />
+        } @else {
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        }
+      </svg>
+    </button>
+  </div>
+
+  @if (isMenuOpen()) {
+    <div id="mobile-navigation" class="border-t border-theme-border bg-surface px-4 py-4 lg:hidden">
+      <nav aria-label="Navegación móvil">
+        <ul class="grid gap-1">
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium hover:bg-card"
+              href="#inicio"
+              (click)="closeMenu()"
+              >Inicio</a
+            >
+          </li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium hover:bg-card"
+              href="#propiedades"
+              (click)="closeMenu()"
+              >Propiedades</a
+            >
+          </li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium hover:bg-card"
+              href="#como-funciona"
+              (click)="closeMenu()"
+              >Cómo funciona</a
+            >
+          </li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium hover:bg-card"
+              href="#contacto"
+              (click)="closeMenu()"
+              >Contacto</a
+            >
+          </li>
+        </ul>
+      </nav>
+
+      <div class="mt-4 grid gap-3 border-t border-theme-border pt-4 sm:grid-cols-[1fr_auto]">
+        <app-theme-selector />
+        <button
+          type="button"
+          class="min-h-11 rounded-lg border border-accent px-4 py-2 font-semibold text-accent"
+          aria-label="Iniciar sesión, disponible próximamente"
+        >
+          Iniciar sesión
+        </button>
+      </div>
+    </div>
+  }
+</header>

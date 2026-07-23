@@ -24,7 +24,7 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('router-outlet')).toBeTruthy();
   });
 
-  it('should load the landing page at the root route', async () => {
+  it('should load the public layout and landing page at the root route', async () => {
     const fixture = TestBed.createComponent(App);
     const router = TestBed.inject(Router);
 
@@ -34,9 +34,10 @@ describe('App', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('h1')?.textContent).toContain('ORMAN');
-    expect(element.querySelector('p')?.textContent).toContain(
-      'Frontend público en construcción.',
+    expect(element.querySelector('app-public-layout')).toBeTruthy();
+    expect(element.querySelector('app-landing')).toBeTruthy();
+    expect(element.querySelector('h1')?.textContent).toContain(
+      'Encuentra el espacio ideal para ti',
     );
   });
 });

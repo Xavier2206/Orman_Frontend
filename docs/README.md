@@ -4,8 +4,10 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 
 ## Estado actual
 
-- Fases 00 a 04 completadas.
-- Sistema de tres temas implementado y verificado.
+- Fases 00 a 05 completadas.
+- Fase intermedia 04.1 de recursos visuales públicos completada.
+- Estructura base de la landing pública implementada y verificada.
+- Estructura `public/images/` preparada y documentada, todavía sin imágenes.
 - Próxima fase pendiente de autorización expresa.
 
 ## Documentos de fases
@@ -14,6 +16,8 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 - [Fase 02 — Estructura base del frontend](fases/02-estructura-frontend.md)
 - [Fase 03 — Instalación y configuración de Tailwind CSS](fases/03-configuracion-tailwind.md)
 - [Fase 04 — Sistema de temas](fases/04-sistema-de-temas.md)
+- [Fase 04.1 — Estructura de recursos visuales públicos](fases/04-1-recursos-visuales-publicos.md)
+- [Fase 05 — Estructura base de la landing pública](fases/05-estructura-landing-publica.md)
 
 ## Documentos teóricos
 
@@ -22,6 +26,7 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 - [Estructura modular del frontend](theory/02-estructura-modular-frontend.md)
 - [Tailwind CSS](theory/03-tailwind-css.md)
 - [Variables CSS y temas](theory/04-variables-css-y-temas.md)
+- [Layouts y composición en Angular](theory/05-layouts-y-composicion-angular.md)
 
 ## Registro de cambios
 

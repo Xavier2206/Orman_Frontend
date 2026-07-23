@@ -18,3 +18,9 @@
   --color-danger: var(--theme-danger);
   --color-focus: var(--theme-focus);
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

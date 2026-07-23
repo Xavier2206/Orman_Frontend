@@ -4,9 +4,9 @@
 
 Tailwind CSS es un framework CSS orientado a utilidades. Proporciona clases pequeñas y combinables para aplicar reglas como espaciado, tamaño, color, alineación o tipografía directamente desde el marcado. Su compilador analiza los archivos del proyecto y genera únicamente el CSS necesario para las clases detectadas.
 
-## ¿Qué significa *utility-first*?
+## ¿Qué significa _utility-first_?
 
-*Utility-first* significa construir una interfaz combinando clases con una responsabilidad concreta. Por ejemplo, `min-h-screen` establece una altura mínima de pantalla, `text-center` centra texto y `font-bold` aplica peso tipográfico negrita. La composición de varias utilidades describe el resultado visual sin necesitar una clase CSS personalizada para cada bloque.
+_Utility-first_ significa construir una interfaz combinando clases con una responsabilidad concreta. Por ejemplo, `min-h-screen` establece una altura mínima de pantalla, `text-center` centra texto y `font-bold` aplica peso tipográfico negrita. La composición de varias utilidades describe el resultado visual sin necesitar una clase CSS personalizada para cada bloque.
 
 Este enfoque no elimina CSS: cambia dónde se expresa la mayor parte de las decisiones repetitivas y permite conservar CSS propio para reglas globales, variables semánticas o casos que no conviene representar mediante utilidades.
 
@@ -43,7 +43,7 @@ ORMAN lo registra en `.postcssrc.json`:
 La instrucción global en `src/styles.css` incorpora Tailwind al punto de entrada de estilos de Angular:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 El plugin sustituye esa importación por las capas, variables y utilidades necesarias. No se usan las directivas separadas `@tailwind base`, `@tailwind components` y `@tailwind utilities` del flujo antiguo.

@@ -24,11 +24,11 @@ describe('ThemeSelectorComponent', () => {
     const buttons = fixture.nativeElement.querySelectorAll('button');
 
     expect(buttons).toHaveLength(3);
-    expect(
-      [...buttons].map((button) =>
-        button.textContent?.replace(/\s+/g, ' ').trim(),
-      ),
-    ).toEqual(['ORMAN (activo)', 'Noche', 'Día']);
+    expect([...buttons].map((button) => button.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+      'ORMAN (activo)',
+      'Noche',
+      'Día',
+    ]);
   });
 
   it('should mark the active theme with aria-pressed', () => {

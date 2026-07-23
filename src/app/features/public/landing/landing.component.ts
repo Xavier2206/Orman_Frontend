@@ -1,18 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component } from '@angular/core';
 
-import { THEME_LABELS } from '../../../core/theme/theme.constants';
-import { ThemeService } from '../../../core/theme/theme.service';
-import { ThemeSelectorComponent } from '../../../shared/components/theme-selector/theme-selector.component';
+import { HeroSectionComponent } from './components/hero-section/hero-section.component';
 
 @Component({
   selector: 'app-landing',
-  imports: [ThemeSelectorComponent],
+  imports: [HeroSectionComponent],
   templateUrl: './landing.component.html',
 })
-export class LandingComponent {
-  private readonly themeService = inject(ThemeService);
-
-  protected readonly activeThemeLabel = computed(
-    () => THEME_LABELS[this.themeService.activeTheme()],
-  );
-}
+export class LandingComponent {}
