@@ -2,6 +2,27 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-24 — Fase 05.1
+
+### Añadido
+
+- Logotipo oficial de ORMAN en el enlace de inicio del encabezado público.
+- Prueba unitaria del recurso, su ruta pública, texto alternativo y enlace.
+- Documento de ejecución de la corrección 05.1.
+
+### Cambiado
+
+- Marca temporal del encabezado reemplazada por el logotipo oficial, conservando el nombre y descriptor textual.
+- Símbolo temporal “O” retirado de la composición del hero para evitar simular o duplicar el logotipo.
+- README principal, índice documental y documento histórico de la Fase 05 actualizados con una referencia posterior.
+
+### Verificado
+
+- SVG válido con dimensiones internas de 457 × 557 y `viewBox="0 0 457 557"`.
+- Contraste fuerte en ORMAN y Noche, y contraste menor del dorado sobre el fondo blanco de Día documentado sin alterar la marca.
+- Compilación satisfactoria, 30 pruebas aprobadas, copia idéntica del recurso a `dist` y respuestas HTTP 200 de la landing y del SVG.
+- Ausencia de paquetes nuevos, SCSS, `tailwind.config.js`, operaciones Git y trabajo de la Fase 06.
+
 ## 2026-07-22 — Fase 04.1
 
 ### Añadido

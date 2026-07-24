@@ -4,13 +4,14 @@ Frontend público de ORMAN, una plataforma familiar para presentar propiedades y
 
 ## Estado actual
 
-- Fases 00 a 05 completadas.
+- Fases 00 a 05 y corrección 05.1 completadas.
 - Landing pública estructural disponible en `/`.
 - Layout público reutilizable con encabezado, contenido mediante `router-outlet` y pie de página.
+- Logotipo oficial visible en el encabezado desde `/images/brand/orman-logo.svg`.
 - Hero inicial y marcadores temporales para propiedades, funcionamiento y contacto.
 - Navegación interna por anclas y menú móvil controlado con Angular Signal.
 - Selector de temas ORMAN, Noche y Día integrado en el encabezado.
-- Estructura `public/images/` preparada y documentada para futuros recursos visuales.
+- Estructura `public/images/` preparada, documentada y con el logotipo oficial integrado.
 - Próxima fase pendiente de autorización expresa.
 
 La landing todavía no incluye buscador, filtros, tarjetas reales, datos, formularios, login ni integración con backend.
@@ -66,7 +67,7 @@ src/app/
 
 La ruta raíz carga de forma diferida `PublicLayoutComponent`; su ruta hija vacía carga `LandingComponent` dentro del outlet del layout. El componente raíz conserva su propio outlet como punto de entrada del router.
 
-Los futuros recursos colocados en `public/images/` se referenciarán desde Angular con rutas absolutas como `/images/brand/orman-logo.svg`. Las convenciones completas se encuentran en [public/images/README.md](public/images/README.md).
+Los recursos colocados en `public/images/` se sirven desde la raíz pública. El logotipo oficial se referencia en Angular mediante `/images/brand/orman-logo.svg`, sin importarlo desde TypeScript. Las convenciones completas se encuentran en [public/images/README.md](public/images/README.md).
 
 ## Temas y accesibilidad
 
@@ -74,7 +75,7 @@ Los tokens de las tres paletas viven en `src/styles/themes.css` y se exponen a T
 
 ## Documentación
 
-El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md) y la landing actual en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md).
+El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md) y la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md).
 
 ## Alcance
 

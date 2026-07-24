@@ -4,10 +4,10 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 
 ## Estado actual
 
-- Fases 00 a 05 completadas.
+- Fases 00 a 05 y corrección 05.1 completadas.
 - Fase intermedia 04.1 de recursos visuales públicos completada.
 - Estructura base de la landing pública implementada y verificada.
-- Estructura `public/images/` preparada y documentada, todavía sin imágenes.
+- Logotipo oficial integrado desde `public/images/brand/orman-logo.svg`.
 - Próxima fase pendiente de autorización expresa.
 
 ## Documentos de fases
@@ -18,6 +18,7 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 - [Fase 04 — Sistema de temas](fases/04-sistema-de-temas.md)
 - [Fase 04.1 — Estructura de recursos visuales públicos](fases/04-1-recursos-visuales-publicos.md)
 - [Fase 05 — Estructura base de la landing pública](fases/05-estructura-landing-publica.md)
+- [Fase 05.1 — Integración del logotipo oficial de ORMAN](fases/05-1-integracion-logo-orman.md)
 
 ## Documentos teóricos
 

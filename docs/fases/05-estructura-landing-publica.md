@@ -2,6 +2,8 @@
 
 Fecha de ejecución: 2026-07-22.
 
+> Nota posterior: el logotipo oficial se integró en el encabezado durante la Fase 05.1, sin alterar el alcance ni el historial de esta fase.
+
 ## 1. Objetivo
 
 Crear la estructura visual y arquitectónica inicial de la landing pública de ORMAN con Angular 22, Tailwind CSS 4 y el sistema existente de temas ORMAN, Noche y Día.

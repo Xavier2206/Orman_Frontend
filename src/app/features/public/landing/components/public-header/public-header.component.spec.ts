@@ -22,6 +22,17 @@ describe('PublicHeaderComponent', () => {
     expect(element.textContent).toContain('Cómo funciona');
   });
 
+  it('should render the official logo linked to the landing start', () => {
+    const logo = fixture.nativeElement.querySelector(
+      'a[href="#inicio"] img',
+    ) as HTMLImageElement | null;
+
+    expect(logo).toBeTruthy();
+    expect(logo?.getAttribute('src')).toBe('/images/brand/orman-logo.svg');
+    expect(logo?.getAttribute('alt')).toBe('ORMAN - Gestión de propiedades');
+    expect(logo?.closest('a')?.getAttribute('aria-label')).toBe('Ir al inicio de ORMAN');
+  });
+
   it('should render the theme selector', () => {
     expect(fixture.nativeElement.querySelector('app-theme-selector')).toBeTruthy();
   });
