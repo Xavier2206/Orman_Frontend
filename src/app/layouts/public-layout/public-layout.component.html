@@ -3,12 +3,12 @@
 >
   <a
     href="#contenido-principal"
-    class="fixed left-4 top-4 z-50 -translate-y-24 rounded-lg bg-accent px-4 py-3 font-semibold text-accent-contrast shadow-md transition-transform focus:translate-y-0 motion-reduce:transition-none"
+    class="fixed left-4 top-4 z-[110] -translate-y-24 rounded-lg bg-accent px-4 py-3 font-semibold text-accent-contrast shadow-md transition-transform focus:translate-y-0 motion-reduce:transition-none"
   >
     Saltar al contenido principal
   </a>
 
-  <app-public-header />
+  <app-public-header class="sticky top-0 z-[100] block" />
 
   <main id="contenido-principal" class="flex-1" tabindex="-1">
     <router-outlet />

@@ -37,6 +37,13 @@ describe('PublicHeaderComponent', () => {
     expect(fixture.nativeElement.querySelector('app-theme-selector')).toBeTruthy();
   });
 
+  it('should preserve the visual login action', () => {
+    expect(fixture.nativeElement.textContent).toContain('Iniciar sesión');
+    expect(
+      fixture.nativeElement.querySelector('[aria-label="Iniciar sesión, disponible próximamente"]'),
+    ).toBeTruthy();
+  });
+
   it('should expose the mobile menu state with aria-expanded', () => {
     const button = fixture.nativeElement.querySelector('[aria-controls="mobile-navigation"]');
     expect(button.getAttribute('aria-expanded')).toBe('false');
@@ -48,6 +55,7 @@ describe('PublicHeaderComponent', () => {
     fixture.detectChanges();
     expect(button.getAttribute('aria-expanded')).toBe('true');
     expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('app-theme-selector')).toHaveLength(2);
 
     button.click();
     fixture.detectChanges();

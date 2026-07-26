@@ -2,6 +2,26 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-26 — Fase 06.1
+
+### Añadido
+
+- Selector de temas compacto con iconos para ORMAN, día y noche, nombres accesibles y estado `aria-pressed`.
+- Pruebas de accesibilidad y cambio de los tres temas, además de presencia del selector en el menú móvil.
+- Documento práctico de la Fase 06.1.
+
+### Cambiado
+
+- Header público persistente mediante `sticky`, con fondo semitransparente, desenfoque discreto, foco visible y ajustes responsive.
+- Navegación, marca y botón visual de inicio de sesión refinados sin crear rutas ni autenticación.
+- El botón ORMAN usa el SVG oficial sin alterarlo; el recurso contiene solo el símbolo y se ajusta con `object-contain` dentro de 24 px.
+- Corrección visual: el tema ORMAN activo mantiene fondo oscuro y comunica su estado mediante borde y aro dorados; el host del header es `sticky` directo con `z-[100]`.
+
+### Verificado
+
+- Validación posterior a la corrección visual: `npx ng build` correcto, 227.78 kB iniciales brutos y 62.66 kB estimados.
+- Validación posterior a la corrección visual: `npx ng test --watch=false` correcto, 8 archivos y 31 pruebas aprobadas.
+
 ## 2026-07-24 — Fase 05.1
 
 ### Añadido

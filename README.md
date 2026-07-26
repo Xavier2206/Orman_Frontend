@@ -4,13 +4,13 @@ Frontend público de ORMAN, una plataforma familiar para presentar propiedades y
 
 ## Estado actual
 
-- Fases 00 a 05 y corrección 05.1 completadas.
+- Fases 00 a 05, corrección 05.1 y Fase 06.1 completadas.
 - Landing pública estructural disponible en `/`.
 - Layout público reutilizable con encabezado, contenido mediante `router-outlet` y pie de página.
 - Logotipo oficial visible en el encabezado desde `/images/brand/orman-logo.svg`.
 - Hero inicial y marcadores temporales para propiedades, funcionamiento y contacto.
-- Navegación interna por anclas y menú móvil controlado con Angular Signal.
-- Selector de temas ORMAN, Noche y Día integrado en el encabezado.
+- Navegación interna por anclas, header persistente y menú móvil controlado con Angular Signal.
+- Selector compacto de temas ORMAN, Día y Noche integrado en el encabezado.
 - Estructura `public/images/` preparada, documentada y con el logotipo oficial integrado.
 - Próxima fase pendiente de autorización expresa.
 
@@ -75,7 +75,7 @@ Los tokens de las tres paletas viven en `src/styles/themes.css` y se exponen a T
 
 ## Documentación
 
-El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md) y la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md).
+El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md), la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md) y las mejoras del header en [docs/fases/06-1-mejora-header-selector-temas.md](docs/fases/06-1-mejora-header-selector-temas.md).
 
 ## Alcance
 
