@@ -2,6 +2,29 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-26 — Fase 06.2
+
+### Añadido
+
+- Panel visual del hero centrado en el SVG oficial de ORMAN, con descriptor y etiquetas de tipos de propiedades.
+- Elementos arquitectónicos decorativos y resplandor dorado accesibles como contenido oculto a tecnologías asistivas.
+- Animación de entrada discreta, flotación mínima y alternativa completa para movimiento reducido.
+- Tokens semánticos del panel del hero para asegurar contraste en ORMAN, Noche y Día.
+- Pruebas unitarias del logo, texto alternativo, etiquetas, CTA, anclas, `h1` único y retiro de la antigua etiqueta del edificio.
+- Documento práctico de la Fase 06.2.
+
+### Cambiado
+
+- La ilustración abstracta del edificio fue reemplazada sin alterar el contenido izquierdo del hero.
+- El ancho máximo del hero se alineó con el sistema de contenido del header en pantallas grandes.
+- Corrección visual pendiente de aprobación: Día usa un panel claro con tarjeta interior azul marino para el logotipo; ORMAN y Noche conservan paneles oscuros propios.
+- La animación continua del logo y del resplandor fue retirada y sustituida por una entrada única horizontal junto a la aparición breve de las líneas decorativas.
+
+### Verificado
+
+- `npx ng build` correcto: 231.58 kB iniciales brutos y 63.11 kB estimados.
+- `npx ng test --watch=false` correcto: 8 archivos y 32 pruebas aprobadas.
+
 ## 2026-07-26 — Fase 06.1
 
 ### Añadido

@@ -11,8 +11,9 @@ describe('HeroSectionComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should render the title and descriptive text', () => {
+  it('should render one title and the descriptive text', () => {
     const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('h1')).toHaveLength(1);
     expect(element.querySelector('h1')?.textContent).toContain(
       'Encuentra el espacio ideal para ti',
     );
@@ -24,5 +25,17 @@ describe('HeroSectionComponent', () => {
     expect(links).toHaveLength(2);
     expect(links[0].getAttribute('href')).toBe('#propiedades');
     expect(links[1].getAttribute('href')).toBe('#contacto');
+  });
+
+  it('should render the official logo and hero property labels', () => {
+    const element = fixture.nativeElement as HTMLElement;
+    const logo = element.querySelector('img');
+
+    expect(logo?.getAttribute('src')).toBe('/images/brand/orman-logo.svg');
+    expect(logo?.getAttribute('alt')).toBe('Logotipo oficial de ORMAN');
+    expect(element.textContent).toContain('Gestión familiar de propiedades');
+    expect(element.textContent).toContain('Casas y edificios');
+    expect(element.textContent).toContain('Departamentos y tiendas');
+    expect(element.textContent).not.toContain('Edificio ORMAN');
   });
 });

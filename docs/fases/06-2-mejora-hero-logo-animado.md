@@ -1,0 +1,32 @@
+# Fase 06.2 — Mejora del hero con logotipo animado
+
+## Objetivo
+
+Reemplazar la ilustración abstracta del edificio en el hero público por una composición visual centrada en el logotipo oficial de ORMAN, sin ampliar el alcance de la landing.
+
+## Implementación
+
+- Se conserva sin cambios el contenido textual, el `h1` y los dos CTA del hero.
+- El panel derecho usa el recurso oficial `/images/brand/orman-logo.svg` sin editarlo, filtrarlo ni reemplazarlo.
+- El panel usa fondo azul marino en ORMAN, carbón en Noche y una superficie clara en Día. En Día, el logotipo se mantiene sobre una tarjeta interior azul marino para conservar su visibilidad.
+- La composición incorpora líneas arquitectónicas, marcos finos, formas geométricas y un resplandor dorado decorativo. Los elementos puramente visuales usan `aria-hidden="true"`.
+- Bajo el logotipo se muestran “Gestión familiar de propiedades”, “Casas y edificios” y “Departamentos y tiendas”. No se añaden estadísticas, precios ni datos simulados.
+- En escritorio, el hero adopta el mismo ancho máximo de `1800px` y padding responsive del header. En móvil, conserva el orden texto seguido de panel y reduce la decoración secundaria.
+
+## Animación y accesibilidad
+
+- La entrada única del contenido visual combina opacidad de 0 a 1 con `translateX(20px)` a `0`, durante 540 ms.
+- Las líneas decorativas aparecen después mediante una entrada breve de opacidad de 420 ms. No existe flotación, pulso ni ninguna animación infinita.
+- Con `prefers-reduced-motion: reduce` se eliminan todas esas animaciones y el logo se muestra directamente en su estado final.
+- Se conserva un único `h1`, el logo cuenta con texto alternativo descriptivo, los enlaces mantienen destinos `#propiedades` y `#contacto`, y los controles conservan áreas táctiles de al menos 48 px.
+
+## Alcance excluido
+
+No se modifican el header, footer, rutas, buscador, propiedades, formularios, API, login, imágenes externas ni librerías.
+
+## Verificación
+
+- Pruebas del componente ampliadas para comprobar el único `h1`, los CTA y anclas, el SVG oficial, su `alt`, los textos nuevos y la ausencia de “Edificio ORMAN”.
+- Corrección validada con `npx ng build`: 232.32 kB iniciales brutos y 63.21 kB estimados.
+- Corrección validada con `npx ng test --watch=false`: 8 archivos y 32 pruebas aprobadas.
+- No se inicia servidor ni se ejecuta Git.

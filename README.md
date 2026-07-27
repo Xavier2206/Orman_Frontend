@@ -4,11 +4,11 @@ Frontend público de ORMAN, una plataforma familiar para presentar propiedades y
 
 ## Estado actual
 
-- Fases 00 a 05, corrección 05.1 y Fase 06.1 completadas.
+- Fases 00 a 05, corrección 05.1 y Fases 06.1–06.2 completadas.
 - Landing pública estructural disponible en `/`.
 - Layout público reutilizable con encabezado, contenido mediante `router-outlet` y pie de página.
 - Logotipo oficial visible en el encabezado desde `/images/brand/orman-logo.svg`.
-- Hero inicial y marcadores temporales para propiedades, funcionamiento y contacto.
+- Hero con logotipo oficial, composición arquitectónica decorativa y movimiento reducido compatible; además de marcadores temporales para propiedades, funcionamiento y contacto.
 - Navegación interna por anclas, header persistente y menú móvil controlado con Angular Signal.
 - Selector compacto de temas ORMAN, Día y Noche integrado en el encabezado.
 - Estructura `public/images/` preparada, documentada y con el logotipo oficial integrado.
@@ -71,11 +71,11 @@ Los recursos colocados en `public/images/` se sirven desde la raíz pública. El
 
 ## Temas y accesibilidad
 
-Los tokens de las tres paletas viven en `src/styles/themes.css` y se exponen a Tailwind mediante `@theme inline` en `src/styles.css`. La interfaz utiliza colores semánticos, foco visible, landmarks, un único `h1`, enlace de salto, áreas táctiles adecuadas y movimiento reducido cuando el sistema lo solicita.
+Los tokens de las tres paletas viven en `src/styles/themes.css` y se exponen a Tailwind mediante `@theme inline` en `src/styles.css`. La interfaz utiliza colores semánticos, foco visible, landmarks, un único `h1`, enlace de salto, áreas táctiles adecuadas y movimiento reducido cuando el sistema lo solicita. El panel del hero conserva una superficie azul marino para mantener el contraste del logotipo oficial incluso en el tema Día.
 
 ## Documentación
 
-El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md), la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md) y las mejoras del header en [docs/fases/06-1-mejora-header-selector-temas.md](docs/fases/06-1-mejora-header-selector-temas.md).
+El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md), la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md), las mejoras del header en [docs/fases/06-1-mejora-header-selector-temas.md](docs/fases/06-1-mejora-header-selector-temas.md) y el hero con logotipo animado en [docs/fases/06-2-mejora-hero-logo-animado.md](docs/fases/06-2-mejora-hero-logo-animado.md).
 
 ## Alcance
 
