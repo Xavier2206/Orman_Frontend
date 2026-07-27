@@ -1,33 +1,87 @@
 <header
   class="w-full border-b border-theme-border bg-surface/98 text-content shadow-sm backdrop-blur-sm transition-colors duration-200 motion-reduce:transition-none"
 >
-  <div class="mx-auto flex min-h-20 w-full max-w-[1800px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-    <a href="#inicio" class="flex min-h-14 items-center gap-3 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Ir al inicio de ORMAN">
-      <img class="h-11 w-auto shrink-0 object-contain lg:h-12" src="/images/brand/orman-logo.svg" alt="ORMAN - Gestión de propiedades" />
+  <div
+    class="mx-auto flex min-h-20 w-full max-w-[1800px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"
+  >
+    <a
+      href="#inicio"
+      class="flex min-h-14 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      aria-label="Ir al inicio de ORMAN"
+    >
+      <img
+        class="h-11 w-auto shrink-0 object-contain lg:h-12"
+        src="/images/brand/orman-logo.svg"
+        alt="ORMAN - Gestión de propiedades"
+      />
       <span class="min-w-0">
-        <span class="block text-base font-bold tracking-[0.18em] text-content sm:text-lg">ORMAN</span>
+        <span class="block text-base font-bold tracking-[0.18em] text-content sm:text-lg"
+          >ORMAN</span
+        >
         <span class="block text-xs text-muted">Gestión de propiedades</span>
       </span>
     </a>
 
     <nav class="hidden lg:block" aria-label="Navegación principal">
       <ul class="flex items-center gap-1">
-        <li><a class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-content underline decoration-accent decoration-2 underline-offset-8 transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#inicio">Inicio</a></li>
-        <li><a class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#propiedades">Propiedades</a></li>
-        <li><a class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#como-funciona">Cómo funciona</a></li>
-        <li><a class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#contacto">Contacto</a></li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-content underline decoration-accent decoration-2 underline-offset-8 transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            href="#inicio"
+            >Inicio</a
+          >
+        </li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            href="#propiedades"
+            >Propiedades</a
+          >
+        </li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            href="#como-funciona"
+            >Cómo funciona</a
+          >
+        </li>
+        <li>
+          <a
+            class="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            href="#contacto"
+            >Contacto</a
+          >
+        </li>
       </ul>
     </nav>
 
     <div class="hidden items-center gap-2 lg:flex">
       <app-theme-selector />
-      <button type="button" class="min-h-11 rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" aria-label="Iniciar sesión, disponible próximamente">
+      <button
+        type="button"
+        class="min-h-11 rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+        aria-label="Iniciar sesión, disponible próximamente"
+      >
         Iniciar sesión
       </button>
     </div>
 
-    <button type="button" class="grid size-11 shrink-0 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none lg:hidden" aria-label="Abrir o cerrar menú de navegación" aria-controls="mobile-navigation" [attr.aria-expanded]="isMenuOpen()" (click)="toggleMenu()">
-      <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <button
+      type="button"
+      class="grid size-11 shrink-0 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none lg:hidden"
+      aria-label="Abrir o cerrar menú de navegación"
+      aria-controls="mobile-navigation"
+      [attr.aria-expanded]="isMenuOpen()"
+      (click)="toggleMenu()"
+    >
+      <svg
+        class="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
         @if (isMenuOpen()) {
           <path d="M6 6l12 12M18 6 6 18" />
         } @else {
@@ -41,16 +95,50 @@
     <div id="mobile-navigation" class="border-t border-theme-border bg-surface px-4 py-4 lg:hidden">
       <nav aria-label="Navegación móvil">
         <ul class="grid gap-1">
-          <li><a class="flex min-h-11 items-center rounded-lg px-3 font-semibold underline decoration-accent decoration-2 underline-offset-8 transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#inicio" (click)="closeMenu()">Inicio</a></li>
-          <li><a class="flex min-h-11 items-center rounded-lg px-3 font-medium transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#propiedades" (click)="closeMenu()">Propiedades</a></li>
-          <li><a class="flex min-h-11 items-center rounded-lg px-3 font-medium transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#como-funciona" (click)="closeMenu()">Cómo funciona</a></li>
-          <li><a class="flex min-h-11 items-center rounded-lg px-3 font-medium transition-colors duration-200 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" href="#contacto" (click)="closeMenu()">Contacto</a></li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-semibold underline decoration-accent decoration-2 underline-offset-8 transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              href="#inicio"
+              (click)="closeMenu()"
+              >Inicio</a
+            >
+          </li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              href="#propiedades"
+              (click)="closeMenu()"
+              >Propiedades</a
+            >
+          </li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              href="#como-funciona"
+              (click)="closeMenu()"
+              >Cómo funciona</a
+            >
+          </li>
+          <li>
+            <a
+              class="flex min-h-11 items-center rounded-lg px-3 font-medium transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              href="#contacto"
+              (click)="closeMenu()"
+              >Contacto</a
+            >
+          </li>
         </ul>
       </nav>
 
       <div class="mt-4 grid gap-3 border-t border-theme-border pt-4 sm:grid-cols-[1fr_auto]">
         <app-theme-selector />
-        <button type="button" class="min-h-11 rounded-lg border border-accent px-4 py-2 font-semibold text-accent transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none" aria-label="Iniciar sesión, disponible próximamente">Iniciar sesión</button>
+        <button
+          type="button"
+          class="min-h-11 rounded-lg border border-accent px-4 py-2 font-semibold text-accent transition-colors duration-200 hover:bg-accent hover:text-accent-contrast  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+          aria-label="Iniciar sesión, disponible próximamente"
+        >
+          Iniciar sesión
+        </button>
       </div>
     </div>
   }
