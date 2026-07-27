@@ -12,23 +12,43 @@
 
 :host-context(html[data-theme='light']) .hero-visual-panel {
   --theme-hero-panel: #ffffff;
-  --theme-hero-border: #d9e0e6;
+  --theme-hero-border: rgba(212, 169, 78, 0.55);
   --theme-hero-decoration: rgba(212, 169, 78, 0.26);
   --theme-hero-glow: rgba(212, 169, 78, 0.12);
   --theme-hero-text: #000f1f;
   --theme-hero-text-muted: #52606d;
   --theme-hero-tag: #ffffff;
   --theme-hero-tag-border: rgba(212, 169, 78, 0.32);
-  --theme-hero-logo-surface: transparent;
-  --theme-hero-logo-border: transparent;
-  --theme-hero-logo-shadow: transparent;
+  --theme-hero-logo-surface: #ffffff;
+  --theme-hero-logo-border: rgba(212, 169, 78, 0.5);
+  --theme-hero-logo-shadow: rgba(0, 15, 31, 0.08);
+  border-width: 2px;
   box-shadow: 0 10px 30px rgba(0, 15, 31, 0.08);
 }
 
+:host-context(html[data-theme='light']) .hero-visual-panel::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0.375rem;
+  border: 1px solid rgba(212, 169, 78, 0.28);
+  border-radius: 1.125rem;
+  pointer-events: none;
+  content: '';
+}
+
 :host-context(html[data-theme='light']) .hero-logo-surface {
-  border-color: transparent;
-  background-color: transparent;
-  box-shadow: none;
+  border-width: 2px;
+  border-color: var(--theme-hero-logo-border);
+  background-color: var(--theme-hero-logo-surface);
+  box-shadow: 0 8px 24px var(--theme-hero-logo-shadow);
+}
+
+:host-context(html[data-theme='light']) .hero-logo-caption {
+  margin-top: 1.25rem;
+}
+
+:host-context(html[data-theme='light']) .hero-property-tags {
+  margin-top: 0.875rem;
 }
 
 @keyframes hero-logo-enter {

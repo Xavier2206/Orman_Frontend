@@ -35,6 +35,10 @@ No se modifican el header, footer, rutas, buscador, propiedades, formularios, AP
 
 - La variante clara se resuelve dentro de `hero-section.component.css` mediante `:host-context(html[data-theme='light'])`.
 - El panel exterior, las etiquetas y la superficie inmediata del logotipo son blancos; el texto permanece azul marino y las líneas decorativas conservan un dorado suave.
+- En Día, el borde exterior gris se sustituye localmente por dorado al 45 % y se añade un marco interior de 1 px al 20 %, sin afectar los temas ORMAN y Noche.
+- Refinamiento posterior en Día: el borde exterior aumenta a 2 px con dorado al 55 %, el marco interior conserva 1 px y sube al 28 %, y el logotipo recibe una tarjeta blanca de 2 px con borde dorado al 50 % y sombra azul marino suave.
 - La tarjeta oscura detrás del logotipo se elimina solo en Día. ORMAN y Noche no reciben sobrescrituras locales.
 - No se modifican los tokens globales, el SVG oficial, el contenido ni la animación de entrada aprobada.
 - La corrección local supera `npx ng build` con 232.32 kB iniciales brutos y 63.21 kB estimados, además de `npx ng test --watch=false` con 8 archivos y 32 pruebas aprobadas.
+- El refinamiento de bordes dorados mantiene esos resultados: build correcto con 232.32 kB iniciales y 32 pruebas aprobadas.
+- El marco dorado del logotipo y el refuerzo final de bordes mantienen el build correcto en 232.32 kB iniciales, con 8 archivos y 32 pruebas aprobadas.
