@@ -8,7 +8,7 @@ Reemplazar la ilustración abstracta del edificio en el hero público por una co
 
 - Se conserva sin cambios el contenido textual, el `h1` y los dos CTA del hero.
 - El panel derecho usa el recurso oficial `/images/brand/orman-logo.svg` sin editarlo, filtrarlo ni reemplazarlo.
-- El panel usa fondo azul marino en ORMAN, carbón en Noche y una superficie clara en Día. En Día, el logotipo se mantiene sobre una tarjeta interior azul marino para conservar su visibilidad.
+- El panel usa fondo azul marino en ORMAN, carbón en Noche y blanco puro en Día. En Día, el logotipo se muestra directamente sobre el panel blanco, sin filtros ni tarjeta interior oscura.
 - La composición incorpora líneas arquitectónicas, marcos finos, formas geométricas y un resplandor dorado decorativo. Los elementos puramente visuales usan `aria-hidden="true"`.
 - Bajo el logotipo se muestran “Gestión familiar de propiedades”, “Casas y edificios” y “Departamentos y tiendas”. No se añaden estadísticas, precios ni datos simulados.
 - En escritorio, el hero adopta el mismo ancho máximo de `1800px` y padding responsive del header. En móvil, conserva el orden texto seguido de panel y reduce la decoración secundaria.
@@ -30,3 +30,11 @@ No se modifican el header, footer, rutas, buscador, propiedades, formularios, AP
 - Corrección validada con `npx ng build`: 232.32 kB iniciales brutos y 63.21 kB estimados.
 - Corrección validada con `npx ng test --watch=false`: 8 archivos y 32 pruebas aprobadas.
 - No se inicia servidor ni se ejecuta Git.
+
+## Corrección local del tema Día
+
+- La variante clara se resuelve dentro de `hero-section.component.css` mediante `:host-context(html[data-theme='light'])`.
+- El panel exterior, las etiquetas y la superficie inmediata del logotipo son blancos; el texto permanece azul marino y las líneas decorativas conservan un dorado suave.
+- La tarjeta oscura detrás del logotipo se elimina solo en Día. ORMAN y Noche no reciben sobrescrituras locales.
+- No se modifican los tokens globales, el SVG oficial, el contenido ni la animación de entrada aprobada.
+- La corrección local supera `npx ng build` con 232.32 kB iniciales brutos y 63.21 kB estimados, además de `npx ng test --watch=false` con 8 archivos y 32 pruebas aprobadas.

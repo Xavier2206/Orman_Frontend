@@ -19,11 +19,13 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 - El ancho máximo del hero se alineó con el sistema de contenido del header en pantallas grandes.
 - Corrección visual pendiente de aprobación: Día usa un panel claro con tarjeta interior azul marino para el logotipo; ORMAN y Noche conservan paneles oscuros propios.
 - La animación continua del logo y del resplandor fue retirada y sustituida por una entrada única horizontal junto a la aparición breve de las líneas decorativas.
+- Corrección local pendiente de revisión visual: el panel del hero es blanco puro en Día y el logotipo se muestra directamente sobre él, sin tarjeta oscura; ORMAN y Noche permanecen sin cambios.
 
 ### Verificado
 
 - `npx ng build` correcto: 231.58 kB iniciales brutos y 63.11 kB estimados.
 - `npx ng test --watch=false` correcto: 8 archivos y 32 pruebas aprobadas.
+- Corrección local del panel blanco en Día: `npx ng build` correcto con 232.32 kB iniciales y `npx ng test --watch=false` correcto con 32 pruebas.
 
 ## 2026-07-26 — Fase 06.1
 
