@@ -5,6 +5,7 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 ## Estado actual
 
 - Fases 00 a 05, corrección 05.1 y Fases 06.1–06.2 completadas.
+- Fase 10 de modal visual de inicio de sesión completada.
 - Fase intermedia 04.1 de recursos visuales públicos completada.
 - Estructura base de la landing pública implementada y verificada.
 - Logotipo oficial integrado desde `public/images/brand/orman-logo.svg`.
@@ -21,6 +22,7 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 - [Fase 05.1 — Integración del logotipo oficial de ORMAN](fases/05-1-integracion-logo-orman.md)
 - [Fase 06.1 — Mejora del header y selector de temas](fases/06-1-mejora-header-selector-temas.md)
 - [Fase 06.2 — Mejora del hero con logotipo animado](fases/06-2-mejora-hero-logo-animado.md)
+- [Fase 10 — Modal visual de inicio de sesión en dos pasos](fases/10-modal-inicio-sesion.md)
 
 ## Documentos teóricos
 

@@ -5,16 +5,18 @@ Frontend público de ORMAN, una plataforma familiar para presentar propiedades y
 ## Estado actual
 
 - Fases 00 a 05, corrección 05.1 y Fases 06.1–06.2 completadas.
+- Fase 10 de modal visual de inicio de sesión en dos pasos completada.
 - Landing pública estructural disponible en `/`.
 - Layout público reutilizable con encabezado, contenido mediante `router-outlet` y pie de página.
 - Logotipo oficial visible en el encabezado desde `/images/brand/orman-logo.svg`.
 - Hero con logotipo oficial, composición arquitectónica decorativa y movimiento reducido compatible; además de marcadores temporales para propiedades, funcionamiento y contacto.
 - Navegación interna por anclas, header persistente y menú móvil controlado con Angular Signal.
 - Selector compacto de temas ORMAN, Día y Noche integrado en el encabezado.
+- Modal visual responsive con confirmación, formulario local y accesibilidad, abierto desde desktop y móvil.
 - Estructura `public/images/` preparada, documentada y con el logotipo oficial integrado.
 - Próxima fase pendiente de autorización expresa.
 
-La landing todavía no incluye buscador, filtros, tarjetas reales, datos, formularios, login ni integración con backend.
+La landing todavía no incluye buscador, filtros, tarjetas reales, datos, autenticación real ni integración con backend. El modal de acceso es exclusivamente visual y no envía credenciales.
 
 ## Tecnologías
 
@@ -57,6 +59,7 @@ public/images/
 
 src/app/
 ├── layouts/public-layout/
+├── features/auth/login-modal/
 ├── features/public/landing/
 │   └── components/
 │       ├── hero-section/
@@ -75,7 +78,7 @@ Los tokens de las tres paletas viven en `src/styles/themes.css` y se exponen a T
 
 ## Documentación
 
-El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md), la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md), las mejoras del header en [docs/fases/06-1-mejora-header-selector-temas.md](docs/fases/06-1-mejora-header-selector-temas.md) y el hero con logotipo animado en [docs/fases/06-2-mejora-hero-logo-animado.md](docs/fases/06-2-mejora-hero-logo-animado.md).
+El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md), la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md), las mejoras del header en [docs/fases/06-1-mejora-header-selector-temas.md](docs/fases/06-1-mejora-header-selector-temas.md), el hero con logotipo animado en [docs/fases/06-2-mejora-hero-logo-animado.md](docs/fases/06-2-mejora-hero-logo-animado.md) y el modal visual en [docs/fases/10-modal-inicio-sesion.md](docs/fases/10-modal-inicio-sesion.md).
 
 ## Alcance
 

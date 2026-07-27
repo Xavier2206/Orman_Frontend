@@ -40,8 +40,45 @@ describe('PublicHeaderComponent', () => {
   it('should preserve the visual login action', () => {
     expect(fixture.nativeElement.textContent).toContain('Iniciar sesión');
     expect(
-      fixture.nativeElement.querySelector('[aria-label="Iniciar sesión, disponible próximamente"]'),
+      fixture.nativeElement.querySelector('[aria-label="Abrir inicio de sesión"]'),
     ).toBeTruthy();
+  });
+
+  it('should open and close the login modal from the desktop action', async () => {
+    const desktopTrigger = fixture.nativeElement.querySelector(
+      '[data-login-trigger="desktop"]',
+    ) as HTMLButtonElement;
+
+    desktopTrigger.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeTruthy();
+
+    const cancelButton = [...fixture.nativeElement.querySelectorAll('app-login-modal button')].find(
+      (button: HTMLButtonElement) => button.textContent?.trim() === 'Cancelar',
+    ) as HTMLButtonElement;
+    cancelButton.click();
+    fixture.detectChanges();
+    await Promise.resolve();
+
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeFalsy();
+    expect(document.activeElement).toBe(desktopTrigger);
+  });
+
+  it('should close the mobile menu before opening the login modal', () => {
+    const menuButton = fixture.nativeElement.querySelector(
+      '[aria-controls="mobile-navigation"]',
+    ) as HTMLButtonElement;
+    menuButton.click();
+    fixture.detectChanges();
+
+    const mobileTrigger = fixture.nativeElement.querySelector(
+      '[data-login-trigger="mobile"]',
+    ) as HTMLButtonElement;
+    mobileTrigger.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeTruthy();
   });
 
   it('should expose the mobile menu state with aria-expanded', () => {

@@ -2,6 +2,33 @@
 
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
+## 2026-07-26 — Fase 10
+
+### Añadido
+
+- Modal standalone de inicio de sesión visual en dos pasos dentro de `features/auth`.
+- Confirmación inicial y formulario reactivo con validación local de campos requeridos.
+- Signals para paso actual, contraseña visible y mensaje informativo.
+- Cierre por Cancelar, X, Escape y clic en el overlay.
+- Contención manual del foco, foco inicial, retorno al disparador y alternativa para el menú móvil.
+- Bloqueo y restauración segura del scroll del documento.
+- Animaciones breves compatibles con movimiento reducido.
+- Trece pruebas nuevas para el modal y la integración con el header.
+- Documento práctico de la Fase 10.
+
+### Cambiado
+
+- Los botones desktop y móvil de inicio de sesión abren el mismo modal.
+- El menú móvil se cierra antes de mostrar el diálogo.
+- Las pruebas del header cubren apertura, cierre y retorno del foco.
+- README principal e índice documental actualizados al estado de la fase.
+
+### Verificado
+
+- `npx ng build` correcto: 256.70 kB iniciales brutos y 69.47 kB estimados.
+- `npx ng test --watch=false` correcto: 9 archivos y 45 pruebas aprobadas.
+- Ausencia de servicios, API, rutas, dependencias o autenticación real.
+
 ## 2026-07-26 — Fase 06.2
 
 ### Añadido
