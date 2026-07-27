@@ -1,74 +1,107 @@
-# Fase 10 — Modal visual de inicio de sesión en dos pasos
+# Fase 10 — Acceso visual en dos pasos
 
 ## Objetivo
 
-Incorporar a la landing pública un modal visual de acceso en dos pasos, integrado con los botones de inicio de sesión del header y sin implementar autenticación real, servicios, API ni navegación.
+Incorporar a la landing pública un flujo visual de acceso en dos pasos, sin autenticación real, servicios, API ni navegación privada.
 
 ## Arquitectura
 
-El modal pertenece a la funcionalidad de autenticación:
+Los dos patrones de interfaz se implementan como componentes standalone independientes:
 
 ```text
-src/app/features/auth/login-modal/
-├── login-modal.component.ts
-├── login-modal.component.html
-├── login-modal.component.css
-└── login-modal.component.spec.ts
+src/app/features/auth/
+├── quick-menu/
+│   ├── quick-menu.component.ts
+│   ├── quick-menu.component.html
+│   ├── quick-menu.component.css
+│   └── quick-menu.component.spec.ts
+└── login-modal/
+    ├── login-modal.component.ts
+    ├── login-modal.component.html
+    ├── login-modal.component.css
+    └── login-modal.component.spec.ts
 ```
 
-`LoginModalComponent` es standalone e importa `ReactiveFormsModule`. `PublicHeaderComponent` lo renderiza condicionalmente y mantiene localmente el estado de apertura, sin utilizar un servicio global.
+- `QuickMenuComponent` representa exclusivamente la confirmación no modal.
+- `LoginModalComponent` representa exclusivamente el diálogo modal de credenciales.
+- `PublicHeaderComponent` coordina el flujo con Signals locales.
 
-## Flujo de dos pasos
+No existe `AuthUiService`, `AuthService` ni estado global para esta interfaz.
 
-1. Los botones desktop y móvil del header abren el modal.
-2. El primer paso muestra la confirmación “Acceso a ORMAN”.
-3. “Conectar” cambia al formulario dentro del mismo diálogo.
-4. El formulario permite escribir usuario o correo y contraseña.
-5. El control de visibilidad alterna localmente el tipo del campo de contraseña.
-6. Un envío válido muestra que el acceso estará disponible próximamente.
-7. Cancelar, X, Escape o clic sobre el overlay cierran el diálogo.
-8. Cada nueva apertura comienza nuevamente en el paso 1.
+## Flujo
 
-No se envían, almacenan ni verifican credenciales.
+1. El botón desktop o móvil del header abre `QuickMenuComponent`.
+2. En móvil, el menú de navegación se cierra antes de mostrar el QuickMenu.
+3. “Cancelar”, X, Escape, clic exterior o un segundo clic en el disparador cierran el QuickMenu.
+4. “Conectar” destruye el QuickMenu y abre `LoginModalComponent`.
+5. El modal permite escribir usuario o correo y contraseña.
+6. El control de visibilidad alterna localmente el tipo del campo de contraseña.
+7. Un envío válido muestra que el acceso estará disponible próximamente.
+8. Cancelar, X, Escape o clic sobre el overlay cierran el modal.
+9. La siguiente apertura comienza nuevamente en el QuickMenu.
 
-## Signals y formulario
+Los dos componentes nunca se renderizan simultáneamente.
 
-El modal utiliza Signals para:
+## QuickMenuComponent
 
-- Paso actual.
-- Visibilidad de la contraseña.
-- Mensaje informativo local.
+Responsabilidades:
 
-El header usa Signals para:
+- Mostrar “Acceso a ORMAN” y su descripción.
+- Emitir `close` y `connect`.
+- Gestionar Escape y clic exterior con listeners de Angular.
+- Enfocar inicialmente el botón “Conectar”.
+- Mantener semántica `role="dialog"` sin `aria-modal`.
+- Aplicar su propia animación de entrada y alternativa de movimiento reducido.
 
-- Estado del menú móvil.
-- Visibilidad del modal.
+En desktop se renderiza dentro de un contenedor `relative` junto al botón. El panel utiliza posicionamiento absoluto, alineación derecha y una punta decorativa orientada al disparador. No recibe un `HTMLElement`.
 
-Los campos se implementan con un `FormGroup` local y validadores `required`. No se exige formato de correo porque el primer campo también admite un nombre de usuario.
+En móvil utiliza una variante fija, centrada bajo el header y con margen lateral.
 
-## Accesibilidad
+No contiene overlay, desenfoque global, formulario, focus trap ni bloqueo del scroll.
 
-- Diálogo con `role="dialog"` y `aria-modal="true"`.
-- Título y descripción asociados mediante `aria-labelledby` y `aria-describedby`.
-- Botón X con nombre accesible.
-- Etiquetas visibles, `aria-invalid` y asociación de errores.
-- Iconos decorativos ocultos a tecnologías asistivas.
-- Foco inicial en el botón de cierre.
-- Foco en el primer campo al pasar al segundo paso.
-- Contención manual de Tab y Shift+Tab dentro del panel.
-- Cierre mediante Escape.
-- Retorno del foco al botón de apertura; en móvil se usa el botón del menú como alternativa porque el disparador desaparece al cerrar el menú.
-- Controles con áreas táctiles de al menos 44–48 px.
+## LoginModalComponent
 
-El focus trap es deliberadamente local y cubre los botones e inputs actuales. Si el diálogo incorpora controles complejos en el futuro, deberá ampliarse o sustituirse por una abstracción accesible reutilizable.
+Responsabilidades:
 
-## Bloqueo del desplazamiento
+- Renderizar directamente el formulario de credenciales.
+- Mostrar el SVG oficial de ORMAN.
+- Gestionar validaciones locales requeridas.
+- Mostrar u ocultar la contraseña.
+- Mostrar el mensaje local de disponibilidad próxima.
+- Gestionar overlay, backdrop blur, foco inicial y focus trap.
+- Bloquear y restaurar el scroll del documento.
+- Cerrar mediante Cancelar, X, Escape o clic sobre el overlay.
+- Reiniciar formulario, visibilidad y mensaje al cerrar.
 
-Al crearse el modal se conserva el valor previo de `document.body.style.overflow` y se aplica `hidden`. El valor anterior se restaura al destruirse el componente mediante `DestroyRef`, incluso si el cierre ocurre por una vía distinta de los botones.
+Usa `role="dialog"`, `aria-modal="true"`, `aria-labelledby` y `aria-describedby`.
 
-## Adaptación a temas
+## Coordinación desde el header
 
-Existe un solo componente para ORMAN, Noche y Día. La presentación reutiliza tokens existentes:
+`PublicHeaderComponent` utiliza Signals separados:
+
+- `isQuickMenuOpen`
+- `isLoginModalOpen`
+- `loginOrigin`
+- `loginTrigger`
+
+El elemento disparador se conserva únicamente para restaurar el foco; no se pasa al QuickMenu para posicionarlo. En desktop, el contenedor relativo resuelve el anclaje. En móvil, si el botón ya no existe porque se cerró el menú, el foco vuelve al botón que abre la navegación.
+
+Los botones exponen `aria-expanded`, `aria-controls="orman-quick-menu"` y `aria-haspopup="dialog"`.
+
+## Formulario y alcance funcional
+
+`LoginModalComponent` importa `ReactiveFormsModule` y utiliza un `FormGroup` local:
+
+- Usuario o correo requerido.
+- Contraseña requerida.
+
+No se exige formato de correo porque el primer campo también acepta un nombre de usuario.
+
+No se envían, almacenan ni verifican credenciales. No existe HTTP, backend, API, JWT, cookies, sesión, OTP, persistencia ni simulación de autenticación.
+
+## Temas
+
+Ambos componentes reutilizan tokens semánticos existentes:
 
 - `bg-overlay`
 - `bg-card`
@@ -83,50 +116,60 @@ Existe un solo componente para ORMAN, Noche y Día. La presentación reutiliza t
 - `outline-focus`
 - `shadow-md` y `shadow-lg`
 
-No se añadieron tokens, colores fijos en la plantilla ni variantes `dark:*`.
+No se añadieron tokens, colores fijos en plantillas ni variantes `dark:*`. Un único diseño se adapta automáticamente a ORMAN, Noche y Día.
 
 ## Responsive y movimiento
 
-- El panel es mobile first, deja margen lateral y limita su ancho a `max-w-lg`.
-- La altura máxima considera `100dvh` y permite scroll interno.
-- Los botones se apilan en móvil y se muestran en fila desde `sm`.
-- Overlay y panel tienen una entrada breve de opacidad y desplazamiento.
-- `prefers-reduced-motion: reduce` elimina ambas animaciones.
-
-## Componentes implicados
-
-- `LoginModalComponent`: interfaz, pasos, formulario, accesibilidad, scroll y cierre.
-- `PublicHeaderComponent`: apertura desktop/móvil, cierre del menú móvil, render condicional y retorno del foco.
+- QuickMenu desktop: ancho máximo de 384 px y alineación derecha respecto al botón.
+- QuickMenu móvil: posición superior fija, centrado horizontal y margen lateral.
+- LoginModal: ancho máximo `max-w-lg`, límite basado en `100dvh` y scroll interno.
+- Los botones se apilan cuando el ancho disponible es reducido.
+- Cada componente tiene animaciones propias, breves y no repetitivas.
+- `prefers-reduced-motion: reduce` desactiva las animaciones.
 
 ## Pruebas
 
-Se verifican:
+### QuickMenuComponent
 
-- Creación y paso inicial.
-- Cambio al segundo paso.
-- Cierre por Cancelar, X, Escape y overlay.
-- Ausencia de cierre al pulsar dentro del panel.
-- Mostrar y ocultar contraseña.
-- Validaciones requeridas.
-- Mensaje local sin autenticación real.
-- Atributos accesibles y SVG oficial.
+- Contenido, eventos `close` y `connect`.
+- Cancelar, X, Escape y clic exterior.
+- Ausencia de cierre al pulsar dentro.
+- Semántica no modal y ausencia de overlay.
+- Ausencia de bloqueo del scroll.
+- Foco inicial en “Conectar”.
+- Controles nativos de teclado y variante móvil.
+
+### LoginModalComponent
+
+- Apertura directa en el formulario, sin confirmación.
+- Overlay, logo oficial y semántica modal.
+- Cancelar, X, Escape y clic en overlay.
+- Ausencia de cierre al pulsar dentro.
+- Focus trap.
+- Visibilidad de contraseña.
+- Validaciones, mensaje local y reinicio.
 - Bloqueo y restauración del scroll.
-- Apertura desde desktop y móvil.
+
+### PublicHeaderComponent
+
+- Apertura exclusiva del QuickMenu desde desktop y móvil.
 - Cierre previo del menú móvil.
-- Ocultación del modal y retorno de foco desktop.
+- Sustitución del QuickMenu por LoginModal al conectar.
+- Exclusión mutua de ambos componentes.
+- Cierre independiente y retorno del foco.
+- Segundo clic sobre el disparador desktop.
 
 Resultados:
 
-- `npx ng build`: correcto, 256.70 kB iniciales brutos y 69.47 kB estimados.
-- `npx ng test --watch=false`: 9 archivos y 45 pruebas aprobadas.
+- `npx ng build`: correcto, 256.92 kB iniciales brutos y 69.52 kB estimados.
+- `npx ng test --watch=false`: 10 archivos y 62 pruebas aprobadas.
 
 ## Limitaciones
 
-- No existe autenticación, API, backend, JWT, sesión ni persistencia de credenciales.
-- No hay recuperación, registro, proveedores externos, roles ni rutas privadas.
-- El formulario solo demuestra interacción y validación local.
-- El focus trap está ajustado a la estructura actual del diálogo.
+- La interfaz no autentica usuarios.
+- No existen estados de servidor, recuperación, registro, proveedores externos, roles ni rutas privadas.
+- El focus trap manual está ajustado a los controles actuales del modal.
 
 ## Trabajo futuro
 
-Una fase posterior, expresamente autorizada, podrá definir el contrato real de autenticación, tratamiento seguro de credenciales, estados de carga y error, recuperación de acceso y navegación protegida.
+Una fase posterior, expresamente autorizada, podrá definir el contrato real de autenticación y sus requisitos de seguridad. Esta fase no inicia ese trabajo.

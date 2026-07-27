@@ -7,6 +7,7 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 ### Añadido
 
 - Modal standalone de inicio de sesión visual en dos pasos dentro de `features/auth`.
+- `QuickMenuComponent` standalone para la confirmación compacta no modal.
 - Confirmación inicial y formulario reactivo con validación local de campos requeridos.
 - Signals para paso actual, contraseña visible y mensaje informativo.
 - Cierre por Cancelar, X, Escape y clic en el overlay.
@@ -22,12 +23,20 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 - El menú móvil se cierra antes de mostrar el diálogo.
 - Las pruebas del header cubren apertura, cierre y retorno del foco.
 - README principal e índice documental actualizados al estado de la fase.
+- Corrección visual de la Fase 10: la confirmación inicial ahora es un popover compacto sin overlay, anclado al botón desktop mediante su posición real y centrado bajo el header en móvil.
+- El overlay, el desenfoque, la contención del foco y el bloqueo del scroll se reservan exclusivamente para el modal de credenciales.
+- La semántica accesible diferencia el popover no modal del diálogo modal del segundo paso.
+- Refactorización estructural: QuickMenu y LoginModal son componentes independientes con HTML, CSS, pruebas y responsabilidades separadas.
+- El header coordina ambos mediante Signals locales, los mantiene mutuamente excluyentes y posiciona el QuickMenu desktop con un contenedor relativo.
+- `LoginModalComponent` abre directamente el formulario y concentra exclusivamente overlay, blur, focus trap y bloqueo del scroll.
 
 ### Verificado
 
 - `npx ng build` correcto: 256.70 kB iniciales brutos y 69.47 kB estimados.
 - `npx ng test --watch=false` correcto: 9 archivos y 45 pruebas aprobadas.
 - Ausencia de servicios, API, rutas, dependencias o autenticación real.
+- Corrección visual verificada: build correcto con 257.58 kB iniciales brutos y 69.61 kB estimados; 9 archivos y 47 pruebas aprobadas.
+- Refactorización estructural verificada: build correcto con 256.92 kB iniciales brutos y 69.52 kB estimados; 10 archivos y 62 pruebas aprobadas.
 
 ## 2026-07-26 — Fase 06.2
 

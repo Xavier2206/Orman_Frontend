@@ -1,3 +1,7 @@
+:host {
+  display: contents;
+}
+
 .login-modal-overlay {
   animation: login-overlay-enter 180ms ease-out both;
 }

@@ -6,12 +6,16 @@ describe('LoginModalComponent', () => {
   let fixture: ComponentFixture<LoginModalComponent>;
 
   beforeEach(async () => {
+    document.body.style.overflow = '';
     await TestBed.configureTestingModule({ imports: [LoginModalComponent] }).compileComponents();
     fixture = TestBed.createComponent(LoginModalComponent);
     fixture.detectChanges();
   });
 
-  afterEach(() => fixture.destroy());
+  afterEach(() => {
+    fixture.destroy();
+    document.body.style.overflow = '';
+  });
 
   function clickButton(label: string): void {
     const button = [...fixture.nativeElement.querySelectorAll('button')].find(
@@ -22,74 +26,89 @@ describe('LoginModalComponent', () => {
     fixture.detectChanges();
   }
 
-  function openCredentialsStep(): void {
-    clickButton('Conectar');
-  }
-
-  it('should create and start on step one', () => {
+  it('should create directly with the credentials form', () => {
     expect(fixture.componentInstance).toBeTruthy();
-    expect(fixture.nativeElement.textContent).toContain('Acceso a ORMAN');
-    expect(fixture.nativeElement.textContent).not.toContain('Accede a tu cuenta ORMAN.');
-  });
-
-  it('should move to step two when Connect is selected', () => {
-    openCredentialsStep();
-
     expect(fixture.nativeElement.textContent).toContain('Iniciar sesión');
     expect(fixture.nativeElement.textContent).toContain('Accede a tu cuenta ORMAN.');
+    expect(fixture.nativeElement.textContent).not.toContain('Acceso a ORMAN');
+    expect(fixture.nativeElement.querySelector('#login-username')).toBeTruthy();
   });
 
-  it('should emit close and reset from Cancel', () => {
-    const closed = vi.fn();
-    fixture.componentInstance.closed.subscribe(closed);
-    openCredentialsStep();
+  it('should expose a modal dialog, overlay and official logo', () => {
+    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+    const logo = fixture.nativeElement.querySelector('img') as HTMLImageElement;
+
+    expect(fixture.nativeElement.querySelector('.login-modal-overlay')).toBeTruthy();
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(dialog.getAttribute('aria-labelledby')).toBe('login-modal-title');
+    expect(dialog.getAttribute('aria-describedby')).toBe('login-modal-description');
+    expect(logo.getAttribute('src')).toBe('/images/brand/orman-logo.svg');
+    expect(logo.getAttribute('alt')).toBe('ORMAN');
+  });
+
+  it('should focus the username field when opened', async () => {
+    await fixture.whenStable();
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
+
+    expect(document.activeElement).toBe(username);
+  });
+
+  it('should emit close from Cancel', () => {
+    const close = vi.fn();
+    fixture.componentInstance.close.subscribe(close);
 
     clickButton('Cancelar');
 
-    expect(closed).toHaveBeenCalledOnce();
-    expect(fixture.nativeElement.textContent).toContain('Acceso a ORMAN');
+    expect(close).toHaveBeenCalledOnce();
   });
 
   it('should emit close from the close button', () => {
-    const closed = vi.fn();
-    fixture.componentInstance.closed.subscribe(closed);
+    const close = vi.fn();
+    fixture.componentInstance.close.subscribe(close);
 
     const closeButton = fixture.nativeElement.querySelector(
       '[aria-label="Cerrar inicio de sesión"]',
     ) as HTMLButtonElement;
     closeButton.click();
 
-    expect(closed).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
   });
 
   it('should close with Escape', () => {
-    const closed = vi.fn();
-    fixture.componentInstance.closed.subscribe(closed);
-    const overlay = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+    const close = vi.fn();
+    fixture.componentInstance.close.subscribe(close);
 
-    overlay.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
-    expect(closed).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
   });
 
-  it('should close from the overlay but not from the panel', () => {
-    const closed = vi.fn();
-    fixture.componentInstance.closed.subscribe(closed);
-    const overlay = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
-    const panel = overlay.querySelector('section') as HTMLElement;
+  it('should close from the overlay but not from the dialog panel', () => {
+    const close = vi.fn();
+    fixture.componentInstance.close.subscribe(close);
+    const overlay = fixture.nativeElement.querySelector('.login-modal-overlay') as HTMLElement;
+    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
 
-    panel.click();
-    expect(closed).not.toHaveBeenCalled();
+    dialog.click();
+    expect(close).not.toHaveBeenCalled();
 
     overlay.click();
-    expect(closed).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
+  });
+
+  it('should keep Tab focus inside the modal dialog', () => {
+    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+    const firstButton = dialog.querySelector('button') as HTMLButtonElement;
+    const submitButton = dialog.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitButton.focus();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+
+    expect(document.activeElement).toBe(firstButton);
   });
 
   it('should show and hide the password', () => {
-    openCredentialsStep();
-    const password = fixture.nativeElement.querySelector(
-      '#login-password',
-    ) as HTMLInputElement;
+    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
     const toggle = fixture.nativeElement.querySelector(
       '[aria-label="Mostrar contraseña"]',
     ) as HTMLButtonElement;
@@ -108,8 +127,6 @@ describe('LoginModalComponent', () => {
   });
 
   it('should show local required-field validation', () => {
-    openCredentialsStep();
-
     clickButton('Iniciar sesión');
 
     expect(fixture.nativeElement.textContent).toContain('Ingresa tu usuario o correo.');
@@ -117,7 +134,6 @@ describe('LoginModalComponent', () => {
   });
 
   it('should only show the local information message for valid visual fields', () => {
-    openCredentialsStep();
     const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
     const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
 
@@ -133,16 +149,31 @@ describe('LoginModalComponent', () => {
     );
   });
 
-  it('should expose accessible dialog attributes and the official logo', () => {
-    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
-    expect(dialog.getAttribute('aria-modal')).toBe('true');
-    expect(dialog.getAttribute('aria-labelledby')).toBe('login-modal-title');
-    expect(dialog.getAttribute('aria-describedby')).toBe('login-modal-description');
+  it('should reset local form state when closing', () => {
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
+    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
+    username.value = 'usuario';
+    username.dispatchEvent(new Event('input'));
+    password.value = 'clave-local';
+    password.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
 
-    openCredentialsStep();
-    const logo = fixture.nativeElement.querySelector('img') as HTMLImageElement;
-    expect(logo.getAttribute('src')).toBe('/images/brand/orman-logo.svg');
-    expect(logo.getAttribute('alt')).toBe('ORMAN');
+    const toggle = fixture.nativeElement.querySelector(
+      '[aria-label="Mostrar contraseña"]',
+    ) as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+    clickButton('Iniciar sesión');
+    clickButton('Cancelar');
+
+    expect(username.value).toBe('');
+    expect(password.value).toBe('');
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'El acceso al sistema estará disponible próximamente.',
+    );
+    expect(
+      fixture.nativeElement.querySelector('[aria-label="Mostrar contraseña"]'),
+    ).toBeTruthy();
   });
 
   it('should lock and restore document scrolling', () => {

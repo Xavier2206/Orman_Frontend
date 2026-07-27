@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  HostListener,
   Injector,
   afterNextRender,
   inject,
@@ -23,13 +24,12 @@ export class LoginModalComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly dialogPanel = viewChild.required<ElementRef<HTMLElement>>('dialogPanel');
-  private readonly closeButton = viewChild.required<ElementRef<HTMLButtonElement>>('closeButton');
-  private readonly usernameInput = viewChild<ElementRef<HTMLInputElement>>('usernameInput');
-  private readonly previousBodyOverflow = this.document.body.style.overflow;
+  private readonly usernameInput = viewChild.required<ElementRef<HTMLInputElement>>('usernameInput');
+  private previousBodyOverflow = '';
+  private scrollLocked = false;
 
-  readonly closed = output<void>();
+  readonly close = output<void>();
 
-  protected readonly currentStep = signal<1 | 2>(1);
   protected readonly passwordVisible = signal(false);
   protected readonly showInformation = signal(false);
   protected readonly loginForm = new FormGroup({
@@ -44,23 +44,14 @@ export class LoginModalComponent {
   });
 
   constructor() {
-    this.document.body.style.overflow = 'hidden';
-
-    afterNextRender(() => this.closeButton().nativeElement.focus());
-
-    this.destroyRef.onDestroy(() => {
-      this.document.body.style.overflow = this.previousBodyOverflow;
-    });
-  }
-
-  protected showCredentialsStep(): void {
-    this.currentStep.set(2);
-    this.showInformation.set(false);
+    this.lockDocumentScroll();
 
     afterNextRender(
-      () => this.usernameInput()?.nativeElement.focus(),
+      () => this.usernameInput().nativeElement.focus(),
       { injector: this.injector },
     );
+
+    this.destroyRef.onDestroy(() => this.restoreDocumentScroll());
   }
 
   protected togglePasswordVisibility(): void {
@@ -78,7 +69,8 @@ export class LoginModalComponent {
 
   protected requestClose(): void {
     this.resetState();
-    this.closed.emit();
+    this.restoreDocumentScroll();
+    this.close.emit();
   }
 
   protected handleBackdropClick(event: MouseEvent): void {
@@ -87,7 +79,8 @@ export class LoginModalComponent {
     }
   }
 
-  protected handleKeydown(event: KeyboardEvent): void {
+  @HostListener('document:keydown', ['$event'])
+  protected handleDocumentKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       event.preventDefault();
       this.requestClose();
@@ -110,8 +103,9 @@ export class LoginModalComponent {
   }
 
   private keepFocusInsideDialog(event: KeyboardEvent): void {
+    const dialogPanel = this.dialogPanel().nativeElement;
     const focusableElements = [
-      ...this.dialogPanel().nativeElement.querySelectorAll<HTMLElement>(
+      ...dialogPanel.querySelectorAll<HTMLElement>(
         'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
       ),
     ].filter((element) => !element.hidden);
@@ -130,19 +124,37 @@ export class LoginModalComponent {
     } else if (!event.shiftKey && activeElement === lastElement) {
       event.preventDefault();
       firstElement.focus();
-    } else if (!this.dialogPanel().nativeElement.contains(activeElement)) {
+    } else if (!dialogPanel.contains(activeElement)) {
       event.preventDefault();
       firstElement.focus();
     }
   }
 
   private resetState(): void {
-    this.currentStep.set(1);
     this.passwordVisible.set(false);
     this.showInformation.set(false);
     this.loginForm.reset({
       username: '',
       password: '',
     });
+  }
+
+  private lockDocumentScroll(): void {
+    if (this.scrollLocked) {
+      return;
+    }
+
+    this.previousBodyOverflow = this.document.body.style.overflow;
+    this.document.body.style.overflow = 'hidden';
+    this.scrollLocked = true;
+  }
+
+  private restoreDocumentScroll(): void {
+    if (!this.scrollLocked) {
+      return;
+    }
+
+    this.document.body.style.overflow = this.previousBodyOverflow;
+    this.scrollLocked = false;
   }
 }

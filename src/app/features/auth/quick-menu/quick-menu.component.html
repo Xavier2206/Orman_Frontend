@@ -1,0 +1,71 @@
+<section
+  #panel
+  id="orman-quick-menu"
+  class="quick-menu-panel rounded-2xl border border-accent bg-card p-5 text-content shadow-lg sm:p-6"
+  [class.quick-menu-panel-mobile]="origin() === 'mobile'"
+  role="dialog"
+  aria-labelledby="quick-menu-title"
+  aria-describedby="quick-menu-description"
+>
+  <button
+    type="button"
+    class="absolute right-3 top-3 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+    aria-label="Cerrar acceso a ORMAN"
+    (click)="requestClose()"
+  >
+    <svg
+      class="size-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  </button>
+
+  <div class="pr-12">
+    <div
+      class="grid size-12 place-items-center rounded-xl border border-accent bg-surface text-accent shadow-sm"
+      aria-hidden="true"
+    >
+      <svg
+        class="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6" />
+      </svg>
+    </div>
+    <h2 id="quick-menu-title" class="mt-4 text-xl font-bold tracking-tight text-content">
+      Acceso a ORMAN
+    </h2>
+    <p id="quick-menu-description" class="mt-2 leading-6 text-muted">
+      Continúa para ingresar tus credenciales.
+    </p>
+  </div>
+
+  <div class="my-5 border-t border-theme-border" aria-hidden="true"></div>
+
+  <div class="flex flex-col-reverse gap-3 min-[420px]:flex-row min-[420px]:justify-end">
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-xl border border-theme-border bg-card px-5 py-2.5 font-semibold text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+      (click)="requestClose()"
+    >
+      Cancelar
+    </button>
+    <button
+      #connectButton
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-5 py-2.5 font-semibold text-accent-contrast shadow-md transition-colors duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+      (click)="requestConnect()"
+    >
+      Conectar
+    </button>
+  </div>
+</section>

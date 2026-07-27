@@ -12,7 +12,7 @@ Frontend público de ORMAN, una plataforma familiar para presentar propiedades y
 - Hero con logotipo oficial, composición arquitectónica decorativa y movimiento reducido compatible; además de marcadores temporales para propiedades, funcionamiento y contacto.
 - Navegación interna por anclas, header persistente y menú móvil controlado con Angular Signal.
 - Selector compacto de temas ORMAN, Día y Noche integrado en el encabezado.
-- Modal visual responsive con confirmación, formulario local y accesibilidad, abierto desde desktop y móvil.
+- Acceso visual responsive con QuickMenu no modal y LoginModal de credenciales independientes, coordinados desde el header.
 - Estructura `public/images/` preparada, documentada y con el logotipo oficial integrado.
 - Próxima fase pendiente de autorización expresa.
 
@@ -59,7 +59,9 @@ public/images/
 
 src/app/
 ├── layouts/public-layout/
-├── features/auth/login-modal/
+├── features/auth/
+│   ├── quick-menu/
+│   └── login-modal/
 ├── features/public/landing/
 │   └── components/
 │       ├── hero-section/

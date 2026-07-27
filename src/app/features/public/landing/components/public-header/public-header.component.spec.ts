@@ -7,12 +7,31 @@ describe('PublicHeaderComponent', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    document.body.style.overflow = '';
     await TestBed.configureTestingModule({ imports: [PublicHeaderComponent] }).compileComponents();
     fixture = TestBed.createComponent(PublicHeaderComponent);
     fixture.detectChanges();
   });
 
-  afterEach(() => localStorage.clear());
+  afterEach(() => {
+    fixture.destroy();
+    localStorage.clear();
+    document.body.style.overflow = '';
+  });
+
+  function desktopLoginTrigger(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector(
+      '[data-login-trigger="desktop"]',
+    ) as HTMLButtonElement;
+  }
+
+  function clickButtonInside(selector: string, label: string): void {
+    const button = [...fixture.nativeElement.querySelectorAll(`${selector} button`)].find(
+      (candidate: HTMLButtonElement) => candidate.textContent?.trim() === label,
+    ) as HTMLButtonElement;
+    button.click();
+    fixture.detectChanges();
+  }
 
   it('should render the ORMAN brand and navigation', () => {
     const element = fixture.nativeElement as HTMLElement;
@@ -33,38 +52,28 @@ describe('PublicHeaderComponent', () => {
     expect(logo?.closest('a')?.getAttribute('aria-label')).toBe('Ir al inicio de ORMAN');
   });
 
-  it('should render the theme selector', () => {
+  it('should render the theme selector and login action', () => {
     expect(fixture.nativeElement.querySelector('app-theme-selector')).toBeTruthy();
-  });
-
-  it('should preserve the visual login action', () => {
     expect(fixture.nativeElement.textContent).toContain('Iniciar sesión');
     expect(
       fixture.nativeElement.querySelector('[aria-label="Abrir inicio de sesión"]'),
     ).toBeTruthy();
   });
 
-  it('should open and close the login modal from the desktop action', async () => {
-    const desktopTrigger = fixture.nativeElement.querySelector(
-      '[data-login-trigger="desktop"]',
-    ) as HTMLButtonElement;
+  it('should open only QuickMenu from the desktop action', () => {
+    const trigger = desktopLoginTrigger();
 
-    desktopTrigger.click();
+    trigger.click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeTruthy();
 
-    const cancelButton = [...fixture.nativeElement.querySelectorAll('app-login-modal button')].find(
-      (button: HTMLButtonElement) => button.textContent?.trim() === 'Cancelar',
-    ) as HTMLButtonElement;
-    cancelButton.click();
-    fixture.detectChanges();
-    await Promise.resolve();
-
-    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeFalsy();
-    expect(document.activeElement).toBe(desktopTrigger);
+    expect(fixture.nativeElement.querySelector('app-quick-menu')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeNull();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(trigger.getAttribute('aria-controls')).toBe('orman-quick-menu');
+    expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
   });
 
-  it('should close the mobile menu before opening the login modal', () => {
+  it('should close the mobile menu and open only the mobile QuickMenu', () => {
     const menuButton = fixture.nativeElement.querySelector(
       '[aria-controls="mobile-navigation"]',
     ) as HTMLButtonElement;
@@ -77,8 +86,72 @@ describe('PublicHeaderComponent', () => {
     mobileTrigger.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-quick-menu')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.quick-menu-panel-mobile')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeNull();
+  });
+
+  it('should close QuickMenu without opening LoginModal', async () => {
+    const trigger = desktopLoginTrigger();
+    trigger.click();
+    fixture.detectChanges();
+
+    clickButtonInside('app-quick-menu', 'Cancelar');
+    await Promise.resolve();
+
+    expect(fixture.nativeElement.querySelector('app-quick-menu')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('should replace QuickMenu with LoginModal after Connect', () => {
+    desktopLoginTrigger().click();
+    fixture.detectChanges();
+
+    clickButtonInside('app-quick-menu', 'Conectar');
+
+    expect(fixture.nativeElement.querySelector('app-quick-menu')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-login-modal')).toBeTruthy();
+  });
+
+  it('should never render QuickMenu and LoginModal simultaneously', () => {
+    desktopLoginTrigger().click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('app-quick-menu, app-login-modal')).toHaveLength(
+      1,
+    );
+
+    clickButtonInside('app-quick-menu', 'Conectar');
+    expect(fixture.nativeElement.querySelectorAll('app-quick-menu, app-login-modal')).toHaveLength(
+      1,
+    );
+  });
+
+  it('should close LoginModal and return focus to the desktop trigger', async () => {
+    const trigger = desktopLoginTrigger();
+    trigger.click();
+    fixture.detectChanges();
+    clickButtonInside('app-quick-menu', 'Conectar');
+
+    clickButtonInside('app-login-modal', 'Cancelar');
+    await Promise.resolve();
+
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('should close QuickMenu with a second desktop trigger click', () => {
+    const trigger = desktopLoginTrigger();
+    trigger.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-quick-menu')).toBeTruthy();
+
+    trigger.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-quick-menu')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-login-modal')).toBeNull();
   });
 
   it('should expose the mobile menu state with aria-expanded', () => {
@@ -97,7 +170,7 @@ describe('PublicHeaderComponent', () => {
     button.click();
     fixture.detectChanges();
     expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeNull();
   });
 
   it('should close the mobile menu when a navigation option is selected', () => {
@@ -110,6 +183,6 @@ describe('PublicHeaderComponent', () => {
     fixture.detectChanges();
 
     expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('#mobile-navigation')).toBeNull();
   });
 });

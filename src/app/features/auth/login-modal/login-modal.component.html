@@ -1,18 +1,16 @@
 <div
-  class="login-modal-overlay fixed inset-0 z-[200] flex items-center justify-center overflow-y-auto bg-overlay p-4 backdrop-blur-sm sm:p-6"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="login-modal-title"
-  aria-describedby="login-modal-description"
+  class="login-modal-overlay fixed inset-0 z-[220] flex items-center justify-center overflow-y-auto bg-overlay p-4 backdrop-blur-sm sm:p-6"
   (click)="handleBackdropClick($event)"
-  (keydown)="handleKeydown($event)"
 >
   <section
     #dialogPanel
     class="login-modal-panel relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-accent bg-card p-6 text-content shadow-lg sm:p-8"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="login-modal-title"
+    aria-describedby="login-modal-description"
   >
     <button
-      #closeButton
       type="button"
       class="absolute right-4 top-4 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
       aria-label="Cerrar inicio de sesión"
@@ -30,34 +28,120 @@
       </svg>
     </button>
 
-    @if (currentStep() === 1) {
-      <div class="pr-12">
-        <div
-          class="grid size-14 place-items-center rounded-2xl border border-accent bg-surface text-accent shadow-sm"
-          aria-hidden="true"
+    <div class="pr-12">
+      <img
+        class="h-16 w-auto object-contain"
+        src="/images/brand/orman-logo.svg"
+        alt="ORMAN"
+      />
+
+      <div class="mt-5 flex items-center gap-3" aria-label="Paso 2 de 2">
+        <span
+          class="grid size-8 place-items-center rounded-full border border-accent bg-surface text-sm font-bold text-content"
+          >1</span
         >
-          <svg
-            class="size-7"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-          >
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6" />
-          </svg>
-        </div>
-        <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">
-          Acceso a ORMAN
-        </h2>
-        <p id="login-modal-description" class="mt-3 leading-7 text-muted">
-          Continúa para ingresar tus credenciales.
-        </p>
+        <span class="h-px flex-1 bg-accent" aria-hidden="true"></span>
+        <span
+          class="grid size-8 place-items-center rounded-full bg-accent text-sm font-bold text-accent-contrast"
+          aria-current="step"
+          >2</span
+        >
       </div>
 
-      <div class="my-6 border-t border-theme-border" aria-hidden="true"></div>
+      <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">
+        Iniciar sesión
+      </h2>
+      <p id="login-modal-description" class="mt-2 text-muted">Accede a tu cuenta ORMAN.</p>
+    </div>
 
-      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+    <form class="mt-6 grid gap-5" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+      <div>
+        <label for="login-username" class="mb-2 block text-sm font-semibold text-content">
+          Usuario o correo
+        </label>
+        <input
+          #usernameInput
+          id="login-username"
+          type="text"
+          formControlName="username"
+          autocomplete="username"
+          class="min-h-12 w-full rounded-xl border border-theme-border bg-surface px-4 py-3 text-content placeholder:text-muted focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          placeholder="Usuario o correo"
+          [attr.aria-invalid]="showUsernameError()"
+          [attr.aria-describedby]="showUsernameError() ? 'login-username-error' : null"
+        />
+        @if (showUsernameError()) {
+          <p id="login-username-error" class="mt-2 text-sm font-medium text-danger" role="alert">
+            Ingresa tu usuario o correo.
+          </p>
+        }
+      </div>
+
+      <div>
+        <label for="login-password" class="mb-2 block text-sm font-semibold text-content">
+          Contraseña
+        </label>
+        <div class="relative">
+          <input
+            id="login-password"
+            [type]="passwordVisible() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="current-password"
+            class="min-h-12 w-full rounded-xl border border-theme-border bg-surface px-4 py-3 pr-14 text-content placeholder:text-muted focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            placeholder="Contraseña"
+            [attr.aria-invalid]="showPasswordError()"
+            [attr.aria-describedby]="showPasswordError() ? 'login-password-error' : null"
+          />
+          <button
+            type="button"
+            class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            [attr.aria-pressed]="passwordVisible()"
+            (click)="togglePasswordVisibility()"
+          >
+            @if (passwordVisible()) {
+              <svg
+                class="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <path d="M3 3l18 18M10.6 10.7A2 2 0 0 0 13.3 13.4M9.9 4.3A10.7 10.7 0 0 1 12 4c5.5 0 9 5 9 5a15.8 15.8 0 0 1-2.1 2.6M6.2 6.2C4.1 7.5 3 9 3 9s3.5 5 9 5c1.1 0 2.1-.2 3-.5" />
+              </svg>
+            } @else {
+              <svg
+                class="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
+                <circle cx="12" cy="12" r="2.5" />
+              </svg>
+            }
+          </button>
+        </div>
+        @if (showPasswordError()) {
+          <p id="login-password-error" class="mt-2 text-sm font-medium text-danger" role="alert">
+            Ingresa tu contraseña.
+          </p>
+        }
+      </div>
+
+      @if (showInformation()) {
+        <p
+          class="rounded-xl border border-theme-border bg-surface p-4 text-sm leading-6 text-muted"
+          role="status"
+        >
+          El acceso al sistema estará disponible próximamente.
+        </p>
+      }
+
+      <div class="mt-1 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           class="inline-flex min-h-12 items-center justify-center rounded-xl border border-theme-border bg-card px-5 py-3 font-semibold text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
@@ -66,143 +150,12 @@
           Cancelar
         </button>
         <button
-          type="button"
+          type="submit"
           class="inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-5 py-3 font-semibold text-accent-contrast shadow-md transition-colors duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-          (click)="showCredentialsStep()"
         >
-          Conectar
+          Iniciar sesión
         </button>
       </div>
-    } @else {
-      <div class="pr-12">
-        <img
-          class="h-16 w-auto object-contain"
-          src="/images/brand/orman-logo.svg"
-          alt="ORMAN"
-        />
-
-        <div class="mt-5 flex items-center gap-3" aria-label="Paso 2 de 2">
-          <span
-            class="grid size-8 place-items-center rounded-full border border-accent bg-surface text-sm font-bold text-content"
-            >1</span
-          >
-          <span class="h-px flex-1 bg-accent" aria-hidden="true"></span>
-          <span
-            class="grid size-8 place-items-center rounded-full bg-accent text-sm font-bold text-accent-contrast"
-            aria-current="step"
-            >2</span
-          >
-        </div>
-
-        <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">
-          Iniciar sesión
-        </h2>
-        <p id="login-modal-description" class="mt-2 text-muted">Accede a tu cuenta ORMAN.</p>
-      </div>
-
-      <form class="mt-6 grid gap-5" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
-        <div>
-          <label for="login-username" class="mb-2 block text-sm font-semibold text-content">
-            Usuario o correo
-          </label>
-          <input
-            #usernameInput
-            id="login-username"
-            type="text"
-            formControlName="username"
-            autocomplete="username"
-            class="min-h-12 w-full rounded-xl border border-theme-border bg-surface px-4 py-3 text-content placeholder:text-muted focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            placeholder="Usuario o correo"
-            [attr.aria-invalid]="showUsernameError()"
-            [attr.aria-describedby]="showUsernameError() ? 'login-username-error' : null"
-          />
-          @if (showUsernameError()) {
-            <p id="login-username-error" class="mt-2 text-sm font-medium text-danger" role="alert">
-              Ingresa tu usuario o correo.
-            </p>
-          }
-        </div>
-
-        <div>
-          <label for="login-password" class="mb-2 block text-sm font-semibold text-content">
-            Contraseña
-          </label>
-          <div class="relative">
-            <input
-              id="login-password"
-              [type]="passwordVisible() ? 'text' : 'password'"
-              formControlName="password"
-              autocomplete="current-password"
-              class="min-h-12 w-full rounded-xl border border-theme-border bg-surface px-4 py-3 pr-14 text-content placeholder:text-muted focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              placeholder="Contraseña"
-              [attr.aria-invalid]="showPasswordError()"
-              [attr.aria-describedby]="showPasswordError() ? 'login-password-error' : null"
-            />
-            <button
-              type="button"
-              class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-              [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-              [attr.aria-pressed]="passwordVisible()"
-              (click)="togglePasswordVisibility()"
-            >
-              @if (passwordVisible()) {
-                <svg
-                  class="size-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M3 3l18 18M10.6 10.7A2 2 0 0 0 13.3 13.4M9.9 4.3A10.7 10.7 0 0 1 12 4c5.5 0 9 5 9 5a15.8 15.8 0 0 1-2.1 2.6M6.2 6.2C4.1 7.5 3 9 3 9s3.5 5 9 5c1.1 0 2.1-.2 3-.5" />
-                </svg>
-              } @else {
-                <svg
-                  class="size-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
-                  <circle cx="12" cy="12" r="2.5" />
-                </svg>
-              }
-            </button>
-          </div>
-          @if (showPasswordError()) {
-            <p id="login-password-error" class="mt-2 text-sm font-medium text-danger" role="alert">
-              Ingresa tu contraseña.
-            </p>
-          }
-        </div>
-
-        @if (showInformation()) {
-          <p
-            class="rounded-xl border border-theme-border bg-surface p-4 text-sm leading-6 text-muted"
-            role="status"
-          >
-            El acceso al sistema estará disponible próximamente.
-          </p>
-        }
-
-        <div class="mt-1 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            class="inline-flex min-h-12 items-center justify-center rounded-xl border border-theme-border bg-card px-5 py-3 font-semibold text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-            (click)="requestClose()"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-5 py-3 font-semibold text-accent-contrast shadow-md transition-colors duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-          >
-            Iniciar sesión
-          </button>
-        </div>
-      </form>
-    }
+    </form>
   </section>
 </div>

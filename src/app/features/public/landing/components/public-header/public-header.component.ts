@@ -1,19 +1,22 @@
 import { Component, ElementRef, inject, signal } from '@angular/core';
 
 import { LoginModalComponent } from '../../../../auth/login-modal/login-modal.component';
+import { QuickMenuComponent } from '../../../../auth/quick-menu/quick-menu.component';
 import { ThemeSelectorComponent } from '../../../../../shared/components/theme-selector/theme-selector.component';
 
 @Component({
   selector: 'app-public-header',
-  imports: [ThemeSelectorComponent, LoginModalComponent],
+  imports: [ThemeSelectorComponent, QuickMenuComponent, LoginModalComponent],
   templateUrl: './public-header.component.html',
 })
 export class PublicHeaderComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
-  private loginTrigger: HTMLElement | null = null;
 
   protected readonly isMenuOpen = signal(false);
+  protected readonly isQuickMenuOpen = signal(false);
   protected readonly isLoginModalOpen = signal(false);
+  protected readonly loginTrigger = signal<HTMLElement | null>(null);
+  protected readonly loginOrigin = signal<'desktop' | 'mobile'>('desktop');
 
   protected toggleMenu(): void {
     this.isMenuOpen.update((isOpen) => !isOpen);
@@ -23,21 +26,43 @@ export class PublicHeaderComponent {
     this.isMenuOpen.set(false);
   }
 
-  protected openLoginModal(event: Event, fromMobileMenu = false): void {
-    if (event.currentTarget instanceof HTMLElement) {
-      this.loginTrigger = event.currentTarget;
+  protected toggleQuickMenu(event: Event, fromMobileMenu = false): void {
+    if (this.isQuickMenuOpen()) {
+      this.closeQuickMenu();
+      return;
     }
+
+    if (event.currentTarget instanceof HTMLElement) {
+      this.loginTrigger.set(event.currentTarget);
+    }
+
+    this.loginOrigin.set(fromMobileMenu ? 'mobile' : 'desktop');
 
     if (fromMobileMenu) {
       this.closeMenu();
     }
 
+    this.isLoginModalOpen.set(false);
+    this.isQuickMenuOpen.set(true);
+  }
+
+  protected closeQuickMenu(): void {
+    this.isQuickMenuOpen.set(false);
+    this.restoreLoginTriggerFocus();
+  }
+
+  protected openLoginModal(): void {
+    this.isQuickMenuOpen.set(false);
     this.isLoginModalOpen.set(true);
   }
 
   protected closeLoginModal(): void {
     this.isLoginModalOpen.set(false);
-    const trigger = this.loginTrigger;
+    this.restoreLoginTriggerFocus();
+  }
+
+  private restoreLoginTriggerFocus(): void {
+    const trigger = this.loginTrigger();
 
     queueMicrotask(() => {
       if (trigger?.isConnected) {
@@ -48,7 +73,7 @@ export class PublicHeaderComponent {
           ?.focus();
       }
 
-      this.loginTrigger = null;
+      this.loginTrigger.set(null);
     });
   }
 }
