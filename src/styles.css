@@ -9,6 +9,7 @@
   --color-content: var(--theme-text);
   --color-muted: var(--theme-text-muted);
   --color-accent: var(--theme-accent);
+  --color-accent-text: var(--theme-accent-text);
   --color-accent-hover: var(--theme-accent-hover);
   --color-accent-contrast: var(--theme-accent-contrast);
   --color-theme-border: var(--theme-border);

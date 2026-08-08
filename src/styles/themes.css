@@ -8,6 +8,7 @@
   --theme-text: #e7edf3;
   --theme-text-muted: #aebbc7;
   --theme-accent: #d4a94e;
+  --theme-accent-text: #d4a94e;
   --theme-accent-hover: #e0bb68;
   --theme-accent-contrast: #000f1f;
   --theme-border: rgba(212, 169, 78, 0.25);
@@ -45,6 +46,7 @@
   --theme-text: #f5f5f5;
   --theme-text-muted: #b8b8b8;
   --theme-accent: #d4a94e;
+  --theme-accent-text: #d4a94e;
   --theme-accent-hover: #e0bb68;
   --theme-accent-contrast: #080808;
   --theme-border: rgba(212, 169, 78, 0.22);
@@ -71,6 +73,7 @@
   --theme-text: #000f1f;
   --theme-text-muted: #52606d;
   --theme-accent: #d4a94e;
+  --theme-accent-text: #80601b;
   --theme-accent-hover: #bf9134;
   --theme-accent-contrast: #000f1f;
   --theme-border: #d9e0e6;
