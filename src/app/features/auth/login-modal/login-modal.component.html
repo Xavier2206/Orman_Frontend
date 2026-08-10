@@ -4,7 +4,7 @@
 >
   <section
     #dialogPanel
-    class="login-modal-panel relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto px-6 pb-6 pt-5 text-content sm:px-8 sm:pb-8 sm:pt-7"
+    class="login-modal-panel relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto px-6 pb-8 pt-8 text-content sm:px-8 sm:pb-10 sm:pt-10"
     role="dialog"
     aria-modal="true"
     aria-labelledby="login-modal-title"
@@ -28,50 +28,53 @@
       </svg>
     </button>
 
-    <div class="login-modal-header">
+    <div class="login-modal-header text-center">
       <img
-        class="mx-auto h-14 w-auto object-contain"
+        class="mx-auto h-16 w-auto object-contain sm:h-[4.5rem]"
         src="/images/brand/orman-logo.svg"
         alt="ORMAN"
       />
 
-      <div class="mt-4 flex items-center gap-3" aria-label="Paso 2 de 2">
-        <span
-          class="grid size-8 place-items-center rounded-full border border-accent bg-surface text-sm font-bold text-content"
-          >1</span
-        >
-        <span class="h-px flex-1 bg-accent" aria-hidden="true"></span>
-        <span
-          class="grid size-8 place-items-center rounded-full bg-accent text-sm font-bold text-accent-contrast"
-          aria-current="step"
-          >2</span
-        >
-      </div>
-
-      <h2 id="login-modal-title" class="mt-4 text-2xl font-bold tracking-tight text-content">
+      <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">
         Iniciar sesión
       </h2>
       <p id="login-modal-description" class="mt-2 text-muted">Accede a tu cuenta ORMAN.</p>
     </div>
 
-    <form class="mt-6 grid gap-5" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+    <form class="mt-8 grid gap-6" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
       <div class="login-field relative">
-        <input
-          #usernameInput
-          id="login-username"
-          type="text"
-          formControlName="username"
-          autocomplete="username"
-          class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 text-content placeholder:text-transparent"
-          [class.field-error]="showUsernameError()"
-          [class.field-valid]="isUsernameValid()"
-          placeholder=" "
-          [attr.aria-invalid]="showUsernameError()"
-          [attr.aria-describedby]="showUsernameError() ? 'login-username-error' : null"
-        />
-        <label for="login-username" class="login-field-label">
-          Usuario o correo
-        </label>
+        <div class="relative">
+          <input
+            #usernameInput
+            id="login-username"
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-12 text-content placeholder:text-transparent"
+            [class.field-error]="showUsernameError()"
+            [class.field-valid]="isUsernameValid()"
+            placeholder=" "
+            [attr.aria-invalid]="showUsernameError()"
+            [attr.aria-describedby]="showUsernameError() ? 'login-username-error' : null"
+          />
+          <label for="login-username" class="login-field-label">
+            Usuario o correo
+          </label>
+          @if (showUsernameError()) {
+            <span class="login-field-status-icon login-field-status-icon-username login-field-status-error" aria-hidden="true">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 9v4m0 3h.01M10.3 3.5 2.9 16.3a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 3.5a2 2 0 0 0-3.4 0Z" />
+              </svg>
+            </span>
+          } @else if (isUsernameValid()) {
+            <span class="login-field-status-icon login-field-status-icon-username login-field-status-success" aria-hidden="true">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+                <path d="m8 12 2.5 2.5L16 9" />
+              </svg>
+            </span>
+          }
+        </div>
         @if (showUsernameError()) {
           <p id="login-username-error" class="login-field-error mt-2 text-sm font-medium" role="alert">
             Ingresa tu usuario o correo.
@@ -86,7 +89,7 @@
             [type]="passwordVisible() ? 'text' : 'password'"
             formControlName="password"
             autocomplete="current-password"
-            class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-14 text-content placeholder:text-transparent"
+            class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-20 text-content placeholder:text-transparent"
             [class.field-error]="showPasswordError()"
             [class.field-valid]="isPasswordValid()"
             placeholder=" "
@@ -96,6 +99,20 @@
           <label for="login-password" class="login-field-label">
             Contraseña
           </label>
+          @if (showPasswordError()) {
+            <span class="login-field-status-icon login-field-status-icon-password login-field-status-error" aria-hidden="true">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 9v4m0 3h.01M10.3 3.5 2.9 16.3a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 3.5a2 2 0 0 0-3.4 0Z" />
+              </svg>
+            </span>
+          } @else if (isPasswordValid()) {
+            <span class="login-field-status-icon login-field-status-icon-password login-field-status-success" aria-hidden="true">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+                <path d="m8 12 2.5 2.5L16 9" />
+              </svg>
+            </span>
+          }
           <button
             type="button"
             class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
@@ -145,7 +162,7 @@
         </p>
       }
 
-      <div class="mt-1 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           class="login-modal-action login-modal-secondary inline-flex min-h-12 items-center justify-center px-5 py-3 font-semibold text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"

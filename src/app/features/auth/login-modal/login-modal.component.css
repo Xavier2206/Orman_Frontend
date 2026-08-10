@@ -55,6 +55,34 @@
     background-color 150ms ease;
 }
 
+.login-field-status-icon {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.login-field-status-icon-username {
+  right: 1rem;
+}
+
+.login-field-status-icon-password {
+  right: 3.25rem;
+}
+
+.login-field-status-error {
+  color: var(--theme-danger-text);
+}
+
+.login-field-status-success {
+  color: var(--theme-success-text);
+}
+
 .login-field-input:focus + .login-field-label,
 .login-field-input:not(:placeholder-shown) + .login-field-label {
   top: 0;
