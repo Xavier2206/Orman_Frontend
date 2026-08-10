@@ -1,0 +1,16 @@
+:host {
+  display: contents;
+}
+
+.public-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--theme-header-bg);
+  border-bottom: 1px solid var(--theme-header-border);
+}
+
+.public-header-mobile {
+  background-color: var(--theme-header-bg);
+  border-top: 1px solid var(--theme-header-border);
+}

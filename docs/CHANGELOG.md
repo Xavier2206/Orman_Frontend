@@ -1,5 +1,183 @@
 # Changelog
 
+## 2026-08-09 - Microfase 5C de Footer refinado
+
+### Aniadido
+
+- Tokens locales por tema para fondo y borde de Footer.
+- Estilos encapsulados de Footer mediante la convencion Angular `styleUrl`.
+
+### Cambiado
+
+- Footer raiz y separador de copyright dejan de depender de Surface y Border globales.
+
+### Conservado
+
+- Textos, Accent, enlaces internos, hover, foco global, radios, responsive, contenido y semantica sin cambios.
+- No se agregaron gradientes, filtros, radios ni sombras.
+- Landing, Hero, Header, ThemeSelector, QuickMenu, LoginModal, PublicLayout, Page y ThemeService sin cambios.
+- No se crearon mappings Tailwind, no se ejecutaron comandos Git y no se realizo commit.
+
+## 2026-08-09 - Microfase 6 de radios, sombras y consistencia visual
+
+### Verificado
+
+- Auditoría completa de radios Tailwind, radios locales, sombras Tailwind y sombras locales en los componentes refinados.
+- No se detectaron inconsistencias importantes que requieran cambios de implementación.
+- No se modificó la escala global de Tailwind, no se añadieron tokens y no se uniformaron artificialmente las sombras o radios.
+- Hero queda pendiente para la Microfase 7.
+
+### Conservado
+
+- LoginModal, QuickMenu, Header, ThemeSelector, Landing y Footer mantienen la jerarquía visual aprobada.
+- No se ejecutaron comandos Git y no se realizó commit.
+
+## 2026-08-09 - Microfase 7 de Hero refinado e integración final
+
+### Aniadido
+
+- Tokens Hero de fondo, borde y hover para la CTA secundaria, por tema.
+- Aislamiento local del eyebrow mediante los tokens Hero de tag existentes.
+
+### Cambiado
+
+- La CTA secundaria deja de depender de Card, Card Hover y Border globales.
+- Los valores efectivos de Hero para Día se centralizan en `themes.css` y se retiran los overrides temáticos redundantes del CSS local.
+
+### Conservado
+
+- Panel Hero y superficie del logo con 24 px, `shadow-lg` y sombras locales existentes.
+- CTA principal, contenido, estructura, responsive, focus, glow, decoración, logo oficial y animaciones existentes.
+- Page, Header, ThemeSelector, Landing, Footer, QuickMenu, LoginModal, PublicLayout y ThemeService sin cambios.
+- No se modificaron tokens globales, no se ejecutaron comandos Git y no se realizó commit.
+
+## 2026-08-09 - Microfase 5B de Landing refinado
+
+### Aniadido
+
+- Tokens locales por tema para card, panel y borde de Landing.
+- Estilos encapsulados de Landing mediante la convencion Angular `styleUrl`.
+
+### Cambiado
+
+- `#propiedades` es la unica card destacada: en ORMAN usa su gradiente, borde y sombra locales; en Noche y Dia conserva la sombra existente.
+- `#contacto` usa la card refinada estandar y conserva `shadow-sm`.
+- `#como-funciona` usa el panel refinado sin sombra nueva.
+
+### Conservado
+
+- Textos, Accent y `text-accent-text` de Dia, estructura, orden, espaciado, responsive y transiciones existentes.
+- Hero, Footer, Header, ThemeSelector, QuickMenu, LoginModal, PublicLayout, Page y ThemeService sin cambios.
+- No se crearon mappings Tailwind ni token de hover; los tokens globales Card, Card Hover, Surface y Border permanecen intactos.
+- No se ejecutaron comandos Git ni se realizo commit.
+
+## 2026-08-09 - Microfase 5A de Header y ThemeSelector refinados
+
+### Aniadido
+
+- Tokens locales de fondo y borde para Header, por tema.
+- Tokens locales de base, borde, activo y hover para ThemeSelector, por tema.
+- Estilos encapsulados para Header y ThemeSelector mediante la convencion Angular `styleUrl`.
+
+### Cambiado
+
+- Header y navegacion movil consumen sus superficies locales y conservan `backdrop-blur-sm` y `shadow-sm`.
+- ThemeSelector deja de depender de Surface, Border, Card y Card Hover globales para sus superficies refinadas.
+
+### Conservado
+
+- Accent, ring, sombra, `aria-pressed`, focus-visible, responsive y logica de Header/ThemeSelector sin cambios.
+- QuickMenu, LoginModal, PublicLayout, Page, Landing, Footer, Hero y ThemeService sin cambios.
+- No se crearon mappings Tailwind para estos tokens, no se ejecutaron comandos Git y no se realizo commit.
+
+### Verificado
+
+- `npx ng build` correcto: 260.95 kB iniciales brutos y 70.06 kB estimados.
+- `npx ng test --watch=false` correcto: 10 archivos y 65 pruebas aprobadas.
+- La pestaña Browser existente en `localhost:4200` sirvió inicialmente una version anterior despues de recargar; ese bloqueo inicial quedó documentado y posteriormente se resolvió al recargar el workspace correcto.
+- Validación visual posterior de la Microfase 5A completada en ORMAN, Noche y Día: **APROBADA VISUALMENTE**.
+
+## 2026-08-09 - Microfase 4 de QuickMenu refinado
+
+### Aniadido
+
+- Tokens locales por tema para fondo, borde y superficie secundaria del QuickMenu.
+- Panel y caret aislados de `--theme-card`; el caret usa el mismo fondo y borde del panel.
+- Radio local de 16 px para el panel y de 14 px para las acciones principales.
+
+### Conservado
+
+- Padding actual, `shadow-lg`, icon container, Accent, focus-visible, posicionamiento, responsive, animaciones y logica del QuickMenu.
+- LoginModal, PublicLayout, Page, Header, Landing, Footer, ThemeSelector, Hero y ThemeService sin cambios.
+- No se crearon mappings Tailwind para los tokens QuickMenu, no se ejecutaron comandos Git y no se realizo commit.
+
+### Verificado
+
+- `npx ng build` correcto: 260.39 kB iniciales brutos y 69.99 kB estimados.
+- `npx ng test --watch=false` correcto: 10 archivos y 65 pruebas aprobadas.
+- Browser revisado en ORMAN, Noche y Dia a anchos aproximados de 375 px y 1440 px: panel, transparencia, caret, bordes, acciones, icon container, posicion y ausencia de overflow. ORMAN queda restaurado al finalizar.
+
+## 2026-08-09 - Microfase 3 de LoginModal refinado
+
+### Aniadido
+
+- Tokens modales por tema: `--theme-modal-bg`, `--theme-modal-border`, `--theme-modal-shadow`, `--theme-field-label-bg`, `--theme-modal-secondary-bg` y `--theme-modal-secondary-border`.
+- Consumo local de Field, Danger y Success refinados en los inputs del LoginModal.
+- Foco de inputs con borde de acento y doble halo, manteniendo el focus-visible de cerrar, password toggle y botones.
+
+### Conservado
+
+- Alcance limitado a LoginModal; no se modificaron QuickMenu, PublicLayout, Page, Header, Landing, Footer, ThemeSelector, Hero ni ThemeService.
+- Overlay, `backdrop-blur-sm`, dimensiones, estructura, spacing, logo, Escape y focus trap permanecen intactos.
+- No se crearon mappings Tailwind para los tokens modales, no se ejecutaron comandos Git y no se realizo commit.
+
+### Verificado
+
+- `npx ng build` correcto: 259.79 kB iniciales brutos y 69.93 kB estimados.
+- `npx ng test --watch=false` correcto: 10 archivos y 65 pruebas aprobadas.
+- Browser revisado en ORMAN, Noche y Dia; se comprobaron foco, estados de validacion, labels flotantes, botones, Escape y ausencia de overflow en viewport de escritorio y el caso movil de Dia. ORMAN quedo restaurado al finalizar.
+
+## 2026-08-09 - Microfase 2 de Page Background refinado
+
+### Cambiado
+
+- PublicLayout consume `--theme-page-bg` mediante `background-image` en su wrapper principal.
+- `bg-page` permanece activo para conservar `background-color: var(--theme-page)` como fallback.
+- ORMAN, Noche y Dia muestran sus gradientes de Page correspondientes.
+
+### Conservado
+
+- `themes.css`, `styles.css`, ThemeService y todos los componentes visuales permanecen sin cambios adicionales.
+- Surface, Card, Border, Overlay, Field, Danger, Success, Hero, radios, sombras y focus permanecen en sus estados anteriores.
+
+### Verificado
+
+- Build correcto.
+- 10 archivos de prueba y 65 pruebas aprobadas.
+- Verificacion Browser realizada en anchos aproximados de 375 px y 1440 px sin overflow horizontal.
+
+## 2026-08-09 - Microfase 1 de arquitectura de tokens refinados
+
+### Aniadido
+
+- Token separado `--theme-page-bg` para futuros fondos visuales sin convertir `--theme-page` en una imagen.
+- Tokens `--theme-field` y `--theme-field-border`.
+- Tokens semanticos `--theme-danger-text`, `--theme-danger-border` y `--theme-danger-bg`.
+- Tokens semanticos `--theme-success-text`, `--theme-success-border` y `--theme-success-bg`.
+- Mappings de color Tailwind 4 para Field, Danger y Success.
+
+### Conservado
+
+- `ThemeService`, Signals, `ThemeName`, `data-theme` y `localStorage` sin cambios.
+- Valores actualmente consumidos de Page, Surface, Card, Border, Overlay, Danger, Success, Warning y Focus sin cambios.
+- Warning conservado como `#D97706`.
+
+### Fuera de alcance
+
+- No se migraron componentes a los tokens nuevos.
+- No se aplicaron gradientes visibles, radios, sombras, doble halo, overlay refinado ni Card radial.
+- Hero, LoginModal, QuickMenu, Landing, Header, Footer, ThemeSelector y PublicLayout permanecen sin cambios.
+
 Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
 ## 2026-07-26 — Fase 10
@@ -80,7 +258,7 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 - Header público persistente mediante `sticky`, con fondo semitransparente, desenfoque discreto, foco visible y ajustes responsive.
 - Navegación, marca y botón visual de inicio de sesión refinados sin crear rutas ni autenticación.
 - El botón ORMAN usa el SVG oficial sin alterarlo; el recurso contiene solo el símbolo y se ajusta con `object-contain` dentro de 24 px.
-- Corrección visual: el tema ORMAN activo mantiene fondo oscuro y comunica su estado mediante borde y aro dorados; el host del header es `sticky` directo con `z-[100]`.
+- Corrección visual: el tema ORMAN activo mantiene fondo oscuro y comunica su estado mediante borde y aro dorados; el elemento `header.public-header` es `sticky` directo con `z-[100]`.
 
 ### Verificado
 

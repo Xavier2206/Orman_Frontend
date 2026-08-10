@@ -6,5 +6,6 @@ import { HeroSectionComponent } from './components/hero-section/hero-section.com
   selector: 'app-landing',
   imports: [HeroSectionComponent],
   templateUrl: './landing.component.html',
+  styleUrl: './landing.component.css',
 })
 export class LandingComponent {}

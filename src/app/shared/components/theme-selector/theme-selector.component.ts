@@ -12,6 +12,7 @@ interface ThemeControl {
 @Component({
   selector: 'app-theme-selector',
   templateUrl: './theme-selector.component.html',
+  styleUrl: './theme-selector.component.css',
 })
 export class ThemeSelectorComponent {
   private readonly themeService = inject(ThemeService);

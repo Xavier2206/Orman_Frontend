@@ -8,6 +8,40 @@ Implementar la infraestructura de tres temas visuales para ORMAN con Angular Sig
 
 ## 2. Alcance
 
+### Evolucion posterior - Microfase 1 de arquitectura de tokens refinados
+
+La Microfase 1 prepara `--theme-page-bg`, Field y la semantica separada de Danger y Success sin cambiar componentes ni aplicar cambios visuales. `ThemeService`, `ThemeName`, `data-theme`, `localStorage`, los valores consumidos actuales y los tokens `--theme-hero-*` permanecen intactos. Los nuevos tokens se definen por tema y sus mappings de color se preparan en `@theme inline`, pero aun no se consumen.
+
+La Microfase 2 consume por primera vez `--theme-page-bg` unicamente en el wrapper principal de PublicLayout mediante `background-image`, manteniendo `bg-page` y `--theme-page` como color fallback. No se modifican componentes visuales ni se consumen los tokens Field, Danger o Success refinados.
+
+### Evolucion posterior - Microfase 3 de LoginModal refinado
+
+La Microfase 3 consume los tokens refinados exclusivamente en `LoginModalComponent`. El panel usa `--theme-modal-bg`, `--theme-modal-border` y `--theme-modal-shadow`; los campos usan `Field`, `Danger` y `Success` refinados; y las etiquetas flotantes usan `--theme-field-label-bg`. El foco de los inputs se resuelve localmente con borde de acento y doble halo, sin alterar el focus-visible de los controles restantes. El boton secundario consume sus tokens modales propios. Overlay, blur, dimensiones, estructura, logo y logica de `ThemeService` permanecen intactos. QuickMenu, Hero, Page y el resto de componentes quedan fuera de alcance.
+
+### Evolucion posterior - Microfase 4 de QuickMenu refinado
+
+La Microfase 4 aisla exclusivamente el panel de `QuickMenuComponent` de `--theme-card` mediante `--theme-quick-menu-bg`, `--theme-quick-menu-border`, `--theme-quick-menu-secondary-bg` y `--theme-quick-menu-secondary-border`. El caret usa el mismo fondo y borde que el panel, mientras que cerrar y cancelar consumen la superficie secundaria local. El boton primario, el icon container, la logica, la posicion, los focus-visible y las sombras existentes permanecen intactos. LoginModal queda congelado y Hero sigue pendiente de refinamiento.
+
+### Evolucion posterior - Microfase 5A de Header y ThemeSelector refinados
+
+La Microfase 5A define superficies locales para `PublicHeaderComponent` mediante `--theme-header-bg` y `--theme-header-border`, conservando el blur y la sombra existentes. El elemento sticky final es `header.public-header`. `ThemeSelectorComponent` se aisla de Surface, Border, Card y Card Hover globales con tokens locales de base, borde, activo y hover; conserva Accent, ring, sombra, `aria-pressed` y focus-visible. No se modifica la logica, Page, QuickMenu, LoginModal, Landing, Footer, Hero ni ThemeService.
+
+### Evolucion posterior - Microfase 5B de Landing refinado
+
+La Microfase 5B define superficies locales para las tres secciones informativas de `LandingComponent` mediante `--theme-landing-card-bg`, `--theme-landing-panel-bg` y `--theme-landing-border`, sin modificar los tokens globales Card, Surface o Border. En ORMAN, solo `#propiedades` recibe una composicion destacada local con gradientes discretos, borde propio y sombra propia; `#contacto` conserva la card refinada estandar y `#como-funciona` conserva un panel neutral. Noche y Dia no reciben gradientes especiales. Hero, Footer, Header, ThemeSelector, QuickMenu, LoginModal, PublicLayout y ThemeService permanecen sin cambios.
+
+### Evolucion posterior - Microfase 5C de Footer refinado
+
+La Microfase 5C define `--theme-footer-bg` y `--theme-footer-border` para aislar el Footer de Surface y Border globales. La superficie estructural y el separador de copyright consumen esos tokens locales; texto, Accent, enlaces, hover, foco global, radios, responsive y contenido se conservan. No se incorporan gradientes, filtros, radios ni sombras. Landing, Hero, Header, ThemeSelector, QuickMenu, LoginModal, PublicLayout y ThemeService permanecen sin cambios.
+
+### Evolucion posterior - Microfase 6 de radios, sombras y consistencia visual
+
+La Microfase 6 audita la escala actual de radios y sombras sin modificar la implementacion. Se conserva la jerarquia aprobada: LoginModal con panel de 20 px, campos y acciones de 14 px y sombra modal especifica; QuickMenu con panel de 16 px, acciones de 14 px y `shadow-lg`; Header estructural con `shadow-sm`; ThemeSelector en formato pill con `shadow-sm` y ring activo; Landing con secciones de 16 px, card ORMAN destacada, card estandar y panel sin sombra; Footer estructural sin radio ni sombra. No se modifica la escala Tailwind, no se crean tokens y Hero queda pendiente para la Microfase 7.
+
+### Evolucion posterior - Microfase 7 de Hero refinado e integracion final
+
+La Microfase 7 aisla el eyebrow del Hero mediante los tokens existentes de tag y separa la CTA secundaria con tres tokens Hero propios para fondo, borde y hover. La CTA principal conserva Accent, `shadow-md`, focus y su radio actual. El panel y la superficie del logo mantienen 24 px, `shadow-lg` y sus sombras locales. Los valores efectivos de Hero para Dia se centralizan en `themes.css`; el CSS local conserva unicamente estructura, marco, margenes y animaciones existentes. No se modifican los tokens globales ni los componentes aprobados de las microfases anteriores.
+
 La fase incluye los temas ORMAN, Noche y Día; un servicio central; inicialización temprana; selector accesible; integración con utilidades semánticas; pruebas; validaciones y documentación.
 
 No incluye landing definitiva, header, hero, navegación, buscador, propiedades, formularios, footer, autenticación, backend, API, rutas nuevas, panel administrativo, detección del tema del sistema ni temas adicionales.

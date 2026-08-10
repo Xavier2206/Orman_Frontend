@@ -8,6 +8,7 @@ import { ThemeSelectorComponent } from '../../../../../shared/components/theme-s
   selector: 'app-public-header',
   imports: [ThemeSelectorComponent, QuickMenuComponent, LoginModalComponent],
   templateUrl: './public-header.component.html',
+  styleUrl: './public-header.component.css',
 })
 export class PublicHeaderComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);

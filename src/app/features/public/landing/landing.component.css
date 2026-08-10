@@ -1,0 +1,31 @@
+.landing-card,
+.landing-panel {
+  border: 1px solid var(--theme-landing-border);
+}
+
+.landing-card {
+  background-color: var(--theme-landing-card-bg);
+}
+
+.landing-panel {
+  background-color: var(--theme-landing-panel-bg);
+}
+
+.landing-properties {
+  box-shadow: var(--shadow-sm);
+}
+
+:host-context(html[data-theme='orman']) .landing-properties {
+  background:
+    radial-gradient(
+      120% 110% at 100% 0%,
+      rgba(6, 34, 56, 0.34) 0%,
+      rgba(6, 34, 56, 0.12) 35%,
+      transparent 62%
+    ),
+    linear-gradient(135deg, rgba(6, 34, 56, 0.92) 0%, rgba(2, 20, 39, 0.88) 100%);
+  border: 1px solid rgba(212, 169, 78, 0.2);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(212, 169, 78, 0.04);
+}

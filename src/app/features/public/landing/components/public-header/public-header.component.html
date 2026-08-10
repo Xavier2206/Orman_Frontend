@@ -1,5 +1,5 @@
 <header
-  class="w-full border-b border-theme-border bg-surface/98 text-content shadow-sm backdrop-blur-sm transition-colors duration-200 motion-reduce:transition-none"
+  class="public-header w-full text-content shadow-sm backdrop-blur-sm transition-colors duration-200 motion-reduce:transition-none"
 >
   <div
     class="mx-auto flex min-h-20 w-full max-w-[1800px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"
@@ -103,7 +103,7 @@
   </div>
 
   @if (isMenuOpen()) {
-    <div id="mobile-navigation" class="border-t border-theme-border bg-surface px-4 py-4 lg:hidden">
+    <div id="mobile-navigation" class="public-header-mobile px-4 py-4 lg:hidden">
       <nav aria-label="Navegación móvil">
         <ul class="grid gap-1">
           <li>

@@ -1,0 +1,8 @@
+.public-footer {
+  background-color: var(--theme-footer-bg);
+  border-top: 1px solid var(--theme-footer-border);
+}
+
+.public-footer-divider {
+  border-top: 1px solid var(--theme-footer-border);
+}

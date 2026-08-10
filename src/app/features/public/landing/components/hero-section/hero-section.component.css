@@ -10,18 +10,21 @@
   box-shadow: 0 18px 40px var(--theme-hero-logo-shadow);
 }
 
+.hero-eyebrow {
+  background-color: var(--theme-hero-tag);
+  border-color: var(--theme-hero-tag-border);
+}
+
+.hero-cta-secondary {
+  background-color: var(--theme-hero-cta-secondary-bg);
+  border-color: var(--theme-hero-cta-secondary-border);
+}
+
+.hero-cta-secondary:hover {
+  background-color: var(--theme-hero-cta-secondary-hover-bg);
+}
+
 :host-context(html[data-theme='light']) .hero-visual-panel {
-  --theme-hero-panel: #ffffff;
-  --theme-hero-border: rgba(212, 169, 78, 0.55);
-  --theme-hero-decoration: rgba(212, 169, 78, 0.26);
-  --theme-hero-glow: rgba(212, 169, 78, 0.12);
-  --theme-hero-text: #000f1f;
-  --theme-hero-text-muted: #52606d;
-  --theme-hero-tag: #ffffff;
-  --theme-hero-tag-border: rgba(212, 169, 78, 0.32);
-  --theme-hero-logo-surface: #ffffff;
-  --theme-hero-logo-border: rgba(212, 169, 78, 0.5);
-  --theme-hero-logo-shadow: rgba(0, 15, 31, 0.08);
   border-width: 2px;
   box-shadow: 0 10px 30px rgba(0, 15, 31, 0.08);
 }

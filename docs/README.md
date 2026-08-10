@@ -4,6 +4,16 @@ Este directorio centraliza la documentación técnica y el registro incremental 
 
 ## Estado actual
 
+- Microfase 2 de Page Background refinado aplicada unicamente en PublicLayout.
+- Microfase 1 de arquitectura de tokens refinados preparada sin cambios visuales de componentes.
+- Microfase 3 de LoginModal refinado aplicada exclusivamente en el modal de inicio de sesion.
+- Microfase 4 de QuickMenu refinado aplicada exclusivamente en el popover de acceso.
+- Microfase 5A de Header y ThemeSelector refinados aplicada y aprobada visualmente sin modificar la logica de navegacion o temas.
+- Microfase 5B de Landing refinado aplicada exclusivamente a sus tres secciones informativas, sin modificar Hero ni componentes compartidos.
+- Microfase 5C de Footer refinado aplicada mediante superficie y borde locales, sin cambiar estructura ni comportamiento.
+- Microfase 6 de radios, sombras y consistencia visual auditada y cerrada sin cambios de implementación; Hero queda pendiente para la Microfase 7.
+- Microfase 7 de Hero refinado e integración final aplicada sin modificar los componentes aprobados previamente.
+
 - Fases 00 a 05, corrección 05.1 y Fases 06.1–06.2 completadas.
 - Fase 10 de modal visual de inicio de sesión completada.
 - Fase intermedia 04.1 de recursos visuales públicos completada.

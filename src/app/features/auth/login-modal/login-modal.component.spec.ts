@@ -131,6 +131,67 @@ describe('LoginModalComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Ingresa tu usuario o correo.');
     expect(fixture.nativeElement.textContent).toContain('Ingresa tu contraseña.');
+    expect(
+      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
+        'field-error',
+      ),
+    ).toBe(true);
+    expect(
+      (fixture.nativeElement.querySelector('#login-password') as HTMLElement).classList.contains(
+        'field-error',
+      ),
+    ).toBe(true);
+  });
+
+  it('should keep an empty focused field neutral until it is touched', () => {
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
+
+    username.focus();
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
+        'field-error',
+      ),
+    ).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Ingresa tu usuario o correo.');
+  });
+
+  it('should show an error after an empty field is touched', () => {
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
+
+    username.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
+        'field-error',
+      ),
+    ).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Ingresa tu usuario o correo.');
+  });
+
+  it('should show a valid visual state after interaction and clear an error when corrected', () => {
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
+
+    username.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    username.value = 'usuario';
+    username.dispatchEvent(new Event('input'));
+    username.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
+        'field-valid',
+      ),
+    ).toBe(true);
+    expect(
+      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
+        'field-error',
+      ),
+    ).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Ingresa tu usuario o correo.');
   });
 
   it('should only show the local information message for valid visual fields', () => {

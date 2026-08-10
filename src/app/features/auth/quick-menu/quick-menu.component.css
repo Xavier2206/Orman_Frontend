@@ -8,6 +8,9 @@
   top: calc(100% + 1rem);
   right: 0;
   width: min(24rem, calc(100vw - 2rem));
+  background: var(--theme-quick-menu-bg);
+  border: 1px solid var(--theme-quick-menu-border);
+  border-radius: 16px;
   animation: quick-menu-enter 180ms ease-out both;
 }
 
@@ -17,11 +20,20 @@
   right: 2.75rem;
   width: 0.875rem;
   height: 0.875rem;
-  border-top: 1px solid var(--theme-accent);
-  border-left: 1px solid var(--theme-accent);
-  background: var(--theme-card);
+  border-top: 1px solid var(--theme-quick-menu-border);
+  border-left: 1px solid var(--theme-quick-menu-border);
+  background: var(--theme-quick-menu-bg);
   content: '';
   transform: rotate(45deg);
+}
+
+.quick-menu-action {
+  border-radius: 14px;
+}
+
+.quick-menu-secondary {
+  background-color: var(--theme-quick-menu-secondary-bg);
+  border: 1px solid var(--theme-quick-menu-secondary-border);
 }
 
 .quick-menu-panel-mobile {

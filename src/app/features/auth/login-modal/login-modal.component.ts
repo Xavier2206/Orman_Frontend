@@ -94,12 +94,22 @@ export class LoginModalComponent {
 
   protected showUsernameError(): boolean {
     const control = this.loginForm.controls.username;
-    return control.invalid && (control.dirty || control.touched);
+    return control.invalid && control.touched;
   }
 
   protected showPasswordError(): boolean {
     const control = this.loginForm.controls.password;
-    return control.invalid && (control.dirty || control.touched);
+    return control.invalid && control.touched;
+  }
+
+  protected isUsernameValid(): boolean {
+    const control = this.loginForm.controls.username;
+    return control.valid && (control.dirty || control.touched);
+  }
+
+  protected isPasswordValid(): boolean {
+    const control = this.loginForm.controls.password;
+    return control.valid && (control.dirty || control.touched);
   }
 
   private keepFocusInsideDialog(event: KeyboardEvent): void {

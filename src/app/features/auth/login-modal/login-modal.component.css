@@ -8,6 +8,94 @@
 
 .login-modal-panel {
   animation: login-panel-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: var(--theme-modal-bg);
+  border: 1.5px solid var(--theme-modal-border);
+  border-radius: 20px;
+  box-shadow: var(--theme-modal-shadow);
+}
+
+.login-field-input {
+  border-width: 1.5px;
+  border-radius: 14px;
+  color: var(--theme-text);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease;
+}
+
+.login-field-input:focus-visible {
+  outline: none;
+  border-color: var(--theme-accent);
+  background-color: var(--theme-field);
+  color: var(--theme-text);
+  box-shadow:
+    0 0 0 3px rgba(212, 169, 78, 0.2),
+    0 0 0 6px rgba(212, 169, 78, 0.08);
+}
+
+.login-field-label {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  z-index: 1;
+  padding: 0;
+  color: var(--theme-text-muted);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    top 150ms ease,
+    color 150ms ease,
+    font-size 150ms ease,
+    line-height 150ms ease,
+    padding 150ms ease,
+    background-color 150ms ease;
+}
+
+.login-field-input:focus + .login-field-label,
+.login-field-input:not(:placeholder-shown) + .login-field-label {
+  top: 0;
+  padding: 0 0.25rem;
+  background-color: var(--theme-field-label-bg);
+  color: var(--theme-accent);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.login-field-input.field-valid:not(:focus) {
+  border-color: var(--theme-success-border);
+  background-color: var(--theme-success-bg);
+  color: var(--theme-success-text);
+}
+
+.login-field-input.field-valid:not(:focus) + .login-field-label {
+  color: var(--theme-success-text);
+}
+
+.login-field-input.field-error:not(:focus) {
+  border-color: var(--theme-danger-border);
+  background-color: var(--theme-danger-bg);
+  color: var(--theme-danger-text);
+}
+
+.login-field-input.field-error:not(:focus) + .login-field-label {
+  color: var(--theme-danger-text);
+}
+
+.login-field-error {
+  color: var(--theme-danger-text);
+}
+
+.login-modal-action {
+  border-radius: 14px;
+}
+
+.login-modal-secondary {
+  background-color: var(--theme-modal-secondary-bg);
+  border: 1.5px solid var(--theme-modal-secondary-border);
 }
 
 @keyframes login-overlay-enter {
@@ -34,7 +122,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .login-modal-overlay,
-  .login-modal-panel {
+  .login-modal-panel,
+  .login-field-label,
+  .login-field-input,
+  .login-modal-action {
     animation: none;
+    transition: none;
   }
 }

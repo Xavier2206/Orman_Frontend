@@ -3,6 +3,8 @@
 
 @theme inline {
   --color-page: var(--theme-page);
+  --color-field: var(--theme-field);
+  --color-field-border: var(--theme-field-border);
   --color-surface: var(--theme-surface);
   --color-card: var(--theme-card);
   --color-card-hover: var(--theme-card-hover);
@@ -17,6 +19,12 @@
   --color-success: var(--theme-success);
   --color-warning: var(--theme-warning);
   --color-danger: var(--theme-danger);
+  --color-danger-text: var(--theme-danger-text);
+  --color-danger-border: var(--theme-danger-border);
+  --color-danger-bg: var(--theme-danger-bg);
+  --color-success-text: var(--theme-success-text);
+  --color-success-border: var(--theme-success-border);
+  --color-success-bg: var(--theme-success-bg);
   --color-focus: var(--theme-focus);
 }
 
