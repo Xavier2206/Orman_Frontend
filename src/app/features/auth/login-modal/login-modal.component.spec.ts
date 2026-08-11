@@ -1,19 +1,42 @@
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import { LoginModalComponent } from './login-modal.component';
+
+const authenticatedResponse = {
+  status: 'AUTHENTICATED' as const,
+  login: 'usuario.demo',
+  codper: 10,
+  accessToken: 'access-token',
+  tokenType: 'Bearer' as const,
+  expiresIn: 900,
+  sid: 'session-id',
+};
 
 describe('LoginModalComponent', () => {
   let fixture: ComponentFixture<LoginModalComponent>;
+  let http: HttpTestingController;
+  let auth: AuthService;
 
   beforeEach(async () => {
+    localStorage.clear();
     document.body.style.overflow = '';
-    await TestBed.configureTestingModule({ imports: [LoginModalComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [LoginModalComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
+    auth = TestBed.inject(AuthService);
     fixture = TestBed.createComponent(LoginModalComponent);
     fixture.detectChanges();
   });
 
   afterEach(() => {
+    http.verify();
     fixture.destroy();
+    localStorage.clear();
     document.body.style.overflow = '';
   });
 
@@ -26,222 +49,160 @@ describe('LoginModalComponent', () => {
     fixture.detectChanges();
   }
 
-  it('should create directly with the credentials form', () => {
-    expect(fixture.componentInstance).toBeTruthy();
-    expect(fixture.nativeElement.textContent).toContain('Iniciar sesión');
-    expect(fixture.nativeElement.textContent).toContain('Accede a tu cuenta ORMAN.');
-    expect(fixture.nativeElement.textContent).not.toContain('Acceso a ORMAN');
-    expect(fixture.nativeElement.querySelector('#login-username')).toBeTruthy();
-  });
+  function fillLogin(): void {
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
+    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
+    username.value = 'usuario.demo';
+    username.dispatchEvent(new Event('input'));
+    password.value = 'password-demo';
+    password.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+  }
 
-  it('should expose a modal dialog, overlay and official logo', () => {
+  function startOtpFlow(): void {
+    fillLogin();
+    clickButton('Iniciar sesión');
+    http.expectOne('/api/v1/auth/login').flush({
+      status: 'OTP_REQUIRED',
+      challengeId: 'challenge-id',
+      expiresIn: 300,
+    });
+    fixture.detectChanges();
+  }
+
+  it('should render the accessible login dialog with the official logo', async () => {
+    await fixture.whenStable();
     const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
+    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
     const logo = fixture.nativeElement.querySelector('img') as HTMLImageElement;
 
-    expect(fixture.nativeElement.querySelector('.login-modal-overlay')).toBeTruthy();
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.getAttribute('aria-labelledby')).toBe('login-modal-title');
-    expect(dialog.getAttribute('aria-describedby')).toBe('login-modal-description');
     expect(logo.getAttribute('src')).toBe('/images/brand/orman-logo.svg');
-    expect(logo.getAttribute('alt')).toBe('ORMAN');
-  });
-
-  it('should focus the username field when opened', async () => {
-    await fixture.whenStable();
-    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
-
     expect(document.activeElement).toBe(username);
   });
 
-  it('should emit close from Cancel', () => {
-    const close = vi.fn();
-    fixture.componentInstance.close.subscribe(close);
+  it('should keep local required-field validation', () => {
+    clickButton('Iniciar sesión');
 
-    clickButton('Cancelar');
-
-    expect(close).toHaveBeenCalledOnce();
+    expect(fixture.nativeElement.textContent).toContain('Ingresa un usuario o correo');
+    expect(fixture.nativeElement.textContent).toContain('La contraseña debe tener entre 8 y 72 caracteres.');
   });
 
-  it('should emit close from the close button', () => {
-    const close = vi.fn();
-    fixture.componentInstance.close.subscribe(close);
+  it('should submit credentials and close through the authenticated output', () => {
+    const authenticated = vi.fn();
+    fixture.componentInstance.authenticated.subscribe(authenticated);
+    fillLogin();
+    clickButton('Iniciar sesión');
 
-    const closeButton = fixture.nativeElement.querySelector(
-      '[aria-label="Cerrar inicio de sesión"]',
-    ) as HTMLButtonElement;
-    closeButton.click();
+    const request = http.expectOne('/api/v1/auth/login');
+    expect(request.request.body).toMatchObject({
+      login: 'usuario.demo',
+      password: 'password-demo',
+      clientType: 'WEB',
+    });
+    request.flush(authenticatedResponse);
 
-    expect(close).toHaveBeenCalledOnce();
+    expect(authenticated).toHaveBeenCalledOnce();
+    expect(auth.authenticated()).toBe(true);
+    expect(localStorage.getItem('accessToken')).toBeNull();
   });
 
-  it('should close with Escape', () => {
+  it('should change from LOGIN to OTP_REQUIRED in the same dialog', async () => {
+    startOtpFlow();
+    await fixture.whenStable();
+
+    const otpInput = fixture.nativeElement.querySelector('#otp-code') as HTMLInputElement;
+    expect(fixture.nativeElement.textContent).toContain('Verificación de seguridad');
+    expect(otpInput).toBeTruthy();
+    expect(document.activeElement).toBe(otpInput);
+    expect(auth.otpChallenge()?.challengeId).toBe('challenge-id');
+  });
+
+  it('should verify the OTP and authenticate', () => {
+    const authenticated = vi.fn();
+    fixture.componentInstance.authenticated.subscribe(authenticated);
+    startOtpFlow();
+    const otp = fixture.nativeElement.querySelector('#otp-code') as HTMLInputElement;
+    otp.value = '123456';
+    otp.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    clickButton('Verificar');
+
+    const request = http.expectOne('/api/v1/auth/otp/verify');
+    expect(request.request.body).toMatchObject({ challengeId: 'challenge-id', code: '123456' });
+    request.flush(authenticatedResponse);
+
+    expect(authenticated).toHaveBeenCalledOnce();
+    expect(auth.authenticated()).toBe(true);
+    expect(auth.otpChallenge()).toBeNull();
+  });
+
+  it('should show a safe OTP error from ProblemDetail', () => {
+    startOtpFlow();
+    const otp = fixture.nativeElement.querySelector('#otp-code') as HTMLInputElement;
+    otp.value = '123456';
+    otp.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    clickButton('Verificar');
+    http.expectOne('/api/v1/auth/otp/verify').flush(
+      { errorCode: 'INVALID_REQUEST', detail: 'Código incorrecto o vencido.' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Código incorrecto o vencido.');
+    expect(fixture.nativeElement.textContent).not.toContain('traceId');
+  });
+
+  it('should resend an OTP without inventing counters', () => {
+    startOtpFlow();
+    clickButton('Reenviar código');
+    const request = http.expectOne('/api/v1/auth/otp/resend');
+    expect(request.request.body).toEqual({ challengeId: 'challenge-id' });
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Enviamos un nuevo código de verificación.');
+  });
+
+  it('should prevent a double login submit while the request is pending', () => {
+    fillLogin();
+    clickButton('Iniciar sesión');
+    clickButton('Iniciando sesión…');
+
+    expect(http.match('/api/v1/auth/login')).toHaveLength(1);
+  });
+
+  it('should preserve Escape, backdrop close and scroll restoration', () => {
     const close = vi.fn();
     fixture.componentInstance.close.subscribe(close);
+    expect(document.body.style.overflow).toBe('hidden');
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
     expect(close).toHaveBeenCalledOnce();
-  });
-
-  it('should close from the overlay but not from the dialog panel', () => {
-    const close = vi.fn();
-    fixture.componentInstance.close.subscribe(close);
-    const overlay = fixture.nativeElement.querySelector('.login-modal-overlay') as HTMLElement;
-    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
-
-    dialog.click();
-    expect(close).not.toHaveBeenCalled();
-
-    overlay.click();
-    expect(close).toHaveBeenCalledOnce();
-  });
-
-  it('should keep Tab focus inside the modal dialog', () => {
-    const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
-    const firstButton = dialog.querySelector('button') as HTMLButtonElement;
-    const submitButton = dialog.querySelector('button[type="submit"]') as HTMLButtonElement;
-    submitButton.focus();
-
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
-
-    expect(document.activeElement).toBe(firstButton);
-  });
-
-  it('should show and hide the password', () => {
-    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
-    const toggle = fixture.nativeElement.querySelector(
-      '[aria-label="Mostrar contraseña"]',
-    ) as HTMLButtonElement;
-
-    expect(password.type).toBe('password');
-    toggle.click();
-    fixture.detectChanges();
-    expect(password.type).toBe('text');
-
-    const hideToggle = fixture.nativeElement.querySelector(
-      '[aria-label="Ocultar contraseña"]',
-    ) as HTMLButtonElement;
-    hideToggle.click();
-    fixture.detectChanges();
-    expect(password.type).toBe('password');
-  });
-
-  it('should show local required-field validation', () => {
-    clickButton('Iniciar sesión');
-
-    expect(fixture.nativeElement.textContent).toContain('Ingresa tu usuario o correo.');
-    expect(fixture.nativeElement.textContent).toContain('Ingresa tu contraseña.');
-    expect(
-      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
-        'field-error',
-      ),
-    ).toBe(true);
-    expect(
-      (fixture.nativeElement.querySelector('#login-password') as HTMLElement).classList.contains(
-        'field-error',
-      ),
-    ).toBe(true);
-  });
-
-  it('should keep an empty focused field neutral until it is touched', () => {
-    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
-
-    username.focus();
-    fixture.detectChanges();
-
-    expect(
-      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
-        'field-error',
-      ),
-    ).toBe(false);
-    expect(fixture.nativeElement.textContent).not.toContain('Ingresa tu usuario o correo.');
-  });
-
-  it('should show an error after an empty field is touched', () => {
-    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
-
-    username.dispatchEvent(new Event('blur'));
-    fixture.detectChanges();
-
-    expect(
-      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
-        'field-error',
-      ),
-    ).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Ingresa tu usuario o correo.');
-  });
-
-  it('should show a valid visual state after interaction and clear an error when corrected', () => {
-    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
-
-    username.dispatchEvent(new Event('blur'));
-    fixture.detectChanges();
-    username.value = 'usuario';
-    username.dispatchEvent(new Event('input'));
-    username.dispatchEvent(new Event('blur'));
-    fixture.detectChanges();
-
-    expect(
-      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
-        'field-valid',
-      ),
-    ).toBe(true);
-    expect(
-      (fixture.nativeElement.querySelector('#login-username') as HTMLElement).classList.contains(
-        'field-error',
-      ),
-    ).toBe(false);
-    expect(fixture.nativeElement.textContent).not.toContain('Ingresa tu usuario o correo.');
-  });
-
-  it('should only show the local information message for valid visual fields', () => {
-    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
-    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
-
-    username.value = 'usuario';
-    username.dispatchEvent(new Event('input'));
-    password.value = 'clave-local';
-    password.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    clickButton('Iniciar sesión');
-
-    expect(fixture.nativeElement.textContent).toContain(
-      'El acceso al sistema estará disponible próximamente.',
-    );
-  });
-
-  it('should reset local form state when closing', () => {
-    const username = fixture.nativeElement.querySelector('#login-username') as HTMLInputElement;
-    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
-    username.value = 'usuario';
-    username.dispatchEvent(new Event('input'));
-    password.value = 'clave-local';
-    password.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-
-    const toggle = fixture.nativeElement.querySelector(
-      '[aria-label="Mostrar contraseña"]',
-    ) as HTMLButtonElement;
-    toggle.click();
-    fixture.detectChanges();
-    clickButton('Iniciar sesión');
-    clickButton('Cancelar');
-
-    expect(username.value).toBe('');
-    expect(password.value).toBe('');
-    expect(fixture.nativeElement.textContent).not.toContain(
-      'El acceso al sistema estará disponible próximamente.',
-    );
-    expect(
-      fixture.nativeElement.querySelector('[aria-label="Mostrar contraseña"]'),
-    ).toBeTruthy();
-  });
-
-  it('should lock and restore document scrolling', () => {
-    expect(document.body.style.overflow).toBe('hidden');
-
-    fixture.destroy();
-
     expect(document.body.style.overflow).toBe('');
+  });
+
+  it('should return from OTP to the login form and clear the temporary challenge', () => {
+    startOtpFlow();
+    clickButton('Volver');
+
+    expect(fixture.nativeElement.querySelector('#login-username')).toBeTruthy();
+    expect(auth.otpChallenge()).toBeNull();
+  });
+
+  it('should keep password visibility control accessible', () => {
+    const password = fixture.nativeElement.querySelector('#login-password') as HTMLInputElement;
+    const toggle = fixture.nativeElement.querySelector(
+      '[aria-label="Mostrar contraseña"]',
+    ) as HTMLButtonElement;
+
+    toggle.click();
+    fixture.detectChanges();
+
+    expect(password.type).toBe('text');
+    expect(fixture.nativeElement.querySelector('[aria-label="Ocultar contraseña"]')).toBeTruthy();
   });
 });

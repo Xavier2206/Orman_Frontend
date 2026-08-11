@@ -1,19 +1,31 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { AuthService } from '../../../../../core/auth/auth.service';
 import { PublicHeaderComponent } from './public-header.component';
 
 describe('PublicHeaderComponent', () => {
   let fixture: ComponentFixture<PublicHeaderComponent>;
+  let auth: AuthService;
+  let http: HttpTestingController;
 
   beforeEach(async () => {
     localStorage.clear();
     document.body.style.overflow = '';
-    await TestBed.configureTestingModule({ imports: [PublicHeaderComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [PublicHeaderComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
+    auth = TestBed.inject(AuthService);
+    http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PublicHeaderComponent);
     fixture.detectChanges();
   });
 
   afterEach(() => {
+    http.verify();
+    auth.clearSession();
     fixture.destroy();
     localStorage.clear();
     document.body.style.overflow = '';
@@ -58,6 +70,24 @@ describe('PublicHeaderComponent', () => {
     expect(
       fixture.nativeElement.querySelector('[aria-label="Abrir inicio de sesión"]'),
     ).toBeTruthy();
+  });
+
+  it('should show the minimal authenticated state without inventing a role', () => {
+    auth.login('usuario.demo', 'password-demo').subscribe();
+    http.expectOne('/api/v1/auth/login').flush({
+      status: 'AUTHENTICATED',
+      login: 'usuario.demo',
+      codper: 10,
+      accessToken: 'access-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      sid: 'session-id',
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Sesión activa: usuario.demo');
+    expect(fixture.nativeElement.textContent).toContain('Cerrar sesión');
+    expect(fixture.nativeElement.textContent).not.toContain('ADMINISTRADOR');
   });
 
   it('should open only QuickMenu from the desktop action', () => {

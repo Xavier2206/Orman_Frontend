@@ -17,7 +17,7 @@ Mejorar el encabezado público y el selector de temas, manteniendo sus funciones
 
 ## 3. Archivos creados
 
-- `docs/fases/06-1-mejora-header-selector-temas.md`.
+- `docs/etapas/etapa-1/fases/06-1-mejora-header-selector-temas.md`.
 
 ## 4. Archivos modificados
 

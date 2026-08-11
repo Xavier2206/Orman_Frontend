@@ -134,8 +134,8 @@ El footer presenta ORMAN, “Gestión familiar de propiedades en alquiler”, lo
 - `src/app/features/public/landing/components/public-footer/public-footer.component.ts`.
 - `src/app/features/public/landing/components/public-footer/public-footer.component.html`.
 - `src/app/features/public/landing/components/public-footer/public-footer.component.spec.ts`.
-- `docs/fases/05-estructura-landing-publica.md`.
-- `docs/theory/05-layouts-y-composicion-angular.md`.
+- `docs/etapas/etapa-1/fases/05-estructura-landing-publica.md`.
+- `docs/etapas/etapa-1/theory/05-layouts-y-composicion-angular.md`.
 
 ## 14. Archivos modificados
 
@@ -150,9 +150,9 @@ El footer presenta ORMAN, “Gestión familiar de propiedades en alquiler”, lo
 - `README.md`.
 - `docs/README.md`.
 - `docs/CHANGELOG.md`.
-- `docs/fases/03-configuracion-tailwind.md` (formato).
-- `docs/fases/04-sistema-de-temas.md` (formato).
-- `docs/theory/03-tailwind-css.md` (formato).
+- `docs/etapas/etapa-1/fases/03-configuracion-tailwind.md` (formato).
+- `docs/etapas/etapa-1/fases/04-sistema-de-temas.md` (formato).
+- `docs/etapas/etapa-1/theory/03-tailwind-css.md` (formato).
 
 No se eliminó ningún archivo. `ThemeService` y `ThemeSelectorComponent` conservaron su ubicación y responsabilidades.
 

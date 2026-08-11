@@ -12,171 +12,154 @@
   >
     <button
       type="button"
-      class="absolute right-4 top-4 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+      class="absolute right-4 top-4 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60"
       aria-label="Cerrar inicio de sesión"
+      [disabled]="isSubmitting()"
       (click)="requestClose()"
     >
-      <svg
-        class="size-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
-      >
+      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M6 6l12 12M18 6 6 18" />
       </svg>
     </button>
 
     <div class="login-modal-header text-center">
-      <img
-        class="mx-auto h-20 w-auto object-contain sm:h-24"
-        src="/images/brand/orman-logo.svg"
-        alt="ORMAN"
-      />
+      <img class="mx-auto h-20 w-auto object-contain sm:h-24" src="/images/brand/orman-logo.svg" alt="ORMAN" />
 
-      <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">
-        Iniciar sesión
-      </h2>
-      <p id="login-modal-description" class="mt-2 text-muted">Accede a tu cuenta ORMAN.</p>
+      @if (authStep() === 'LOGIN') {
+        <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">Iniciar sesión</h2>
+        <p id="login-modal-description" class="mt-2 text-muted">Accede a tu cuenta ORMAN.</p>
+      } @else {
+        <h2 id="login-modal-title" class="mt-5 text-2xl font-bold tracking-tight text-content">Verificación de seguridad</h2>
+        <p id="login-modal-description" class="mt-2 text-muted">Ingresa el código enviado a tu correo.</p>
+      }
     </div>
 
-    <form class="mt-8 grid gap-6" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
-      <div class="login-field relative">
-        <div class="relative">
-          <input
-            #usernameInput
-            id="login-username"
-            type="text"
-            formControlName="username"
-            autocomplete="username"
-            class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-12 text-content placeholder:text-transparent"
-            [class.field-error]="showUsernameError()"
-            [class.field-valid]="isUsernameValid()"
-            placeholder=" "
-            [attr.aria-invalid]="showUsernameError()"
-            [attr.aria-describedby]="showUsernameError() ? 'login-username-error' : null"
-          />
-          <label for="login-username" class="login-field-label">
-            Usuario o correo
-          </label>
+    @if (authStep() === 'LOGIN') {
+      <form class="mt-8 grid gap-6" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+        <div class="login-field relative">
+          <div class="relative">
+            <input
+              #usernameInput
+              id="login-username"
+              type="text"
+              formControlName="username"
+              autocomplete="username"
+              maxlength="30"
+              class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-12 text-content placeholder:text-transparent"
+              [class.field-error]="showUsernameError()"
+              [class.field-valid]="isUsernameValid()"
+              placeholder=" "
+              [attr.aria-invalid]="showUsernameError()"
+              [attr.aria-describedby]="showUsernameError() ? 'login-username-error' : null"
+            />
+            <label for="login-username" class="login-field-label">Usuario o correo</label>
+            @if (isUsernameValid()) {
+              <span class="login-field-status-icon login-field-status-icon-username login-field-status-success" aria-hidden="true">✓</span>
+            }
+          </div>
           @if (showUsernameError()) {
-            <span class="login-field-status-icon login-field-status-icon-username login-field-status-error" aria-hidden="true">
-              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 9v4m0 3h.01M10.3 3.5 2.9 16.3a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 3.5a2 2 0 0 0-3.4 0Z" />
-              </svg>
-            </span>
-          } @else if (isUsernameValid()) {
-            <span class="login-field-status-icon login-field-status-icon-username login-field-status-success" aria-hidden="true">
-              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
-                <path d="m8 12 2.5 2.5L16 9" />
-              </svg>
-            </span>
+            <p id="login-username-error" class="login-field-error mt-2 text-sm font-medium" role="alert">Ingresa un usuario o correo de hasta 30 caracteres.</p>
           }
         </div>
-        @if (showUsernameError()) {
-          <p id="login-username-error" class="login-field-error mt-2 text-sm font-medium" role="alert">
-            Ingresa tu usuario o correo.
+
+        <div class="login-field relative">
+          <div class="relative">
+            <input
+              id="login-password"
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              minlength="8"
+              maxlength="72"
+              class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-20 text-content placeholder:text-transparent"
+              [class.field-error]="showPasswordError()"
+              [class.field-valid]="isPasswordValid()"
+              placeholder=" "
+              [attr.aria-invalid]="showPasswordError()"
+              [attr.aria-describedby]="showPasswordError() ? 'login-password-error' : null"
+            />
+            <label for="login-password" class="login-field-label">Contraseña</label>
+            @if (isPasswordValid()) {
+              <span class="login-field-status-icon login-field-status-icon-password login-field-status-success" aria-hidden="true">✓</span>
+            }
+            <button
+              type="button"
+              class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+              [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              [attr.aria-pressed]="passwordVisible()"
+              (click)="togglePasswordVisibility()"
+            >
+              @if (passwordVisible()) {
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path d="M3 3l18 18M10.6 10.7A2 2 0 0 0 13.3 13.4M9.9 4.3A10.7 10.7 0 0 1 12 4c5.5 0 9 5 9 5a15.8 15.8 0 0 1-2.1 2.6M6.2 6.2C4.1 7.5 3 9 3 9s3.5 5 9 5c1.1 0 2.1-.2 3-.5" />
+                </svg>
+              } @else {
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (showPasswordError()) {
+            <p id="login-password-error" class="login-field-error mt-2 text-sm font-medium" role="alert">La contraseña debe tener entre 8 y 72 caracteres.</p>
+          }
+        </div>
+
+        @if (feedbackMessage()) {
+          <p class="rounded-xl border p-4 text-sm leading-6" [class.border-danger-border]="feedbackKind() === 'error'" [class.bg-danger-bg]="feedbackKind() === 'error'" [class.text-danger-text]="feedbackKind() === 'error'" [class.border-theme-border]="feedbackKind() === 'status'" [class.bg-surface]="feedbackKind() === 'status'" [class.text-muted]="feedbackKind() === 'status'" [attr.role]="feedbackKind() === 'error' ? 'alert' : 'status'" aria-live="polite">
+            {{ feedbackMessage() }}
           </p>
         }
-      </div>
 
-      <div class="login-field relative">
-        <div class="relative">
-          <input
-            id="login-password"
-            [type]="passwordVisible() ? 'text' : 'password'"
-            formControlName="password"
-            autocomplete="current-password"
-            class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 pr-20 text-content placeholder:text-transparent"
-            [class.field-error]="showPasswordError()"
-            [class.field-valid]="isPasswordValid()"
-            placeholder=" "
-            [attr.aria-invalid]="showPasswordError()"
-            [attr.aria-describedby]="showPasswordError() ? 'login-password-error' : null"
-          />
-          <label for="login-password" class="login-field-label">
-            Contraseña
-          </label>
-          @if (showPasswordError()) {
-            <span class="login-field-status-icon login-field-status-icon-password login-field-status-error" aria-hidden="true">
-              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 9v4m0 3h.01M10.3 3.5 2.9 16.3a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 3.5a2 2 0 0 0-3.4 0Z" />
-              </svg>
-            </span>
-          } @else if (isPasswordValid()) {
-            <span class="login-field-status-icon login-field-status-icon-password login-field-status-success" aria-hidden="true">
-              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
-                <path d="m8 12 2.5 2.5L16 9" />
-              </svg>
-            </span>
-          }
-          <button
-            type="button"
-            class="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors duration-200 hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-            [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-            [attr.aria-pressed]="passwordVisible()"
-            (click)="togglePasswordVisibility()"
-          >
-            @if (passwordVisible()) {
-              <svg
-                class="size-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                aria-hidden="true"
-              >
-                <path d="M3 3l18 18M10.6 10.7A2 2 0 0 0 13.3 13.4M9.9 4.3A10.7 10.7 0 0 1 12 4c5.5 0 9 5 9 5a15.8 15.8 0 0 1-2.1 2.6M6.2 6.2C4.1 7.5 3 9 3 9s3.5 5 9 5c1.1 0 2.1-.2 3-.5" />
-              </svg>
-            } @else {
-              <svg
-                class="size-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                aria-hidden="true"
-              >
-                <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
-                <circle cx="12" cy="12" r="2.5" />
-              </svg>
-            }
+        <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button type="button" class="login-modal-action login-modal-secondary inline-flex min-h-12 items-center justify-center px-5 py-3 font-semibold text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isSubmitting()" (click)="requestClose()">Cancelar</button>
+          <button type="submit" class="login-modal-action inline-flex min-h-12 items-center justify-center bg-accent px-5 py-3 font-semibold text-accent-contrast shadow-md transition-colors duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
           </button>
         </div>
-        @if (showPasswordError()) {
-          <p id="login-password-error" class="login-field-error mt-2 text-sm font-medium" role="alert">
-            Ingresa tu contraseña.
+      </form>
+    } @else {
+      <form class="mt-8 grid gap-6" [formGroup]="otpForm" (ngSubmit)="submitOtp()" novalidate>
+        <div class="login-field relative">
+          <div class="relative">
+            <input
+              #otpInput
+              id="otp-code"
+              type="text"
+              formControlName="code"
+              autocomplete="one-time-code"
+              inputmode="numeric"
+              maxlength="6"
+              class="login-field-input peer min-h-12 w-full border-field-border bg-field px-4 pb-2 pt-5 text-center font-mono tracking-[0.4em] text-content placeholder:text-transparent"
+              [class.field-error]="showOtpError()"
+              [class.field-valid]="isOtpValid()"
+              placeholder=" "
+              [attr.aria-invalid]="showOtpError()"
+              [attr.aria-describedby]="showOtpError() ? 'otp-code-error' : null"
+            />
+            <label for="otp-code" class="login-field-label">Código de 6 dígitos</label>
+          </div>
+          @if (showOtpError()) {
+            <p id="otp-code-error" class="login-field-error mt-2 text-sm font-medium" role="alert">Ingresa el código de 6 dígitos.</p>
+          }
+        </div>
+
+        @if (feedbackMessage()) {
+          <p class="rounded-xl border p-4 text-sm leading-6" [class.border-danger-border]="feedbackKind() === 'error'" [class.bg-danger-bg]="feedbackKind() === 'error'" [class.text-danger-text]="feedbackKind() === 'error'" [class.border-theme-border]="feedbackKind() === 'status'" [class.bg-surface]="feedbackKind() === 'status'" [class.text-muted]="feedbackKind() === 'status'" [attr.role]="feedbackKind() === 'error' ? 'alert' : 'status'" aria-live="polite">
+            {{ feedbackMessage() }}
           </p>
         }
-      </div>
 
-      @if (showInformation()) {
-        <p
-          class="rounded-xl border border-theme-border bg-surface p-4 text-sm leading-6 text-muted"
-          role="status"
-        >
-          El acceso al sistema estará disponible próximamente.
-        </p>
-      }
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <button type="button" class="min-h-11 rounded-lg px-3 text-sm font-semibold text-accent-text underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isSubmitting()" (click)="returnToLogin()">Volver</button>
+          <button type="button" class="min-h-11 rounded-lg px-3 text-sm font-semibold text-accent-text underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isSubmitting() || isResendingOtp()" (click)="resendOtp()">{{ isResendingOtp() ? 'Reenviando…' : 'Reenviar código' }}</button>
+        </div>
 
-      <div class="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          class="login-modal-action login-modal-secondary inline-flex min-h-12 items-center justify-center px-5 py-3 font-semibold text-content transition-colors duration-200 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-          (click)="requestClose()"
-        >
-          Cancelar
+        <button type="submit" class="login-modal-action inline-flex min-h-12 items-center justify-center bg-accent px-5 py-3 font-semibold text-accent-contrast shadow-md transition-colors duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Verificando…' : 'Verificar' }}
         </button>
-        <button
-          type="submit"
-          class="login-modal-action inline-flex min-h-12 items-center justify-center bg-accent px-5 py-3 font-semibold text-accent-contrast shadow-md transition-colors duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-        >
-          Iniciar sesión
-        </button>
-      </div>
-    </form>
+      </form>
+    }
   </section>
 </div>

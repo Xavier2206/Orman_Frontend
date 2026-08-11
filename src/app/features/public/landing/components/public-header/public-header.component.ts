@@ -1,5 +1,8 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 
+import { AuthService } from '../../../../../core/auth/auth.service';
 import { LoginModalComponent } from '../../../../auth/login-modal/login-modal.component';
 import { QuickMenuComponent } from '../../../../auth/quick-menu/quick-menu.component';
 import { ThemeSelectorComponent } from '../../../../../shared/components/theme-selector/theme-selector.component';
@@ -12,12 +15,16 @@ import { ThemeSelectorComponent } from '../../../../../shared/components/theme-s
 })
 export class PublicHeaderComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly auth = inject(AuthService);
 
   protected readonly isMenuOpen = signal(false);
   protected readonly isQuickMenuOpen = signal(false);
   protected readonly isLoginModalOpen = signal(false);
   protected readonly loginTrigger = signal<HTMLElement | null>(null);
   protected readonly loginOrigin = signal<'desktop' | 'mobile'>('desktop');
+  protected readonly isLoggingOut = signal(false);
+  protected readonly logoutError = signal<string | null>(null);
 
   protected toggleMenu(): void {
     this.isMenuOpen.update((isOpen) => !isOpen);
@@ -60,6 +67,32 @@ export class PublicHeaderComponent {
   protected closeLoginModal(): void {
     this.isLoginModalOpen.set(false);
     this.restoreLoginTriggerFocus();
+  }
+
+  protected handleAuthenticated(): void {
+    this.isLoginModalOpen.set(false);
+
+    queueMicrotask(() => {
+      this.hostElement.nativeElement.querySelector<HTMLElement>('[data-logout-trigger]')?.focus();
+    });
+  }
+
+  protected logout(): void {
+    if (this.isLoggingOut()) {
+      return;
+    }
+
+    this.isLoggingOut.set(true);
+    this.logoutError.set(null);
+    this.auth
+      .logout()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isLoggingOut.set(false)),
+      )
+      .subscribe({
+        error: () => this.logoutError.set('No fue posible confirmar el cierre de sesión.'),
+      });
   }
 
   private restoreLoginTriggerFocus(): void {

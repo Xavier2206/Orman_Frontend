@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-08-11 - Etapa 2 / Fase 01: autenticación Angular ↔ Backend
+
+### Añadido
+
+- Proxy de desarrollo `/api` hacia el backend local, `HttpClient` moderno y XSRF estándar Angular.
+- Estado de autenticación con Signals, deviceId estable, modelos tipados, `ProblemDetail`, Bearer, refresh single-flight, OTP y logout.
+- Integración del flujo real LOGIN → OTP → AUTHENTICATED en el modal existente y estado visual autenticado mínimo.
+- Pruebas de autenticación, refresh, XSRF, OTP, logout y deviceId.
+
+### Validado
+
+- `npx tsc --noEmit -p tsconfig.app.json`, suite completa de 76 pruebas y build de producción correctos.
+- La validación manual con credenciales, correo OTP y DevTools queda pendiente por no contar con esas credenciales durante la fase.
+
+### Corregido
+
+- Se eliminó la regla de `.gitignore` que impedía versionar `AGENTS.md`, para que las instrucciones permanentes acompañen a futuros clones y agentes.
+
+## 2026-08-11 - Plan General documental
+
+### Añadido
+
+- Se creó `docs/PlanGeneral.md` como documento maestro de planificación por Etapas y Fases.
+- El plan enlaza la documentación histórica, registra estados y deja identificada la primera fase pendiente de Etapa 2.
+
+
+## 2026-08-11 - Reorganizacion documental por Etapas
+
+### Anadido
+
+- Se adopta la organizacion `Etapa -> Fases -> Theory al cierre de la Etapa`.
+- El historico existente queda bajo `docs/etapas/etapa-1/`.
+- Se preparan `docs/etapas/etapa-2/fases/` y `docs/etapas/etapa-2/theory/`.
+
+### Conservado
+
+- No se modifico el contenido historico de las fases ni de la Theory.
+- Esta reorganizacion es documental y no representa una fase funcional nueva.
+
 ## 2026-08-09 - Microfase 5C de Footer refinado
 
 ### Aniadido

@@ -146,8 +146,8 @@ No se creó `tailwind.config.js` y las plantillas no usan colores hexadecimales 
 - `src/app/shared/components/theme-selector/theme-selector.component.ts`.
 - `src/app/shared/components/theme-selector/theme-selector.component.html`.
 - `src/app/shared/components/theme-selector/theme-selector.component.spec.ts`.
-- `docs/fases/04-sistema-de-temas.md`.
-- `docs/theory/04-variables-css-y-temas.md`.
+- `docs/etapas/etapa-1/fases/04-sistema-de-temas.md`.
+- `docs/etapas/etapa-1/theory/04-variables-css-y-temas.md`.
 
 ## 9. Archivos modificados
 

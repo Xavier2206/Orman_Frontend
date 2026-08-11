@@ -63,8 +63,8 @@ No se crearon `core`, `shared` ni `layouts` porque todavía no contienen respons
 - `src/app/features/public/landing/landing.component.html`
 - `src/app/features/public/landing/landing.component.css`
 - `src/app/features/public/landing/landing.component.spec.ts`
-- `docs/fases/02-estructura-frontend.md`
-- `docs/theory/02-estructura-modular-frontend.md`
+- `docs/etapas/etapa-1/fases/02-estructura-frontend.md`
+- `docs/etapas/etapa-1/theory/02-estructura-modular-frontend.md`
 
 ## 7. Archivos modificados
 

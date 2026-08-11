@@ -57,8 +57,8 @@ npm añadió 11 paquetes transitivos y cambió 1 paquete del árbol instalado.
 ## 6. Archivos creados
 
 - `.postcssrc.json`.
-- `docs/fases/03-configuracion-tailwind.md`.
-- `docs/theory/03-tailwind-css.md`.
+- `docs/etapas/etapa-1/fases/03-configuracion-tailwind.md`.
+- `docs/etapas/etapa-1/theory/03-tailwind-css.md`.
 
 ## 7. Archivos modificados
 

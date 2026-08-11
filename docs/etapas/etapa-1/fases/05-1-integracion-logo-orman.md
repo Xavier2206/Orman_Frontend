@@ -97,7 +97,7 @@ El contenido servido comienza con la declaración XML esperada. El servidor temp
 
 ## 12. Archivos creados
 
-- `docs/fases/05-1-integracion-logo-orman.md`.
+- `docs/etapas/etapa-1/fases/05-1-integracion-logo-orman.md`.
 
 ## 13. Archivos modificados
 
@@ -107,7 +107,7 @@ El contenido servido comienza con la declaración XML esperada. El servidor temp
 - `docs/README.md`.
 - `docs/CHANGELOG.md`.
 - `README.md`.
-- `docs/fases/05-estructura-landing-publica.md`.
+- `docs/etapas/etapa-1/fases/05-estructura-landing-publica.md`.
 
 ## 14. Errores encontrados
 

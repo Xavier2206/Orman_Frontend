@@ -57,6 +57,20 @@
 
     <div class="hidden items-center gap-2 lg:flex">
       <app-theme-selector />
+      @if (auth.authenticated()) {
+        <span class="max-w-48 truncate rounded-lg border border-theme-border bg-surface px-3 py-2 text-sm font-medium text-content" aria-live="polite">
+          Sesión activa: {{ auth.loginName() }}
+        </span>
+        <button
+          type="button"
+          data-logout-trigger
+          class="min-h-11 rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="isLoggingOut()"
+          (click)="logout()"
+        >
+          {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+        </button>
+      } @else {
       <div class="relative" data-quick-menu-anchor>
         <button
           type="button"
@@ -75,7 +89,12 @@
           <app-quick-menu (close)="closeQuickMenu()" (connect)="openLoginModal()" />
         }
       </div>
+      }
     </div>
+
+    @if (logoutError()) {
+      <p class="sr-only" role="alert">{{ logoutError() }}</p>
+    }
 
     <button
       type="button"
@@ -143,6 +162,17 @@
 
       <div class="mt-4 grid gap-3 border-t border-theme-border pt-4 sm:grid-cols-[1fr_auto]">
         <app-theme-selector />
+        @if (auth.authenticated()) {
+          <button
+            type="button"
+            data-logout-trigger
+            class="min-h-11 rounded-lg border border-accent px-4 py-2 font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60"
+            [disabled]="isLoggingOut()"
+            (click)="logout()"
+          >
+            {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+          </button>
+        } @else {
         <button
           type="button"
           data-login-trigger="mobile"
@@ -155,6 +185,7 @@
         >
           Iniciar sesión
         </button>
+        }
       </div>
     </div>
   }
@@ -169,5 +200,5 @@
 }
 
 @if (isLoginModalOpen()) {
-  <app-login-modal (close)="closeLoginModal()" />
+  <app-login-modal (close)="closeLoginModal()" (authenticated)="handleAuthenticated()" />
 }

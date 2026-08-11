@@ -108,7 +108,7 @@ No se deben usar rutas como `../../../../public/images/`. Tampoco se deben impor
 - `public/images/hero/README.md`.
 - `public/images/properties/README.md`.
 - `public/images/placeholders/README.md`.
-- `docs/fases/04-1-recursos-visuales-publicos.md`.
+- `docs/etapas/etapa-1/fases/04-1-recursos-visuales-publicos.md`.
 
 ## 12. Archivos modificados
 
