@@ -7,7 +7,14 @@
 }
 
 .hero-logo-surface {
+  perspective: 900px;
   box-shadow: 0 18px 40px var(--theme-hero-logo-shadow);
+}
+
+.hero-logo-mark {
+  transform-origin: center;
+  transform-style: preserve-3d;
+  animation: hero-logo-turn-3d 8s linear infinite;
 }
 
 .hero-eyebrow {
@@ -76,8 +83,19 @@
   }
 }
 
+@keyframes hero-logo-turn-3d {
+  from {
+    transform: rotateY(0deg);
+  }
+
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-logo-entrance,
+  .hero-logo-mark,
   .hero-logo-line {
     animation: none;
   }
