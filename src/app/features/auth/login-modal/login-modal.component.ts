@@ -11,6 +11,7 @@ import {
   output,
   signal,
   viewChild,
+  viewChildren,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -32,7 +33,7 @@ export class LoginModalComponent {
   private readonly authService = inject(AuthService);
   private readonly dialogPanel = viewChild.required<ElementRef<HTMLElement>>('dialogPanel');
   private readonly usernameInput = viewChild.required<ElementRef<HTMLInputElement>>('usernameInput');
-  private readonly otpInput = viewChild<ElementRef<HTMLInputElement>>('otpInput');
+  private readonly otpInputs = viewChildren<ElementRef<HTMLInputElement>>('otpInput');
   private previousBodyOverflow = '';
   private scrollLocked = false;
 
@@ -45,6 +46,7 @@ export class LoginModalComponent {
   protected readonly isResendingOtp = signal(false);
   protected readonly feedbackMessage = signal<string | null>(null);
   protected readonly feedbackKind = signal<'error' | 'status'>('error');
+  protected readonly otpDigits = signal<string[]>(['', '', '', '', '', '']);
   protected readonly loginForm = new FormGroup({
     username: new FormControl('', {
       nonNullable: true,
@@ -98,9 +100,8 @@ export class LoginModalComponent {
         next: (response) => {
           if (response.status === 'OTP_REQUIRED') {
             this.authStep.set('OTP');
-            this.otpForm.reset({ code: '' });
-            this.showStatus('Revisa tu correo e ingresa el código de verificación.');
-            afterNextRender(() => this.otpInput()?.nativeElement.focus(), { injector: this.injector });
+            this.resetOtp();
+            afterNextRender(() => this.focusOtpInput(0), { injector: this.injector });
             return;
           }
 
@@ -154,13 +155,73 @@ export class LoginModalComponent {
       });
   }
 
+  protected handleOtpInput(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 6 - index);
+
+    if (digits.length > 1) {
+      this.applyOtpDigits(index, digits);
+      return;
+    }
+
+    input.value = digits;
+    this.setOtpDigit(index, digits);
+
+    if (digits) {
+      this.focusOtpInput(index + 1);
+    }
+  }
+
+  protected handleOtpKeydown(index: number, event: KeyboardEvent): void {
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+
+      if (this.otpDigits()[index]) {
+        this.setOtpDigit(index, '');
+      } else if (index > 0) {
+        this.setOtpDigit(index - 1, '');
+        this.focusOtpInput(index - 1);
+      }
+      return;
+    }
+
+    if (event.key === 'Delete') {
+      event.preventDefault();
+      this.setOtpDigit(index, '');
+      return;
+    }
+
+    if (event.key === 'ArrowLeft' && index > 0) {
+      event.preventDefault();
+      this.focusOtpInput(index - 1);
+    } else if (event.key === 'ArrowRight' && index < this.otpDigits().length - 1) {
+      event.preventDefault();
+      this.focusOtpInput(index + 1);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      this.focusOtpInput(0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      this.focusOtpInput(this.otpDigits().length - 1);
+    }
+  }
+
+  protected handleOtpPaste(index: number, event: ClipboardEvent): void {
+    event.preventDefault();
+    const pastedDigits = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, 6 - index) ?? '';
+
+    if (pastedDigits) {
+      this.applyOtpDigits(index, pastedDigits);
+    }
+  }
+
   protected returnToLogin(): void {
     if (this.isSubmitting()) {
       return;
     }
 
     this.authService.clearOtpChallenge();
-    this.otpForm.reset({ code: '' });
+    this.resetOtp();
     this.authStep.set('LOGIN');
     this.clearFeedback();
     afterNextRender(() => this.usernameInput().nativeElement.focus(), { injector: this.injector });
@@ -221,6 +282,39 @@ export class LoginModalComponent {
     return control.valid && (control.dirty || control.touched);
   }
 
+  private setOtpDigit(index: number, digit: string): void {
+    const nextDigits = [...this.otpDigits()];
+    nextDigits[index] = digit;
+    this.updateOtpState(nextDigits);
+  }
+
+  private applyOtpDigits(startIndex: number, digits: string): void {
+    const nextDigits = [...this.otpDigits()];
+    const normalizedDigits = digits.replace(/\D/g, '').slice(0, 6 - startIndex);
+
+    normalizedDigits.split('').forEach((digit, offset) => {
+      nextDigits[startIndex + offset] = digit;
+    });
+    this.updateOtpState(nextDigits);
+    this.focusOtpInput(Math.min(startIndex + normalizedDigits.length, nextDigits.length - 1));
+  }
+
+  private updateOtpState(digits: string[]): void {
+    this.otpDigits.set(digits);
+    this.otpForm.controls.code.setValue(digits.join(''), { emitEvent: false });
+    this.otpForm.controls.code.markAsDirty();
+    this.otpForm.controls.code.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private resetOtp(): void {
+    this.otpDigits.set(['', '', '', '', '', '']);
+    this.otpForm.reset({ code: '' });
+  }
+
+  private focusOtpInput(index: number): void {
+    this.otpInputs()[index]?.nativeElement.focus();
+  }
+
   private keepFocusInsideDialog(event: KeyboardEvent): void {
     const dialogPanel = this.dialogPanel().nativeElement;
     const focusableElements = [
@@ -260,7 +354,7 @@ export class LoginModalComponent {
       username: '',
       password: '',
     });
-    this.otpForm.reset({ code: '' });
+    this.resetOtp();
   }
 
   private finishAuthentication(): void {

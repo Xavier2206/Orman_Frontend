@@ -15,7 +15,7 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
 - **Última fase completada:** Fase 01 de Etapa 2 — Integración de autenticación Angular ↔ ORMAN Backend.
 - **Estado de la Fase 01:** `COMPLETADA`.
-- **Pruebas:** `12 archivos y 76 pruebas aprobadas` tras completar la Fase 01.
+- **Pruebas:** `12 archivos y 80 pruebas aprobadas` tras el ajuste visual puntual del OTP dentro de la Fase 01.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
 ## Estados permitidos

@@ -126,6 +126,14 @@
   border: 1.5px solid var(--theme-modal-secondary-border);
 }
 
+.otp-digit-input {
+  width: clamp(2.5rem, 10vw, 3.5rem);
+  height: clamp(2.75rem, 12vw, 4rem);
+  flex: 0 1 auto;
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  line-height: 1;
+}
+
 @keyframes login-overlay-enter {
   from {
     opacity: 0;
@@ -153,6 +161,7 @@
   .login-modal-panel,
   .login-field-label,
   .login-field-input,
+  .otp-digit-input,
   .login-modal-action {
     animation: none;
     transition: none;

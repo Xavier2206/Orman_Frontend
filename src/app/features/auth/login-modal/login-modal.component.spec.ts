@@ -70,6 +70,18 @@ describe('LoginModalComponent', () => {
     fixture.detectChanges();
   }
 
+  function getOtpInputs(): HTMLInputElement[] {
+    return [...fixture.nativeElement.querySelectorAll('input[id^="otp-digit-"]')];
+  }
+
+  function fillOtp(code: string): void {
+    getOtpInputs().forEach((input, index) => {
+      input.value = code[index] ?? '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    fixture.detectChanges();
+  }
+
   it('should render the accessible login dialog with the official logo', async () => {
     await fixture.whenStable();
     const dialog = fixture.nativeElement.querySelector('[role="dialog"]') as HTMLElement;
@@ -112,21 +124,74 @@ describe('LoginModalComponent', () => {
     startOtpFlow();
     await fixture.whenStable();
 
-    const otpInput = fixture.nativeElement.querySelector('#otp-code') as HTMLInputElement;
+    const otpInputs = getOtpInputs();
     expect(fixture.nativeElement.textContent).toContain('Verificación de seguridad');
-    expect(otpInput).toBeTruthy();
-    expect(document.activeElement).toBe(otpInput);
+    expect(otpInputs).toHaveLength(6);
+    expect(otpInputs[0].getAttribute('aria-label')).toBe('Dígito 1 de 6');
+    expect(document.activeElement).toBe(otpInputs[0]);
     expect(auth.otpChallenge()?.challengeId).toBe('challenge-id');
   });
 
-  it('should verify the OTP and authenticate', () => {
+  it('should advance through the six OTP inputs as digits are entered', () => {
+    startOtpFlow();
+    const otpInputs = getOtpInputs();
+
+    otpInputs[0].value = '1';
+    otpInputs[0].dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(otpInputs[0].value).toBe('1');
+    expect(document.activeElement).toBe(otpInputs[1]);
+  });
+
+  it('should move to the previous OTP input and clear it with Backspace', () => {
+    startOtpFlow();
+    const otpInputs = getOtpInputs();
+    otpInputs[0].value = '1';
+    otpInputs[0].dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    otpInputs[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(otpInputs[0].value).toBe('');
+    expect(document.activeElement).toBe(otpInputs[0]);
+  });
+
+  it('should distribute a pasted six-digit code and reject non-numeric input', () => {
+    startOtpFlow();
+    const otpInputs = getOtpInputs();
+    const pasteEvent = new Event('paste', { bubbles: true, cancelable: true }) as ClipboardEvent;
+    Object.defineProperty(pasteEvent, 'clipboardData', {
+      value: { getData: () => '12a3456' },
+    });
+
+    otpInputs[0].dispatchEvent(pasteEvent);
+    fixture.detectChanges();
+
+    expect(getOtpInputs().map((input) => input.value).join('')).toBe('123456');
+
+    const invalidInput = getOtpInputs()[0];
+    invalidInput.value = 'x';
+    invalidInput.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(invalidInput.value).toBe('');
+  });
+
+  it('should disable Verify for an incomplete code and submit one six-digit string', () => {
     const authenticated = vi.fn();
     fixture.componentInstance.authenticated.subscribe(authenticated);
     startOtpFlow();
-    const otp = fixture.nativeElement.querySelector('#otp-code') as HTMLInputElement;
-    otp.value = '123456';
-    otp.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
+    const verifyButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.trim() === 'Verificar',
+    ) as HTMLButtonElement;
+
+    expect(verifyButton.disabled).toBe(true);
+    fillOtp('12345');
+    expect(verifyButton.disabled).toBe(true);
+    fillOtp('123456');
+    expect(verifyButton.disabled).toBe(false);
     clickButton('Verificar');
 
     const request = http.expectOne('/api/v1/auth/otp/verify');
@@ -138,12 +203,22 @@ describe('LoginModalComponent', () => {
     expect(auth.otpChallenge()).toBeNull();
   });
 
+  it('should prevent double OTP verification while the request is pending', () => {
+    startOtpFlow();
+    fillOtp('123456');
+    const verifyButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.includes('Verificar'),
+    ) as HTMLButtonElement;
+    verifyButton.click();
+    fixture.detectChanges();
+    verifyButton.click();
+
+    expect(http.match('/api/v1/auth/otp/verify')).toHaveLength(1);
+  });
+
   it('should show a safe OTP error from ProblemDetail', () => {
     startOtpFlow();
-    const otp = fixture.nativeElement.querySelector('#otp-code') as HTMLInputElement;
-    otp.value = '123456';
-    otp.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
+    fillOtp('123456');
     clickButton('Verificar');
     http.expectOne('/api/v1/auth/otp/verify').flush(
       { errorCode: 'INVALID_REQUEST', detail: 'Código incorrecto o vencido.' },
@@ -185,11 +260,15 @@ describe('LoginModalComponent', () => {
     expect(document.body.style.overflow).toBe('');
   });
 
-  it('should return from OTP to the login form and clear the temporary challenge', () => {
+  it('should return from OTP to login, clear all digits and restore focus', async () => {
     startOtpFlow();
+    fillOtp('123456');
     clickButton('Volver');
+    await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('#login-username')).toBeTruthy();
+    expect(getOtpInputs()).toHaveLength(0);
+    expect(document.activeElement).toBe(fixture.nativeElement.querySelector('#login-username'));
     expect(auth.otpChallenge()).toBeNull();
   });
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-08-12 - Ajuste visual y UX del OTP de ORMAN
+
+### Cambiado
+
+- El segundo estado de `LoginModalComponent` ahora usa seis casillas OTP individuales, con avance automático, Backspace, navegación por teclado y pegado de código completo.
+- `Verificar` y `Volver` quedaron agrupados como acciones principales; `Reenviar código` se presenta como acción secundaria debajo.
+- Se eliminó el mensaje informativo redundante del ingreso a OTP y se conservaron el contrato backend, resend, focus trap, Escape, X, aria-live y el foco al volver a LOGIN.
+
+### Conservado
+
+- El primer paso LOGIN, `AuthService`, endpoints, sesiones, refresh, XSRF, interceptor, rutas y temas oficiales sin cambios.
+
 ## 2026-08-11 - Etapa 2 / Fase 01: autenticación Angular ↔ Backend
 
 ### Añadido

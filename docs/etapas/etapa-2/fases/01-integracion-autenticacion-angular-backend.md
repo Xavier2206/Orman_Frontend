@@ -60,6 +60,17 @@ Convertir el flujo visual de acceso de ORMAN en autenticación WEB real contra e
 - `LoginModalComponent` conserva el mismo overlay, focus trap, Escape, scroll lock, Reactive Forms y diseño; ahora alterna entre LOGIN y OTP dentro del mismo modal.
 - `PublicHeaderComponent` muestra un estado autenticado mínimo con `login` y permite logout, sin inventar roles ni área privada.
 
+## Ajuste visual y UX puntual posterior
+
+Este ajuste no inicia una fase funcional nueva y queda documentado dentro de la Fase 01 porque afecta exclusivamente al segundo estado ya implementado del `LoginModalComponent`.
+
+- El estado OTP ahora muestra seis inputs individuales centrados, con tamaño y separación adaptables a viewport pequeño.
+- Cada casilla acepta un solo dígito, avanza automáticamente, permite navegación con teclado, vuelve a la casilla anterior con Backspace sobre una casilla vacía y distribuye un código pegado.
+- Los seis valores se sincronizan con el `FormControl` interno `code`; `AuthService`, endpoints y el contrato `{ challengeId, code, deviceId, deviceName }` no cambiaron.
+- Se eliminó el mensaje informativo redundante al entrar en OTP. Se conservaron los mensajes `aria-live` para errores y resend, el foco inicial, el focus trap, Escape, X y el retorno a LOGIN.
+- `Verificar` queda deshabilitado con código incompleto o durante verify. `Volver` limpia las casillas y restaura el foco al usuario del primer paso. `Reenviar código` permanece como acción secundaria y conserva el comportamiento backend existente.
+- Se reutilizaron los tokens visuales existentes para los temas ORMAN, DÍA y NOCHE; no se modificó `ThemeService` ni el primer paso de LOGIN.
+
 ## Seguridad y cookies
 
 - `orman_refresh` no se lee, persiste ni copia desde Angular; el navegador la envía mediante el proxy para `/api/v1/auth`.
@@ -76,10 +87,13 @@ Convertir el flujo visual de acceso de ORMAN en autenticación WEB real contra e
 ## Pruebas y validaciones
 
 - Estado previo confirmado: `10 archivos y 65 pruebas aprobadas`.
-- Resultado final: `12 archivos y 76 pruebas aprobadas`.
+- Resultado final de la Fase 01: `12 archivos y 76 pruebas aprobadas`.
+- Resultado tras el ajuste visual OTP: `12 archivos y 80 pruebas aprobadas`.
 - Se añadieron pruebas para deviceId estable, almacenamiento sin tokens, login `AUTHENTICATED`, `OTP_REQUIRED`, OTP verify, OTP resend, transición LOGIN → OTP, loading/doble envío, accesibilidad esencial OTP, Bearer, XSRF estándar, refresh/retry, reintento único, single-flight, errores de sesión, logout y estado visual autenticado.
 - Typecheck: `npx tsc --noEmit -p tsconfig.app.json` correcto.
-- Suite completa: `npm test -- --watch=false` correcta.
+- Suite completa de la Fase 01: `npm test -- --watch=false` correcta.
+- Suite completa tras el ajuste: `npx ng test --no-watch` correcta (`12 archivos y 80 pruebas aprobadas`).
+- Typecheck y build tras el ajuste: `npx tsc --noEmit -p tsconfig.app.json` y `npm run build` correctos; build inicial de `289.32 kB` brutos y `77.22 kB` de transferencia estimada.
 - Build de producción: `npm run build` correcto, con total inicial de `289.16 kB` brutos y `77.14 kB` de transferencia estimada.
 
 ## Validación manual en navegador
