@@ -157,6 +157,24 @@ describe('AuthService and authInterceptor', () => {
     expect(auth.accessToken()).toBe('refreshed-token');
   });
 
+  it('should restore the session during bootstrap when refresh succeeds', () => {
+    auth.restoreSession().subscribe();
+    http.expectOne('/api/v1/auth/refresh').flush(refreshedResponse);
+
+    expect(auth.state()).toBe('authenticated');
+    expect(auth.loginName()).toBe('usuario.demo');
+    expect(auth.accessToken()).toBe('refreshed-token');
+  });
+
+  it('should finish bootstrap unauthenticated when refresh fails without looping', () => {
+    auth.restoreSession().subscribe();
+    expire(http.expectOne('/api/v1/auth/refresh'), 'SESSION_EXPIRED');
+
+    expect(auth.state()).toBe('unauthenticated');
+    expect(auth.authenticated()).toBe(false);
+    expect(http.match('/api/v1/auth/refresh')).toHaveLength(0);
+  });
+
   it('should refresh once and retry the original request once after TOKEN_EXPIRED', () => {
     authenticate();
     let received: unknown;

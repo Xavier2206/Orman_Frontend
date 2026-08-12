@@ -5,6 +5,7 @@ import { Observable, catchError, finalize, map, of, shareReplay, tap, throwError
 import { apiPath } from '../api/api.constants';
 import {
   AuthSession,
+  AuthState,
   AuthenticatedResponse,
   LoginRequest,
   LoginResponse,
@@ -21,10 +22,12 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly device = inject(DeviceService);
   private readonly sessionState = signal<AuthSession | null>(null);
+  private readonly authState = signal<AuthState>('checking');
   private readonly otpChallengeState = signal<OtpChallenge | null>(null);
   private refreshRequest$: Observable<void> | null = null;
 
   readonly session = this.sessionState.asReadonly();
+  readonly state = this.authState.asReadonly();
   readonly otpChallenge = this.otpChallengeState.asReadonly();
   readonly authenticated = computed(() => this.sessionState() !== null);
   readonly accessToken = computed(() => this.sessionState()?.accessToken ?? null);
@@ -45,6 +48,16 @@ export class AuthService {
     return this.http
       .post<LoginResponse>(`${AUTH_PATH}/login`, request, { withCredentials: true })
       .pipe(tap((response) => this.handleLoginResponse(response)));
+  }
+
+  restoreSession(): Observable<void> {
+    if (this.authenticated()) {
+      this.authState.set('authenticated');
+      return of(undefined);
+    }
+
+    this.authState.set('checking');
+    return this.refreshAccessToken().pipe(catchError(() => of(undefined)));
   }
 
   verifyOtp(code: string): Observable<AuthenticatedResponse> {
@@ -127,6 +140,7 @@ export class AuthService {
 
   clearSession(): void {
     this.sessionState.set(null);
+    this.authState.set('unauthenticated');
     this.clearOtpChallenge();
   }
 
@@ -140,6 +154,7 @@ export class AuthService {
       challengeId: response.challengeId,
       expiresIn: response.expiresIn,
     });
+    this.authState.set('unauthenticated');
   }
 
   private completeAuthentication(response: AuthenticatedResponse): void {
@@ -150,6 +165,7 @@ export class AuthService {
       expiresIn: response.expiresIn,
       sid: response.sid,
     });
+    this.authState.set('authenticated');
     this.clearOtpChallenge();
   }
 }

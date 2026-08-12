@@ -1,4 +1,5 @@
 import { Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 
@@ -16,6 +17,7 @@ import { ThemeSelectorComponent } from '../../../../../shared/components/theme-s
 export class PublicHeaderComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
 
   protected readonly isMenuOpen = signal(false);
@@ -69,12 +71,9 @@ export class PublicHeaderComponent {
     this.restoreLoginTriggerFocus();
   }
 
-  protected handleAuthenticated(): void {
+  handleAuthenticated(): void {
     this.isLoginModalOpen.set(false);
-
-    queueMicrotask(() => {
-      this.hostElement.nativeElement.querySelector<HTMLElement>('[data-logout-trigger]')?.focus();
-    });
+    void this.router.navigateByUrl('/app/inicio');
   }
 
   protected logout(): void {

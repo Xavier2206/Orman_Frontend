@@ -50,3 +50,5 @@ export interface OtpChallenge {
   readonly challengeId: string;
   readonly expiresIn: number;
 }
+
+export type AuthState = 'checking' | 'authenticated' | 'unauthenticated';

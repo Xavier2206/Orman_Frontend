@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-08-12 - Etapa 2 / Fase 02: área privada base y rutas protegidas
+
+### Añadido
+
+- Área autenticada lazy bajo `/app` con entrada `/app/inicio`, `PrivateLayout`, topbar, sidebar estructural y contenido temporal.
+- Guard de autenticación y estado de bootstrap `checking` / `authenticated` / `unauthenticated`.
+- Restauración inicial de sesión mediante refresh HttpOnly y pruebas de rutas, guard, layout y bootstrap.
+
+### Cambiado
+
+- Login directo y OTP correcto redirigen a `/app/inicio`.
+- El logout desde el topbar privado retorna a `/` y conserva `orman-device-id`.
+
+### Validado
+
+- Typecheck correcto, 16 archivos con 92 pruebas aprobadas y build de producción correcto (303.23 kB iniciales brutos).
+- No se añadieron dependencias ni se modificó `package-lock.json`.
+
 ## 2026-08-12 - Ajuste visual y UX del OTP de ORMAN
 
 ### Cambiado

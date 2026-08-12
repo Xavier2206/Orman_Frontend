@@ -76,8 +76,9 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | Fase | Estado | Dependencia | Documento |
 | --- | --- | --- | --- |
 | 01 — Integración de autenticación Angular ↔ ORMAN Backend | `COMPLETADA` | Etapa 1 disponible; contrato backend de autenticación y configuración de cookies/CSRF validados | [Documento](etapas/etapa-2/fases/01-integracion-autenticacion-angular-backend.md) |
+| 02 — Área privada base, layout autenticado y protección de rutas | `COMPLETADA` | Fase 01 completada; contrato de refresh y logout validado | [Documento](etapas/etapa-2/fases/02-area-privada-layout-rutas-protegidas.md) |
 
-La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento.
+La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales.
 
 ### Fases futuras por definir
 

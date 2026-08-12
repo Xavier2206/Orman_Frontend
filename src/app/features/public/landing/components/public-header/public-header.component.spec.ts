@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { PublicHeaderComponent } from './public-header.component';
@@ -15,7 +16,7 @@ describe('PublicHeaderComponent', () => {
     document.body.style.overflow = '';
     await TestBed.configureTestingModule({
       imports: [PublicHeaderComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
     auth = TestBed.inject(AuthService);
     http = TestBed.inject(HttpTestingController);
@@ -88,6 +89,15 @@ describe('PublicHeaderComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Sesión activa: usuario.demo');
     expect(fixture.nativeElement.textContent).toContain('Cerrar sesión');
     expect(fixture.nativeElement.textContent).not.toContain('ADMINISTRADOR');
+  });
+
+  it('should navigate to the private start after authentication', () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    fixture.componentInstance.handleAuthenticated();
+
+    expect(navigate).toHaveBeenCalledWith('/app/inicio');
   });
 
   it('should open only QuickMenu from the desktop action', () => {
