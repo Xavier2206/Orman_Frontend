@@ -25,6 +25,7 @@ export class AuthService {
   private readonly authState = signal<AuthState>('checking');
   private readonly otpChallengeState = signal<OtpChallenge | null>(null);
   private refreshRequest$: Observable<void> | null = null;
+  private sessionClearHandler: (() => void) | null = null;
 
   readonly session = this.sessionState.asReadonly();
   readonly state = this.authState.asReadonly();
@@ -138,10 +139,15 @@ export class AuthService {
     this.otpChallengeState.set(null);
   }
 
+  registerSessionClearHandler(handler: () => void): void {
+    this.sessionClearHandler = handler;
+  }
+
   clearSession(): void {
     this.sessionState.set(null);
     this.authState.set('unauthenticated');
     this.clearOtpChallenge();
+    this.sessionClearHandler?.();
   }
 
   private handleLoginResponse(response: LoginResponse): void {

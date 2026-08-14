@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  --private-topbar-height: 5rem;
+}
+
+@media (max-width: 1023px) {
+  :host {
+    --private-topbar-height: 7rem;
+  }
+}
+
+.private-sidebar-backdrop {
+  top: var(--private-topbar-height);
+}

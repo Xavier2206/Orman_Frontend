@@ -18,6 +18,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { finalize } from 'rxjs';
 
 import { isProblemDetail } from '../../../core/api/problem-detail.model';
+import { AuthContextService } from '../../../core/auth/auth-context.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -31,6 +32,7 @@ export class LoginModalComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly authService = inject(AuthService);
+  private readonly authContext = inject(AuthContextService);
   private readonly dialogPanel = viewChild.required<ElementRef<HTMLElement>>('dialogPanel');
   private readonly usernameInput = viewChild.required<ElementRef<HTMLInputElement>>('usernameInput');
   private readonly otpInputs = viewChildren<ElementRef<HTMLInputElement>>('otpInput');
@@ -105,7 +107,7 @@ export class LoginModalComponent {
             return;
           }
 
-          this.finishAuthentication();
+          this.loadContextAndFinish();
         },
         error: (error: unknown) => this.showError(this.getAuthErrorMessage(error, 'No fue posible iniciar sesión.')),
       });
@@ -128,7 +130,7 @@ export class LoginModalComponent {
         finalize(() => this.isSubmitting.set(false)),
       )
       .subscribe({
-        next: () => this.finishAuthentication(),
+        next: () => this.loadContextAndFinish(),
         error: (error: unknown) =>
           this.showError(this.getAuthErrorMessage(error, 'Código incorrecto o vencido.')),
       });
@@ -361,6 +363,18 @@ export class LoginModalComponent {
     this.resetState();
     this.restoreDocumentScroll();
     this.authenticated.emit();
+  }
+
+  private loadContextAndFinish(): void {
+    this.authContext
+      .loadContext()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.finishAuthentication(),
+        // Authentication remains valid if only its complementary context fails. The layout renders
+        // its explicit context error state instead of reintroducing mock navigation.
+        error: () => this.finishAuthentication(),
+      });
   }
 
   private clearFeedback(): void {

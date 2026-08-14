@@ -1,5 +1,137 @@
 # Changelog
 
+## 2026-08-13 — Etapa 2 / Fase 04: selector de rol y Sidebar dinámico
+
+### Cambiado
+
+- El Topbar selecciona roles reales del `AuthContext`; el Sidebar muestra exclusivamente los menús y procesos del rol seleccionado, sin encabezados de rol.
+- La selección es estado Signal local, se reconstruye desde el primer rol del contexto y se limpia con el contexto al cerrar o invalidar sesión.
+
+### Conservado
+
+- No se realizan requests al cambiar de rol, no se modifica autenticación, JWT, authorities ni Spring Security.
+
+### Verificado
+
+- Typecheck correcto; 18 archivos y 107 pruebas aprobadas; build correcto con 307.29 kB iniciales brutos y 78.92 kB estimados.
+- `git diff --check` correcto y `package-lock.json` sin cambios.
+
+## 2026-08-13 — Etapa 2 / Fase 03: contexto post-login real
+
+### Añadido
+
+- Modelos estrictos y `AuthContextService` para `GET /api/v1/auth/context` con estado Signal en memoria, carga única en vuelo, recarga explícita y limpieza.
+- Restauración secuencial de sesión y contexto, y pruebas de endpoint, login, OTP, F5, logout, sidebar y perfil.
+
+### Cambiado
+
+- El sidebar privado dejó de usar su navegación mock y ahora representa Roles → Menús → Procesos del contexto Backend.
+- El perfil privado usa datos de Persona y login reales, con avatar fallback cuando la referencia de foto no es una URL utilizable.
+
+### Pendiente
+
+- Falta un contrato Backend para resolver referencias de fotografía no URL y confirmar la semántica Router de `Proceso.enlace`.
+
+### Verificado
+
+- Typecheck correcto; 18 archivos y 105 pruebas aprobadas; build correcto con 306.96 kB iniciales brutos y 78.83 kB estimados.
+- `git diff --check` correcto y `package-lock.json` sin cambios.
+
+## 2026-08-12 - Corrección estructural definitiva de altura del Sidebar de Fase 02
+
+### Corregido
+
+- El shell privado usa una altura real de viewport (`h-[100dvh]`) en lugar de depender solo de `min-height`, dando al Content y al Sidebar una referencia vertical efectiva.
+- El `<nav>` que pinta el fondo del Sidebar conserva `height: 100%` dentro de esa cadena válida; el fondo lateral ya no depende de la cantidad de opciones mock.
+- El Main y la lista de navegación contienen su propio scroll vertical para conservar el alto exacto del shell.
+
+### Conservado
+
+- Sidebar expandido/compacto, rail y drawer móvil, TopBar, temas, perfil, autenticación, rutas y mock temporal de navegación.
+
+### Validado
+
+- Typecheck correcto; 17 archivos y 98 pruebas aprobadas; build correcto con 304.54 kB iniciales brutos.
+- `package-lock.json` sin cambios. La comprobación visual de zoom queda pendiente de una sesión de navegador disponible.
+
+## 2026-08-12 - Corrección responsive de Fase 02
+
+### Corregido
+
+- El `PrivateLayout` dejó de limitar el cuerpo privado y el contenido interno del `PrivateTopbar` a `max-w-[1800px]` centrado, eliminando los espacios laterales en monitores grandes.
+- El shell privado ocupa el viewport con `min-h-[100dvh]`; el cuerpo distribuye sidebar y main con `flex-1`, y el sidebar desktop usa el alto restante del topbar.
+
+### Conservado
+
+- Autenticación, refresh, logout, guard, rutas, drawer responsive, temas, TopBar, Sidebar y contenido temporal sin cambios funcionales.
+
+## 2026-08-13 - Mejora visual del PrivateTopbar de Fase 02
+
+### Añadido
+
+- Branding privado con logo, nombre ORMAN y subtítulo de gestión de propiedades.
+- Fecha actual en español, selector de temas integrado, rol neutral, campana estructural y popover accesible de perfil.
+- Avatar neutro y logout reutilizando `AuthService`.
+
+### Fuera de alcance
+
+- Roles reales, notificaciones, contador, foto o edición de perfil, endpoints y navegación dinámica.
+
+### Validado
+
+- Typecheck correcto; 17 archivos y 95 pruebas aprobadas; build correcto con 303.79 kB iniciales brutos.
+- `package-lock.json` sin cambios.
+
+## 2026-08-13 - Corrección de altura del Sidebar al cambiar zoom
+
+### Corregido
+
+- El Sidebar desktop ahora estira host y navegación al 100% del alto disponible del Content, evitando que el fondo termine con el contenido mock y deje una zona blanca al variar el zoom.
+- Se conservan `100dvh`, el rail expandido/compacto, el drawer móvil y todos los comportamientos visuales aprobados.
+
+### Validado
+
+- Typecheck correcto; 17 archivos y 98 pruebas aprobadas; build correcto con 304.49 kB iniciales brutos.
+- `package-lock.json` sin cambios. No se realizó validación visual directa de zoom.
+
+## 2026-08-13 - Corrección visual y responsive del Sidebar de Fase 02
+
+### Añadido
+
+- Mock temporal de navegación para validar visualmente Sidebar expandido, compacto, activo y responsive.
+- Hamburguesa dentro del Sidebar, rail compacto móvil persistente, drawer expandido, backdrop y cierre por Escape.
+- Labels accesibles y `title` para conocer cada elemento cuando solo se muestran iconos.
+
+### Conservado
+
+- TopBar sin hamburguesa duplicada, fecha en español, temas, perfil, campana estructural, rol neutral, Main y rutas existentes.
+
+### Fuera de alcance
+
+- El mock no representa rutas, roles, permisos ni menús backend. Debe sustituirse por Usuario ↔ Roles ↔ Menús ↔ Procesos.
+
+### Validado
+
+- Typecheck correcto; 17 archivos y 98 pruebas aprobadas; build correcto con 304.45 kB iniciales brutos.
+- `package-lock.json` sin cambios.
+
+## 2026-08-13 - Ajuste estructural responsive de TopBar y Sidebar de Fase 02
+
+### Añadido
+
+- Colapso desktop del sidebar entre 18rem y 4.5rem, sin crear navegación ficticia.
+- Drawer móvil con backdrop y cierre mediante hamburguesa, click externo y Escape.
+- Fecha visible como segunda fila del topbar móvil y variable CSS de altura por breakpoint para posicionar el drawer.
+
+### Conservado
+
+- Branding, temas, perfil, campana estructural, rol neutral, layout de ancho completo, Main, sidebar “En construcción” y rutas/autenticación.
+
+### Validado
+
+- Typecheck correcto; 17 archivos y 97 pruebas aprobadas; build correcto con 304.47 kB iniciales brutos.
+- `package-lock.json` sin cambios.
+
 ## 2026-08-12 - Etapa 2 / Fase 02: área privada base y rutas protegidas
 
 ### Añadido

@@ -15,6 +15,12 @@ const authenticatedResponse = {
   sid: 'session-id',
 };
 
+const authContextResponse = {
+  usuario: { login: 'usuario.demo', codper: 10 },
+  persona: { nombre: 'Usuario', ap: 'Demo', am: null, foto: null },
+  roles: [],
+};
+
 describe('LoginModalComponent', () => {
   let fixture: ComponentFixture<LoginModalComponent>;
   let http: HttpTestingController;
@@ -67,6 +73,7 @@ describe('LoginModalComponent', () => {
       challengeId: 'challenge-id',
       expiresIn: 300,
     });
+    expect(http.match('/api/v1/auth/context')).toHaveLength(0);
     fixture.detectChanges();
   }
 
@@ -80,6 +87,10 @@ describe('LoginModalComponent', () => {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
     fixture.detectChanges();
+  }
+
+  function flushContext(): void {
+    http.expectOne('/api/v1/auth/context').flush(authContextResponse);
   }
 
   it('should render the accessible login dialog with the official logo', async () => {
@@ -114,6 +125,7 @@ describe('LoginModalComponent', () => {
       clientType: 'WEB',
     });
     request.flush(authenticatedResponse);
+    flushContext();
 
     expect(authenticated).toHaveBeenCalledOnce();
     expect(auth.authenticated()).toBe(true);
@@ -197,6 +209,7 @@ describe('LoginModalComponent', () => {
     const request = http.expectOne('/api/v1/auth/otp/verify');
     expect(request.request.body).toMatchObject({ challengeId: 'challenge-id', code: '123456' });
     request.flush(authenticatedResponse);
+    flushContext();
 
     expect(authenticated).toHaveBeenCalledOnce();
     expect(auth.authenticated()).toBe(true);

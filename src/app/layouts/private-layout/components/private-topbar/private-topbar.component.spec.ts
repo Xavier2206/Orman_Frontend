@@ -1,0 +1,142 @@
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
+
+import { AuthService } from '../../../../core/auth/auth.service';
+import { AuthContextService } from '../../../../core/auth/auth-context.service';
+import { authInterceptor } from '../../../../core/auth/auth.interceptor';
+import { PrivateTopbarComponent } from './private-topbar.component';
+
+describe('PrivateTopbarComponent', () => {
+  let fixture: ComponentFixture<PrivateTopbarComponent>;
+  let auth: AuthService;
+  let context: AuthContextService;
+  let http: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PrivateTopbarComponent],
+      providers: [provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting(), provideRouter([])],
+    }).compileComponents();
+    auth = TestBed.inject(AuthService);
+    context = TestBed.inject(AuthContextService);
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(PrivateTopbarComponent);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    http.verify();
+    auth.clearSession();
+    fixture.destroy();
+  });
+
+  function authenticate(): void {
+    auth.login('Xavier_Ortega', 'password-demo').subscribe();
+    http.expectOne('/api/v1/auth/login').flush({
+      status: 'AUTHENTICATED',
+      login: 'Xavier_Ortega',
+      codper: 10,
+      accessToken: 'access-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      sid: 'session-id',
+    });
+    context.loadContext().subscribe();
+    http.expectOne('/api/v1/auth/context').flush({
+      usuario: { login: 'Xavier_Ortega', codper: 10 },
+      persona: { nombre: 'Xavier', ap: 'Ortega', am: null, foto: null },
+      roles: [{ codr: 1, nombre: 'PROPIETARIO', menus: [] }],
+    });
+    fixture.detectChanges();
+  }
+
+  it('should render ORMAN branding, a Spanish date, themes, real role and structural actions', () => {
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('img[alt="ORMAN"]')).toBeTruthy();
+    expect(element.textContent).toContain('ORMAN');
+    expect(element.textContent).toContain('GESTIÓN DE PROPIEDADES');
+    expect(element.querySelector('[aria-label="Fecha actual"]')?.textContent).toMatch(/de/);
+    expect(element.querySelector('[aria-label="Seleccionar tema visual"]')).toBeTruthy();
+    expect(element.querySelector('[aria-label="Rol principal"]')).toBeNull();
+    expect(element.querySelector('[aria-label="Notificaciones"]')).toBeTruthy();
+    expect(element.querySelector('[aria-label="Abrir perfil"]')).toBeTruthy();
+  });
+
+  it('should open and close the profile popover with the real login and neutral avatar', async () => {
+    authenticate();
+    const profileButton = fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement;
+    profileButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Perfil');
+    expect(fixture.nativeElement.textContent).toContain('Xavier Ortega');
+    expect(fixture.nativeElement.textContent).toContain('Xavier_Ortega');
+    expect(fixture.nativeElement.querySelector('img.size-16')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label="Cerrar perfil"]')).toBeTruthy();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await Promise.resolve();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('should render all available person name parts and use a direct photo URL only when valid', () => {
+    authenticate();
+    context.reloadContext().subscribe();
+    http.expectOne('/api/v1/auth/context').flush({
+      usuario: { login: 'Xavier_Ortega', codper: 10 },
+      persona: { nombre: 'Xavier', ap: 'Ortega', am: 'Materno', foto: 'https://images.example.test/xavier.jpg' },
+      roles: [{ codr: 1, nombre: 'PROPIETARIO', menus: [] }],
+    });
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Xavier Ortega Materno');
+    expect((fixture.nativeElement.querySelector('img.size-16') as HTMLImageElement).src).toBe(
+      'https://images.example.test/xavier.jpg',
+    );
+  });
+
+  it('should populate the role selector from context and change the selected role locally', () => {
+    authenticate();
+    context.reloadContext().subscribe();
+    http.expectOne('/api/v1/auth/context').flush({
+      usuario: { login: 'Xavier_Ortega', codper: 10 },
+      persona: { nombre: 'Xavier', ap: 'Ortega', am: null, foto: null },
+      roles: [
+        { codr: 1, nombre: 'PROPIETARIO', menus: [] },
+        { codr: 2, nombre: 'ADMINISTRADOR', menus: [] },
+      ],
+    });
+    fixture.detectChanges();
+
+    const selector = fixture.nativeElement.querySelector('#private-role-selector') as HTMLSelectElement;
+    expect(selector.value).toBe('1');
+    expect([...selector.options].map((option) => option.text)).toEqual(['PROPIETARIO', 'ADMINISTRADOR']);
+
+    selector.value = '2';
+    selector.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(context.selectedRoleId()).toBe(2);
+    expect(http.match('/api/v1/auth/context')).toHaveLength(0);
+  });
+
+  it('should reuse AuthService logout from the profile action', () => {
+    authenticate();
+    (fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    const logoutButton = [...fixture.nativeElement.querySelectorAll('button')].find((button) => button.textContent?.includes('Cerrar sesión')) as HTMLButtonElement;
+    logoutButton.click();
+
+    const request = http.expectOne('/api/v1/auth/logout');
+    expect(request.request.headers.get('Authorization')).toBe('Bearer access-token');
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    expect(auth.authenticated()).toBe(false);
+  });
+});

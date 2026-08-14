@@ -1,0 +1,36 @@
+:host {
+  display: block;
+  --private-topbar-height: 5rem;
+}
+
+@media (max-width: 1023px) {
+  :host {
+    --private-topbar-height: 7rem;
+  }
+}
+
+.private-topbar-date {
+  text-transform: lowercase;
+}
+
+.private-profile-popover {
+  animation: private-profile-enter 160ms ease-out both;
+}
+
+@keyframes private-profile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .private-profile-popover {
+    animation: none;
+  }
+}

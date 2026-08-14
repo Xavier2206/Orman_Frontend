@@ -1,11 +1,11 @@
-<div class="min-h-screen bg-page text-content">
-  <app-private-topbar
-    [sidebarOpen]="isSidebarOpen()"
-    (toggleSidebar)="toggleSidebar()"
-  />
-  <div class="mx-auto flex w-full max-w-[1800px]">
-    <app-private-sidebar [open]="isSidebarOpen()" (closed)="closeSidebar()" />
-    <main id="private-content" class="min-w-0 flex-1 p-4 sm:p-6 lg:p-8" tabindex="-1">
+<div class="flex h-[100dvh] flex-col overflow-hidden bg-page text-content">
+  <app-private-topbar />
+  <div class="flex min-h-0 w-full flex-1 items-stretch overflow-hidden">
+    @if (isSidebarOpen()) {
+      <button type="button" class="private-sidebar-backdrop fixed inset-x-0 bottom-0 z-10 bg-overlay lg:hidden" aria-label="Cerrar menú lateral" (click)="closeSidebar()"></button>
+    }
+    <app-private-sidebar [open]="isSidebarOpen()" [collapsed]="isSidebarCollapsed()" (closed)="closeSidebar()" (toggleCollapsed)="toggleSidebarCollapsed()" />
+    <main id="private-content" class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" tabindex="-1">
       <router-outlet />
     </main>
   </div>

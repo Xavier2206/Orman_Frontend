@@ -1,18 +1,60 @@
 <header class="border-b border-theme-border bg-surface text-content shadow-sm">
-  <div class="mx-auto flex min-h-16 w-full max-w-[1800px] items-center gap-3 px-4 sm:px-6 lg:px-8">
-    <button type="button" class="grid size-11 place-items-center rounded-lg border border-theme-border bg-card lg:hidden" aria-label="Abrir o cerrar menú" aria-controls="private-sidebar" [attr.aria-expanded]="sidebarOpen()" (click)="toggleSidebar.emit()">
-      <span aria-hidden="true">☰</span>
-    </button>
-    <a routerLink="/app/inicio" class="flex min-h-11 items-center gap-2 rounded-lg" aria-label="Ir al inicio privado de ORMAN">
-      <img class="h-10 w-auto" src="/images/brand/orman-logo.svg" alt="ORMAN" />
-      <span class="hidden text-sm font-bold tracking-[0.18em] sm:inline">ORMAN</span>
+  <div class="private-topbar-inner flex min-h-20 w-full flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <a routerLink="/app/inicio" class="flex min-h-12 min-w-0 items-center gap-2 rounded-lg" aria-label="Ir al inicio privado de ORMAN">
+      <img class="h-10 w-auto shrink-0" src="/images/brand/orman-logo.svg" alt="ORMAN" />
+      <span class="min-w-0">
+        <span class="block text-sm font-bold tracking-[0.18em] sm:text-base">ORMAN</span>
+        <span class="hidden text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted sm:block">GESTIÓN DE PROPIEDADES</span>
+      </span>
     </a>
-    <div class="ml-auto flex items-center gap-2">
+
+    <p class="private-topbar-date order-last basis-full text-center text-sm font-medium text-muted lg:order-none lg:flex-1 lg:basis-auto" aria-label="Fecha actual">{{ currentDate }}</p>
+
+    <div class="ml-auto flex items-center gap-1 sm:gap-2">
       <app-theme-selector />
-      <span class="hidden max-w-40 truncate text-sm text-muted sm:inline">{{ loginName() }}</span>
-      <button type="button" class="min-h-11 rounded-lg border border-accent px-3 text-sm font-semibold text-accent-text hover:bg-accent hover:text-accent-contrast disabled:opacity-60" [disabled]="isLoggingOut()" (click)="logout()">
-        {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+      @if (roles().length > 0) {
+        <label class="hidden items-center gap-2 rounded-lg border border-theme-border px-2 py-1 text-sm text-muted xl:flex" for="private-role-selector">
+          <span>Rol:</span>
+          <select id="private-role-selector" class="max-w-40 bg-transparent py-1 font-medium text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Rol activo" [value]="selectedRoleId()" (change)="selectRole($event)">
+            @for (role of roles(); track role.codr) {
+              <option [value]="role.codr">{{ role.nombre }}</option>
+            }
+          </select>
+        </label>
+      }
+      <button type="button" class="grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Notificaciones" title="Notificaciones" aria-disabled="true">
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" />
+        </svg>
       </button>
+      <div class="relative">
+        <button #profileButton type="button" class="grid size-11 place-items-center rounded-lg border border-accent bg-card text-accent-text transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Abrir perfil" aria-controls="private-profile-popover" [attr.aria-expanded]="isProfileOpen()" (click)="toggleProfile()">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6" />
+          </svg>
+        </button>
+        @if (isProfileOpen()) {
+          <section id="private-profile-popover" class="private-profile-popover absolute right-0 top-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-theme-border bg-card p-5 text-content shadow-lg" role="dialog" aria-labelledby="private-profile-title">
+            <button type="button" class="absolute right-3 top-3 grid size-10 place-items-center rounded-lg text-muted hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Cerrar perfil" (click)="closeProfile()">×</button>
+            <h2 id="private-profile-title" class="pr-10 text-lg font-bold">Perfil</h2>
+            <div class="mt-5 flex flex-col items-center text-center">
+              @if (profileImageUrl(); as imageUrl) {
+                <img class="size-16 rounded-full border border-accent object-cover" [src]="imageUrl" [alt]="visibleName() ?? loginName() ?? 'Foto de perfil'" (error)="useProfileFallback()" />
+              } @else {
+                <div class="grid size-16 place-items-center rounded-full border border-accent bg-surface text-accent" aria-hidden="true">
+                  <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4" /><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6" /></svg>
+                </div>
+              }
+              <p class="mt-3 max-w-full truncate font-semibold" [title]="visibleName() ?? loginName() ?? 'Usuario'">{{ visibleName() ?? loginName() ?? 'Usuario' }}</p>
+              @if (loginName()) { <p class="mt-1 max-w-full truncate text-sm text-muted" [title]="loginName()">{{ loginName() }}</p> }
+              <button type="button" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 font-semibold text-accent-contrast shadow-md hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isLoggingOut()" (click)="logout()">
+                {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+              </button>
+            </div>
+          </section>
+        }
+      </div>
     </div>
   </div>
   @if (logoutError()) { <p class="sr-only" role="alert">{{ logoutError() }}</p> }

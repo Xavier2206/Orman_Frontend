@@ -1,7 +1,40 @@
-<nav id="private-sidebar" aria-label="Menú privado" class="fixed inset-y-16 left-0 z-20 w-72 border-r border-theme-border bg-surface p-5 shadow-lg transition-transform duration-200 motion-reduce:transition-none lg:static lg:block lg:min-h-[calc(100vh-4rem)] lg:translate-x-0 lg:shadow-none" [class.-translate-x-full]="!open()" [class.translate-x-0]="open()">
+<nav id="private-sidebar" aria-label="Menú privado" class="private-sidebar fixed left-0 top-[var(--private-topbar-height)] z-20 h-[calc(100dvh-var(--private-topbar-height))] w-72 border-r border-theme-border bg-surface p-5 shadow-lg transition-[transform,width] duration-200 motion-reduce:transition-none lg:static lg:flex lg:h-full lg:min-h-0 lg:translate-x-0 lg:shadow-none" [class.-translate-x-full]="!open()" [class.translate-x-0]="open()" [class.sidebar-collapsed]="collapsed()" [class.sidebar-mobile-expanded]="open()">
+  <button type="button" class="mb-6 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Abrir o cerrar menú lateral" aria-controls="private-sidebar" [attr.aria-expanded]="open()" (click)="toggleCollapsed.emit()">
+    <span aria-hidden="true">☰</span>
+  </button>
   <div class="flex items-center justify-between lg:block">
-    <h2 class="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Menú</h2>
+    <h2 class="text-sm font-semibold uppercase tracking-[0.16em] text-muted">MENÚ</h2>
     <button type="button" class="grid size-10 place-items-center rounded-lg border border-theme-border lg:hidden" aria-label="Cerrar menú" (click)="closed.emit()">×</button>
   </div>
-  <p class="mt-6 rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">En construcción</p>
+  <div class="mt-6 min-h-0 flex-1 overflow-y-auto">
+    @if (isLoading()) {
+      <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted" role="status">Cargando navegación…</p>
+    } @else if (contextError()) {
+      <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted" role="alert">{{ contextError() }}</p>
+    } @else if (context()) {
+      @if (!selectedRole()) {
+        <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">No hay opciones de navegación disponibles para esta cuenta.</p>
+      } @else if (selectedMenus().length === 0) {
+        <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">Sin menús disponibles.</p>
+      } @else {
+        <ul aria-label="Navegación del rol seleccionado">
+          @for (menu of selectedMenus(); track menu.codm) {
+            <li class="mb-2">
+              <div class="sidebar-item flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-content" [attr.title]="collapsed() ? menu.nombre : null">
+                <span class="sidebar-item-icon grid size-7 shrink-0 place-items-center rounded-md border border-theme-border text-xs" aria-hidden="true">{{ menuIcon(menu) }}</span>
+                <span class="sidebar-item-label truncate">{{ menu.nombre }}</span>
+              </div>
+              @if (menu.procesos.length > 0) {
+                <ul class="sidebar-processes ml-10 mt-1 space-y-1" [class.hidden]="collapsed()">
+                  @for (process of menu.procesos; track process.codp) {
+                    <li class="truncate px-2 py-1 text-xs text-muted" [title]="process.enlace">{{ process.nombre }}</li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
 </nav>

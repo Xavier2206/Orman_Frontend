@@ -8,8 +8,8 @@ import { provideHttpClient, withInterceptors, withXsrfConfiguration } from '@ang
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
+import { AuthContextService } from './core/auth/auth-context.service';
 import { authInterceptor } from './core/auth/auth.interceptor';
-import { AuthService } from './core/auth/auth.service';
 import { ThemeService } from './core/theme/theme.service';
 
 export const appConfig: ApplicationConfig = {
@@ -24,6 +24,6 @@ export const appConfig: ApplicationConfig = {
     ),
     provideRouter(routes),
     provideAppInitializer(() => inject(ThemeService).initializeTheme()),
-    provideAppInitializer(() => inject(AuthService).restoreSession()),
+    provideAppInitializer(() => inject(AuthContextService).restoreContext()),
   ],
 };

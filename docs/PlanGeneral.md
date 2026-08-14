@@ -13,9 +13,9 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
 - **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
-- **Última fase completada:** Fase 01 de Etapa 2 — Integración de autenticación Angular ↔ ORMAN Backend.
-- **Estado de la Fase 01:** `COMPLETADA`.
-- **Pruebas:** `12 archivos y 80 pruebas aprobadas` tras el ajuste visual puntual del OTP dentro de la Fase 01.
+- **Última fase completada:** Fase 04 de Etapa 2 — Selector de rol y Sidebar dinámico.
+- **Estado de la Fase 04:** `COMPLETADA`.
+- **Pruebas:** `18 archivos y 107 pruebas aprobadas`.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
 ## Estados permitidos
@@ -77,6 +77,8 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | --- | --- | --- | --- |
 | 01 — Integración de autenticación Angular ↔ ORMAN Backend | `COMPLETADA` | Etapa 1 disponible; contrato backend de autenticación y configuración de cookies/CSRF validados | [Documento](etapas/etapa-2/fases/01-integracion-autenticacion-angular-backend.md) |
 | 02 — Área privada base, layout autenticado y protección de rutas | `COMPLETADA` | Fase 01 completada; contrato de refresh y logout validado | [Documento](etapas/etapa-2/fases/02-area-privada-layout-rutas-protegidas.md) |
+| 03 — Contexto post-login real en Angular | `COMPLETADA` | Fases 01 y 02; contrato `GET /api/v1/auth/context` confirmado | [Documento](etapas/etapa-2/fases/03-contexto-post-login-angular.md) |
+| 04 — Selector de rol y Sidebar dinámico | `COMPLETADA` | Fase 03; contexto autenticado con roles | [Documento](etapas/etapa-2/fases/04-selector-rol-sidebar-dinamico.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales.
 
@@ -100,7 +102,7 @@ Una dependencia expresa orden técnico, pero cada fase requiere además autoriza
 
 - La aprobación visual pendiente indicada en el documento de la Fase 06.1 debe confirmarse o cerrarse documentalmente.
 - Las decisiones fuera del alcance de autenticación, como roles dinámicos y navegación privada, siguen pendientes de una fase posterior.
-- Los roles dinámicos del usuario, las propiedades y las futuras áreas privadas no tienen todavía una fase frontend implementada en este repositorio.
+- Las propiedades y futuras áreas funcionales no tienen todavía una fase frontend implementada en este repositorio.
 - Las fases posteriores de la Etapa 2 permanecen por definir.
 
 ## Dependencias generales
