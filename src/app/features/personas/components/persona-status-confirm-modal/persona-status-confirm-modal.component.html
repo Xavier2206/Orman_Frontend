@@ -1,0 +1,25 @@
+<div class="overlay">
+  <section
+    appPersonaModalFocus
+    class="modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="persona-status-title"
+    (escapePressed)="close()"
+  >
+    <h2 id="persona-status-title">
+      {{ operation() === 'deactivate' ? 'Dar de baja Persona' : 'Reactivar Persona' }}
+    </h2>
+    <p>
+      {{
+        operation() === 'deactivate'
+          ? '¿Deseas dar de baja a esta Persona? La Persona permanecerá registrada y podrá reactivarse posteriormente.'
+          : '¿Deseas reactivar a esta Persona?'
+      }}
+    </p>
+    <footer>
+      <button type="button" [disabled]="submitting()" (click)="close()">Cancelar</button
+      ><button [disabled]="submitting()" (click)="confirmed.emit()">Confirmar</button>
+    </footer>
+  </section>
+</div>

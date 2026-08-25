@@ -41,7 +41,7 @@ Crear la entrada autenticada `/app/inicio`, su layout privado permanente, la pro
 
 - `src/app/core/auth/auth.guard.ts` y su prueba.
 - `src/app/layouts/private-layout/` con layout, topbar, sidebar y pruebas del layout/sidebar.
-- `src/app/features/private/inicio/` con la pantalla temporal y su prueba.
+- `src/app/features/inicio/` con la pantalla temporal y su prueba.
 
 ## Archivos modificados
 
@@ -130,3 +130,29 @@ La corrección anterior dejó el `<nav>` y su host con `height: 100%`, pero el s
 El shell ahora tiene altura real `h-[100dvh]`, se organiza como columna flex con `overflow-hidden`, y `Content` recibe el espacio restante mediante `flex-1` y `min-h-0`. Así, `app-private-sidebar` y su `<nav>` desktop resuelven correctamente `height: 100%`; el `<nav>` permanece como el elemento que pinta toda la columna lateral. El `Main` y la lista de navegación poseen su propio `overflow-y-auto`, por lo que el número de entradas no define la altura del shell ni genera scroll doble.
 
 No se rediseñaron el rail móvil, el drawer, la lista mock, iconos, TopBar, autenticación o rutas. La comprobación visual de zoom sigue pendiente de un navegador disponible. Las validaciones de esta corrección fueron correctas: `npx tsc --noEmit -p tsconfig.app.json`; suite completa con `17 archivos y 98 pruebas aprobadas`; `npm run build` con `304.54 kB` iniciales brutos y `78.38 kB` estimados; y `git diff --check` correcto. `package-lock.json` no cambió.
+
+## Corrección responsive posterior validada en navegador
+
+La auditoría real detectó que, por debajo de `lg`, la clase Tailwind `-translate-x-full` desplazaba el rail compacto 72 px a la izquierda. La sobrescritura local no ganaba la cascada efectiva y el botón de apertura terminaba entre `-60 px` y `-16 px`, inaccesible para mouse y touch.
+
+El Sidebar y su backdrop se posicionan ahora de forma absoluta dentro de la fila Content del `PrivateLayout`, que empieza inmediatamente después de la altura real del Topbar. Esto elimina la dependencia de `--private-topbar-height`: el drawer no invade un Topbar de dos o tres filas y el rail compacto queda visible con un control táctil de 44 px. La apertura móvil ensancha localmente el rail a 18rem, mantiene backdrop, cierre por botón y Escape, y no modifica AuthContext, roles, menús, procesos, rutas ni seguridad.
+
+El scroll residual de 20 px a 360 px provenía de `min-h-[calc(100vh-10rem)]` en la pantalla de inicio, sumado al padding vertical del Main. Se sustituyó por `min-h-full`, que ocupa el área de contenido real sin impedir que el Main haga scroll cuando exista contenido legítimo.
+
+También se refinó de forma local el logo 3D del Hero: conserva perspectiva y movimiento infinito, pero oscila entre `rotateY(-14deg)` y `rotateY(14deg)` en lugar de completar 360 grados, evitando que el logo quede de perfil. `prefers-reduced-motion` continúa anulando la animación.
+
+La validación Browser confirmó Sidebar cerrado/abierto, botón y cierre accesibles, ausencia de solapamiento con Topbar y de overflow horizontal en 768 × 900, 429 × 900 y 360 × 800. En la sesión real se comprobó además `ADMINISTRADOR` sin menús y `PROPIETARIO → GESTIONAR PERSONAS → LISTAR PERSONAS`, incluido el icono Material `group`, en desktop y mobile. La recarga autenticada mantuvo `/app/inicio` sin flash de landing ni avisos de consola.
+
+Validaciones técnicas: `npx tsc --noEmit -p tsconfig.app.json` correcto; `npx ng test --watch=false` con 18 archivos y 108 pruebas aprobadas; `npx ng build` correcto con 315.93 kB iniciales brutos y 81.74 kB estimados.
+
+## Corrección final de Sidebar responsive y estados de navegación
+
+La validación posterior sustituyó el rail móvil residual por un modelo off-canvas real. En `lg` y superiores, el Sidebar sigue perteneciendo al layout y conserva los modos expandido de 18rem y compacto de 4.5rem. Por debajo de `lg`, el `<nav>` queda transformado y no interactivo fuera del viewport mientras está cerrado; por tanto no reserva ancho, no deja una barra vacía ni permite foco invisible. El `Main` continúa como único hijo en flujo y ocupa el ancho disponible.
+
+El disparador `menu` es ahora un control móvil independiente dentro de la fila Content, visible solo cuando existe navegación y el drawer está cerrado. Al abrirse, el Sidebar se superpone al Main desde el inicio real de esa fila —que sigue al Topbar sin una altura hardcodeada—, muestra backdrop, habilita el botón `close` dentro del drawer y conserva el cierre por Escape. El propio disparador no permanece simultáneamente con el cierre.
+
+Cuando el contexto no tiene roles o el rol seleccionado no tiene menús, el layout no renderiza Sidebar ni drawer. El Topbar no inventa un `<select>`: presenta “Sin rol asignado” como texto no interactivo si no existen roles. `/app/inicio` diferencia “No tienes un rol asignado actualmente.” de “No hay menús disponibles para este rol.”; ambos estados mantienen la sesión, no solicitan contexto adicional y no dejan navegación anterior visible.
+
+El scroll residual previo ya estaba corregido por `min-h-full` en Inicio. Se volvió a comprobar a 360 × 800: `main.clientHeight` y `main.scrollHeight` son ambos 652 px y el documento mide exactamente 800 px, sin overflow horizontal.
+
+Validación final: `npx tsc --noEmit -p tsconfig.app.json` correcto; `npx ng test --watch=false` con 18 archivos y 111 pruebas aprobadas; `npx ng build` correcto con 316.73 kB iniciales brutos y 81.98 kB estimados. El primer intento de build desde el sandbox no pudo recuperar la fuente Material de Google; el mismo build con acceso de red autorizado concluyó correctamente. Browser confirmó los breakpoints 1440 × 900, 1366 × 768, 1280 × 900, 1024 × 768, 768 × 900, 429 × 900 y 360 × 800, los temas ORMAN/Día/Noche, roles reales y F5 autenticado. No se modificaron AuthContext, autenticación, backend, routing ni Hero.

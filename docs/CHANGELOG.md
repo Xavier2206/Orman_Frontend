@@ -1,5 +1,131 @@
 # Changelog
 
+## 2026-08-20 — Fase 06 en desarrollo: auditoría técnica de Personas
+
+### Corregido
+
+- Las cards vuelven a ofrecer sus acciones en móvil mediante el menú previsto y los controles de solo icono tienen nombres accesibles.
+- Los modales gestionan foco inicial, focus trap, Escape y restauración del foco; no se cierran durante una operación en progreso.
+- Las fotografías Blob notifican su llegada mediante Signal en la aplicación zoneless y los filtros ya no recurren a `$any` en el template.
+
+### Verificado
+
+- Typecheck correcto; 26 archivos y 133 pruebas aprobadas.
+- Build de producción correcto: 333.85 kB iniciales brutos; Personas emitido como chunk lazy de 51.80 kB.
+
+## 2026-08-18 — Fase 06 en desarrollo: refactor estructural de modales Personas
+
+### Cambiado
+
+- Separados los modales de formulario Persona, fotografía, detalle, estado, creación de Usuario y contraseña; `PersonasListComponent` conserva coordinación y llamadas Backend.
+- La fotografía temporal se encapsula y revoca sus object URLs; el listado mantiene su ciclo independiente de fotografías Blob.
+
+### Verificado
+
+- Typecheck correcto; 26 archivos y 131 pruebas aprobadas.
+- Build de producción correcto: 334.06 kB iniciales brutos; Personas emitido como chunk lazy de 46.01 kB.
+
+## 2026-08-18 — Fase 06 en desarrollo: rediseño visual del modal Persona
+
+### Cambiado
+
+- El modal reutilizable de Añadir/Editar Persona ahora tiene cabecera con subtítulo, avatar centrado, control de fotografía integrado, formulario responsive y footer separado.
+- Inputs, selects, foco y errores visuales se alinearon a los tokens existentes de ORMAN, DÍA y NOCHE; no se modificaron APIs, campos ni operaciones.
+
+### Verificado
+
+- Typecheck correcto; 20 archivos y 123 pruebas aprobadas.
+- Build de producción correcto: 336.47 kB iniciales brutos; Personas emitido como chunk lazy de 39.18 kB, sin advertencias de presupuesto CSS.
+
+## 2026-08-18 — Fase 06 en desarrollo: resumen superior de Personas
+
+### Añadido
+
+- Modelo local `PersonaResumen` y consumo tipado de `GET /api/v1/personas/resumen` mediante el `HttpClient` existente.
+- Cuatro cards compactas y responsive para Total Personas, Activas, Inactivas y Con Usuario, con Material Symbols reales, skeleton local y estado de error aislado.
+
+### Cambiado
+
+- El resumen carga en paralelo al listado y se actualiza únicamente después de crear Persona, cambiar su estado o crear Usuario vinculado. Filtros, búsqueda, paginación, edición, contraseña y fotografía no lo recargan.
+
+### Verificado
+
+- Typecheck correcto; 20 archivos y 122 pruebas aprobadas.
+- Build de producción correcto: 334.31 kB iniciales brutos; Personas emitido como chunk lazy de 35.02 kB.
+
+## 2026-08-17 — Fase 06 en desarrollo: Gestionar Personas
+
+### Añadido
+
+- Ruta lazy privada `/app/personas/listar`, alcanzable desde `Proceso.enlace` por Angular Router.
+- Feature Personas con API tipada, listado remoto, filtros, paginación, cards, modales, baja/reactivación lógica, Usuario y fotografías Blob autenticadas.
+
+### Verificado
+
+- Typecheck correcto; 19 archivos y 113 pruebas aprobadas.
+- Build de producción correcto: 333.94 kB iniciales brutos; feature Personas emitido en chunk lazy.
+- La validación visual Browser sigue pendiente porque el runtime no ofreció navegador.
+
+### Corregido
+
+- El feature Personas ahora aplica correctamente Material Symbols Rounded a `mat-icon`; los nombres de ligadura ya no se presentan como texto.
+- Cards, labels de filtros y paginación recibieron un pulido visual compacto sin cambios funcionales.
+
+## 2026-08-14 — Corrección final de Sidebar privado responsive y estados vacíos
+
+### Corregido
+
+- En tablet y móvil el Sidebar cerrado queda completamente off-canvas; el Main vuelve a ocupar el ancho completo, sin rail residual ni margen lateral.
+- El botón `menu` está separado del drawer y aparece solo cuando este está cerrado; al abrir, el control `close` se muestra exclusivamente dentro del drawer, que conserva backdrop y Escape.
+- El drawer parte de la fila posterior a la altura real del Topbar, sin valores fijos de altura.
+- Los usuarios sin roles y los roles sin menús no renderizan una columna lateral vacía; `/app/inicio` diferencia ambos estados con mensajes claros y el Topbar muestra un estado no interactivo “Sin rol asignado” cuando corresponde.
+
+### Verificado
+
+- Browser: 1440 × 900, 1366 × 768, 1280 × 900, 1024 × 768, 768 × 900, 429 × 900 y 360 × 800; drawer abierto/cerrado, temas ORMAN/Día/Noche, selector local de roles, menú `PROPIETARIO → GESTIONAR PERSONAS → LISTAR PERSONAS`, icono `group`, recarga autenticada y ausencia de overflow horizontal.
+- Typecheck correcto; 18 archivos y 111 pruebas aprobadas.
+- Build de producción correcto: 316.73 kB iniciales brutos y 81.98 kB de transferencia estimada.
+
+## 2026-08-14 — Corrección responsive posterior del área privada
+
+### Corregido
+
+- El rail móvil del Sidebar dejó de depender de `-translate-x-full`, por lo que su botón de 44 px permanece dentro del viewport en tablet y mobile.
+- Sidebar y backdrop se anclan a la fila que comienza después del Topbar real; el drawer ya no depende de una altura fija ni invade el Topbar cuando este ocupa más de una fila.
+- La pantalla `/app/inicio` usa la altura disponible del Main y elimina el scroll residual de 20 px observado a 360 px.
+- El Hero conserva profundidad 3D, pero el logo oscila entre ±14° para no desaparecer de perfil.
+
+### Verificado
+
+- Browser: 1440 × 900, 1366 × 768, 1280 × 900, 1024 × 768, 768 × 900, 429 × 900 y 360 × 800; Sidebar abierto/cerrado, temas, perfil, roles reales, menú real e icono Material `group`.
+- Recarga autenticada correcta en `/app/inicio`, sin flash de landing ni avisos de consola.
+- Typecheck correcto; 18 archivos y 108 pruebas aprobadas; build correcto con 315.93 kB iniciales brutos y 81.74 kB estimados.
+
+## 2026-08-14 — Etapa 2 / Fase 05: Angular Material Icons en el área privada
+
+### Añadido
+
+- `@angular/material` 22.0.7 y su peer `@angular/cdk` 22.0.7, compatibles con Angular 22.0.7.
+- Carga única de Material Symbols Rounded desde la hoja oficial de Google Fonts.
+- Pruebas para iconos Material directos, fallback `apps` de icono ausente y continuidad del selector de rol.
+
+### Cambiado
+
+- Sidebar, Topbar y controles privados de abrir/cerrar ahora usan `MatIcon` sin migrar botones, selector, layout ni estilos Tailwind a Angular Material.
+- El Sidebar representa directamente `Menu.icono`; para `null`, vacío o solo espacios utiliza `apps`.
+- Se retiró el mapper visual Unicode del Sidebar.
+
+### Pendiente
+
+- Los valores legacy observados en fixtures históricos, como `users` y `reports`, deben actualizarse posteriormente en Backend/BD por nombres oficiales de Material Symbols, por ejemplo `group` y `assessment`. Angular no los traduce.
+- CRUD de Menús, selector visual de iconos y actualización de datos de `Menu.icono` permanecen fuera de alcance.
+
+### Verificado
+
+- Typecheck correcto; 18 archivos y 108 pruebas aprobadas.
+- Build de producción correcto: 316.40 kB iniciales brutos y 81.81 kB de transferencia estimada.
+- La revisión visual manual en navegador queda pendiente porque no había navegador disponible en esta sesión.
+
 ## 2026-08-13 — Etapa 2 / Fase 04: selector de rol y Sidebar dinámico
 
 ### Cambiado

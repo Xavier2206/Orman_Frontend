@@ -1,20 +1,24 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { RouterOutlet } from '@angular/router';
 
+import { AuthContextService } from '../../core/auth/auth-context.service';
 import { PrivateSidebarComponent } from './components/private-sidebar/private-sidebar.component';
 import { PrivateTopbarComponent } from './components/private-topbar/private-topbar.component';
 
 @Component({
   selector: 'app-private-layout',
-  imports: [RouterOutlet, PrivateTopbarComponent, PrivateSidebarComponent],
+  imports: [MatIconModule, RouterOutlet, PrivateTopbarComponent, PrivateSidebarComponent],
   templateUrl: './private-layout.component.html',
   styleUrl: './private-layout.component.css',
 })
 export class PrivateLayoutComponent {
   private readonly document = inject(DOCUMENT);
+  private readonly authContext = inject(AuthContextService);
   protected readonly isSidebarOpen = signal(false);
   protected readonly isSidebarCollapsed = signal(false);
+  protected readonly hasSidebarNavigation = computed(() => this.authContext.selectedMenus().length > 0);
 
   protected toggleSidebar(): void {
     this.isSidebarOpen.update((isOpen) => !isOpen);

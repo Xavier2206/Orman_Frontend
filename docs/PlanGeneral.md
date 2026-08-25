@@ -13,9 +13,10 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
 - **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
-- **Última fase completada:** Fase 04 de Etapa 2 — Selector de rol y Sidebar dinámico.
-- **Estado de la Fase 04:** `COMPLETADA`.
-- **Pruebas:** `18 archivos y 107 pruebas aprobadas`.
+- **Última fase completada:** Fase 05 de Etapa 2 — Angular Material Icons en el área privada.
+- **Estado de la Fase 05:** `COMPLETADA`.
+- **Pruebas:** `26 archivos y 133 pruebas aprobadas`.
+- **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
 ## Estados permitidos
@@ -79,8 +80,14 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 02 — Área privada base, layout autenticado y protección de rutas | `COMPLETADA` | Fase 01 completada; contrato de refresh y logout validado | [Documento](etapas/etapa-2/fases/02-area-privada-layout-rutas-protegidas.md) |
 | 03 — Contexto post-login real en Angular | `COMPLETADA` | Fases 01 y 02; contrato `GET /api/v1/auth/context` confirmado | [Documento](etapas/etapa-2/fases/03-contexto-post-login-angular.md) |
 | 04 — Selector de rol y Sidebar dinámico | `COMPLETADA` | Fase 03; contexto autenticado con roles | [Documento](etapas/etapa-2/fases/04-selector-rol-sidebar-dinamico.md) |
+| 05 — Angular Material Icons en el área privada | `COMPLETADA` | Fase 04; layout privado y `Menu.icono` disponibles | [Documento](etapas/etapa-2/fases/05-angular-material-icons.md) |
+| 06 — Módulo Gestionar Personas | `EN DESARROLLO` | Fases privadas disponibles; contrato Backend de Personas entregado | [Documento](etapas/etapa-2/fases/06-modulo-gestionar-personas.md) |
 
-La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales.
+La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
+
+La Fase 06 incorporó además el resumen remoto superior de Personas desde `GET /api/v1/personas/resumen`. Sus métricas no se derivan del listado, se cargan independientemente y solo se actualizan tras operaciones que modifican altas, estado o vínculo de Usuario. La página de Personas ahora orquesta componentes de modal separados, sin mover HTTP fuera de `PersonaApiService` ni introducir estado global.
+
+La auditoría técnica de la Fase 06 corrigió las acciones móviles, la gestión accesible de foco en modales y la notificación zoneless de fotografías, sin modificar contratos Backend ni ampliar funcionalidades.
 
 ### Fases futuras por definir
 

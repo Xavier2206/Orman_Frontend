@@ -24,8 +24,8 @@ Mejorar el encabezado público y el selector de temas, manteniendo sus funciones
 - `src/app/shared/components/theme-selector/theme-selector.component.ts`.
 - `src/app/shared/components/theme-selector/theme-selector.component.html`.
 - `src/app/shared/components/theme-selector/theme-selector.component.spec.ts`.
-- `src/app/features/public/landing/components/public-header/public-header.component.html`.
-- `src/app/features/public/landing/components/public-header/public-header.component.spec.ts`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.html`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.spec.ts`.
 - `src/app/layouts/public-layout/public-layout.component.html`.
 - `docs/README.md`.
 - `docs/CHANGELOG.md`.

@@ -1,15 +1,18 @@
 import { Component, inject, input, output } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 
-import { AuthContextMenu } from '../../../../core/auth/auth-context.model';
 import { AuthContextService } from '../../../../core/auth/auth-context.service';
 
 @Component({
   selector: 'app-private-sidebar',
+  imports: [MatIconModule],
   templateUrl: './private-sidebar.component.html',
   styleUrl: './private-sidebar.component.css',
 })
 export class PrivateSidebarComponent {
   private readonly authContext = inject(AuthContextService);
+  private readonly router = inject(Router);
 
   protected readonly context = this.authContext.context;
   protected readonly selectedRole = this.authContext.selectedRole;
@@ -21,21 +24,10 @@ export class PrivateSidebarComponent {
   readonly closed = output<void>();
   readonly toggleCollapsed = output<void>();
 
-  protected menuIcon(menu: AuthContextMenu): string {
-    switch (menu.icono?.toLowerCase()) {
-      case 'users':
-      case 'user':
-        return '♙';
-      case 'home':
-        return '⌂';
-      case 'report':
-      case 'reports':
-        return '▥';
-      case 'payments':
-      case 'payment':
-        return '$';
-      default:
-        return '▦';
-    }
+  protected navigate(enlace: string): void {
+    const normalized = enlace.trim().replace(/^\/+/, '');
+    if (!normalized) return;
+    void this.router.navigate(['/app', ...normalized.split('/')]);
+    this.closed.emit();
   }
 }

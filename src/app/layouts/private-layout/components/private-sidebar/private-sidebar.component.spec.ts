@@ -49,7 +49,7 @@ describe('PrivateSidebarComponent', () => {
           {
             codm: 1,
             nombre: 'GESTIONAR PERSONAS',
-            icono: 'users',
+            icono: 'group',
             procesos: [{ codp: 1, nombre: 'LISTAR PERSONAS', enlace: 'personas/listar' }],
           },
         ],
@@ -62,12 +62,33 @@ describe('PrivateSidebarComponent', () => {
     expect(content).toContain('LISTAR PERSONAS');
     expect(content).not.toContain('PROPIETARIO');
     expect(content).not.toContain('Dashboard');
+    expect(fixture.nativeElement.querySelector('mat-icon')?.textContent?.trim()).toBe('menu');
+    expect([...fixture.nativeElement.querySelectorAll('mat-icon')].map((icon: Element) => icon.textContent?.trim())).toContain('group');
+  });
+
+  it('should use the generic Material icon only when a menu icon is null or blank', () => {
+    renderContext([
+      {
+        codr: 1,
+        nombre: 'PROPIETARIO',
+        menus: [
+          { codm: 1, nombre: 'SIN ICONO', icono: null, procesos: [] },
+          { codm: 2, nombre: 'VACÍO', icono: '   ', procesos: [] },
+        ],
+      },
+    ]);
+
+    expect([...fixture.nativeElement.querySelectorAll('mat-icon')].map((icon: Element) => icon.textContent?.trim())).toEqual([
+      'menu',
+      'apps',
+      'apps',
+    ]);
   });
 
   it('should update locally to the selected role menus without another context request', () => {
     renderContext([
-      { codr: 1, nombre: 'PROPIETARIO', menus: [{ codm: 1, nombre: 'CONFIGURACIÓN', icono: 'home', procesos: [] }] },
-      { codr: 2, nombre: 'ADMINISTRADOR', menus: [{ codm: 2, nombre: 'REPORTES', icono: 'reports', procesos: [] }] },
+      { codr: 1, nombre: 'PROPIETARIO', menus: [{ codm: 1, nombre: 'CONFIGURACIÓN', icono: 'settings', procesos: [] }] },
+      { codr: 2, nombre: 'ADMINISTRADOR', menus: [{ codm: 2, nombre: 'REPORTES', icono: 'assessment', procesos: [] }] },
     ]);
     expect(fixture.nativeElement.textContent).toContain('CONFIGURACIÓN');
 

@@ -1,4 +1,5 @@
 import { Component, DestroyRef, ElementRef, HostListener, computed, inject, signal, viewChild } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -9,7 +10,7 @@ import { ThemeSelectorComponent } from '../../../../shared/components/theme-sele
 
 @Component({
   selector: 'app-private-topbar',
-  imports: [RouterLink, ThemeSelectorComponent],
+  imports: [MatIconModule, RouterLink, ThemeSelectorComponent],
   templateUrl: './private-topbar.component.html',
   styleUrl: './private-topbar.component.css',
 })

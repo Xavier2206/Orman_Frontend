@@ -63,6 +63,21 @@ describe('PrivateTopbarComponent', () => {
     expect(element.querySelector('[aria-label="Rol principal"]')).toBeNull();
     expect(element.querySelector('[aria-label="Notificaciones"]')).toBeTruthy();
     expect(element.querySelector('[aria-label="Abrir perfil"]')).toBeTruthy();
+    expect([...element.querySelectorAll('mat-icon')].map((icon) => icon.textContent?.trim())).toEqual(['notifications', 'person']);
+  });
+
+  it('should show a disabled no-role state instead of an empty selector', () => {
+    authenticate();
+    context.reloadContext().subscribe();
+    http.expectOne('/api/v1/auth/context').flush({
+      usuario: { login: 'Xavier_Ortega', codper: 10 },
+      persona: { nombre: 'Xavier', ap: 'Ortega', am: null, foto: null },
+      roles: [],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('#private-role-selector')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-disabled="true"]')?.textContent).toContain('Sin rol asignado');
   });
 
   it('should open and close the profile popover with the real login and neutral avatar', async () => {
@@ -77,6 +92,7 @@ describe('PrivateTopbarComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Xavier_Ortega');
     expect(fixture.nativeElement.querySelector('img.size-16')).toBeNull();
     expect(fixture.nativeElement.querySelector('[aria-label="Cerrar perfil"]')).toBeTruthy();
+    expect([...fixture.nativeElement.querySelectorAll('mat-icon')].map((icon: Element) => icon.textContent?.trim())).toContain('close');
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await Promise.resolve();

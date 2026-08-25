@@ -101,8 +101,8 @@ El contenido servido comienza con la declaración XML esperada. El servidor temp
 
 ## 13. Archivos modificados
 
-- `src/app/features/public/landing/components/public-header/public-header.component.html`.
-- `src/app/features/public/landing/components/public-header/public-header.component.spec.ts`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.html`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.spec.ts`.
 - `src/app/features/public/landing/components/hero-section/hero-section.component.html`.
 - `docs/README.md`.
 - `docs/CHANGELOG.md`.

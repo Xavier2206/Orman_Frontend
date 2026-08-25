@@ -1,0 +1,43 @@
+<div class="overlay">
+  <section
+    appPersonaModalFocus
+    class="modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="persona-user-title"
+    (escapePressed)="close()"
+  >
+    <header>
+      <h2 id="persona-user-title">Crear Usuario</h2>
+      <button type="button" aria-label="Cerrar" [disabled]="submitting()" (click)="close()">
+        ×
+      </button>
+    </header>
+    <p>{{ personaName() }}</p>
+    @if (feedback()) {
+      <p class="feedback" role="alert">{{ feedback() }}</p>
+    }
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label
+        >Login<input formControlName="login" /><small>{{ fieldErrors()['login'] }}</small></label
+      ><label
+        >Nueva contraseña<input
+          type="password"
+          formControlName="password"
+          minlength="8"
+          maxlength="72" /></label
+      ><label
+        >Confirmar contraseña<input
+          type="password"
+          formControlName="confirmation"
+          minlength="8"
+          maxlength="72"
+        /><small>{{ mismatch ? 'Las contraseñas no coinciden.' : '' }}</small></label
+      >
+      <footer>
+        <button type="button" [disabled]="submitting()" (click)="close()">Cancelar</button
+        ><button [disabled]="submitting()">Guardar</button>
+      </footer>
+    </form>
+  </section>
+</div>

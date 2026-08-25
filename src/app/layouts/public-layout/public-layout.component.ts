@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { PublicFooterComponent } from '../../features/public/landing/components/public-footer/public-footer.component';
-import { PublicHeaderComponent } from '../../features/public/landing/components/public-header/public-header.component';
+import { PublicFooterComponent } from './components/public-footer/public-footer.component';
+import { PublicHeaderComponent } from './components/public-header/public-header.component';
 
 @Component({
   selector: 'app-public-layout',

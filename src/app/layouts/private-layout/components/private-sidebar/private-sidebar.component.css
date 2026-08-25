@@ -4,7 +4,6 @@
 }
 
 .private-sidebar {
-  --private-topbar-height: 5rem;
   display: flex;
   flex-direction: column;
 }
@@ -48,28 +47,19 @@
 
 @media (max-width: 1023px) {
   .private-sidebar {
-    --private-topbar-height: 7rem;
-    transform: translateX(0);
-    width: 4.5rem;
-    padding-inline: 0.75rem;
-  }
-
-  .private-sidebar.-translate-x-full {
-    transform: translateX(0);
+    width: min(18rem, calc(100vw - 3rem));
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .private-sidebar.sidebar-mobile-expanded {
-    width: min(18rem, calc(100vw - 3rem));
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
   }
 
-  .private-sidebar:not(.sidebar-mobile-expanded) .sidebar-item-label,
-  .private-sidebar:not(.sidebar-mobile-expanded) .sidebar-processes,
-  .private-sidebar:not(.sidebar-mobile-expanded) h2 {
+  .sidebar-toggle {
     display: none;
-  }
-
-  .private-sidebar:not(.sidebar-mobile-expanded) .sidebar-item {
-    justify-content: center;
-    padding-inline: 0;
   }
 }

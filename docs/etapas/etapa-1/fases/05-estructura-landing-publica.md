@@ -125,15 +125,15 @@ El footer presenta ORMAN, “Gestión familiar de propiedades en alquiler”, lo
 - `src/app/layouts/public-layout/public-layout.component.ts`.
 - `src/app/layouts/public-layout/public-layout.component.html`.
 - `src/app/layouts/public-layout/public-layout.component.spec.ts`.
-- `src/app/features/public/landing/components/public-header/public-header.component.ts`.
-- `src/app/features/public/landing/components/public-header/public-header.component.html`.
-- `src/app/features/public/landing/components/public-header/public-header.component.spec.ts`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.ts`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.html`.
+- `src/app/layouts/public-layout/components/public-header/public-header.component.spec.ts`.
 - `src/app/features/public/landing/components/hero-section/hero-section.component.ts`.
 - `src/app/features/public/landing/components/hero-section/hero-section.component.html`.
 - `src/app/features/public/landing/components/hero-section/hero-section.component.spec.ts`.
-- `src/app/features/public/landing/components/public-footer/public-footer.component.ts`.
-- `src/app/features/public/landing/components/public-footer/public-footer.component.html`.
-- `src/app/features/public/landing/components/public-footer/public-footer.component.spec.ts`.
+- `src/app/layouts/public-layout/components/public-footer/public-footer.component.ts`.
+- `src/app/layouts/public-layout/components/public-footer/public-footer.component.html`.
+- `src/app/layouts/public-layout/components/public-footer/public-footer.component.spec.ts`.
 - `docs/etapas/etapa-1/fases/05-estructura-landing-publica.md`.
 - `docs/etapas/etapa-1/theory/05-layouts-y-composicion-angular.md`.
 

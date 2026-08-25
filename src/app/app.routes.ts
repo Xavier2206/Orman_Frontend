@@ -33,8 +33,15 @@ export const routes: Routes = [
       {
         path: 'inicio',
         loadComponent: () =>
-          import('./features/private/inicio/inicio.component').then(
+          import('./features/inicio/inicio.component').then(
             (component) => component.InicioComponent,
+          ),
+      },
+      {
+        path: 'personas/listar',
+        loadComponent: () =>
+          import('./features/personas/pages/personas-list/personas-list.component').then(
+            (component) => component.PersonasListComponent,
           ),
       },
     ],

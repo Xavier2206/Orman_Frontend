@@ -14,7 +14,7 @@
 .hero-logo-mark {
   transform-origin: center;
   transform-style: preserve-3d;
-  animation: hero-logo-turn-3d 8s linear infinite;
+  animation: hero-logo-turn-3d 6s ease-in-out infinite;
 }
 
 .hero-eyebrow {
@@ -84,12 +84,13 @@
 }
 
 @keyframes hero-logo-turn-3d {
-  from {
-    transform: rotateY(0deg);
+  from,
+  to {
+    transform: rotateY(-14deg);
   }
 
-  to {
-    transform: rotateY(360deg);
+  50% {
+    transform: rotateY(14deg);
   }
 }
 

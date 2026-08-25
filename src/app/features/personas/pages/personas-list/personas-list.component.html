@@ -1,0 +1,490 @@
+<section class="mx-auto w-full min-w-0 max-w-[1500px]" aria-labelledby="personas-title">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[.16em] text-accent-text">Gestión</p>
+      <h1 id="personas-title" class="mt-1 text-3xl font-bold text-content">Gestionar Personas</h1>
+    </div>
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-accent px-4 font-semibold text-accent-contrast shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-accent-hover hover:shadow-md active:scale-[.98] motion-reduce:transform-none motion-reduce:transition-none"
+      (click)="openCreate()"
+    >
+      <mat-icon aria-hidden="true">person_add</mat-icon>
+      Añadir Persona
+    </button>
+  </div>
+
+  <section class="mt-6" aria-label="Resumen de personas">
+    @if (resumenLoading()) {
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        @for (item of [1, 2, 3, 4]; track item) {
+          <div class="summary-card summary-skeleton">
+            <span></span>
+            <div><i></i><b></b></div>
+          </div>
+        }
+      </div>
+    } @else if (resumen(); as data) {
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <article class="summary-card summary-total min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">group</mat-icon></span>
+          <div>
+            <p>Total Personas</p>
+            <strong>{{ data.totalPersonas }}</strong>
+          </div>
+        </article>
+        <article class="summary-card summary-active min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">check_circle</mat-icon></span>
+          <div>
+            <p>Activas</p>
+            <strong>{{ data.activas }}</strong>
+          </div>
+        </article>
+        <article class="summary-card summary-inactive min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">remove_circle</mat-icon></span>
+          <div>
+            <p>Inactivas</p>
+            <strong>{{ data.inactivas }}</strong>
+          </div>
+        </article>
+        <article class="summary-card summary-user min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">lock</mat-icon></span>
+          <div>
+            <p>Con Usuario</p>
+            <strong>{{ data.conUsuario }}</strong>
+          </div>
+        </article>
+      </div>
+    } @else if (resumenError()) {
+      <p class="summary-error">No fue posible cargar el resumen de personas.</p>
+    }
+  </section>
+
+  <div
+    class="mt-7 grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-theme-border bg-surface p-4 shadow-sm md:grid-cols-2 md:items-end lg:grid-cols-[minmax(260px,2.2fr)_minmax(200px,1.2fr)_minmax(190px,1.1fr)_auto]"
+  >
+    <div class="md:col-span-2 lg:col-span-1">
+      <label for="persona-search">Buscar</label>
+      <div class="group relative mt-[.35rem]">
+        <mat-icon
+          class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted transition-colors duration-150 group-focus-within:text-accent-text motion-reduce:transition-none"
+          aria-hidden="true"
+          >search</mat-icon
+        >
+        <input
+          id="persona-search"
+          class="mt-0 pl-11"
+          type="search"
+          placeholder="Buscar personas..."
+          [value]="filters().q"
+          (input)="search($event)"
+        />
+      </div>
+    </div>
+    <div class="relative">
+      <label id="persona-type-label" for="persona-type-trigger">Tipo de persona</label>
+      <button
+        id="persona-type-trigger"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        aria-labelledby="persona-type-label"
+        aria-controls="persona-type-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'type'"
+        (click)="toggleFilter('type')"
+        (keydown)="handleFilterTriggerKeydown($event, 'type')"
+      >
+        <span class="whitespace-nowrap">{{ selectedFilterLabel('type') }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'type' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'type') {
+        <div
+          id="persona-type-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="persona-type-label"
+        >
+          @for (option of typeOptions; track option.value; let index = $index) {
+            <div
+              class="filter-option"
+              role="option"
+              tabindex="-1"
+              [attr.aria-selected]="option.value === selectedFilterValue('type')"
+              [class.filter-option-selected]="option.value === selectedFilterValue('type')"
+              [attr.data-filter]="'type'"
+              [attr.data-index]="index"
+              (click)="selectFilter('type', option.value)"
+              (keydown)="handleFilterOptionKeydown($event, 'type', index)"
+            >
+              {{ option.label }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <div class="relative">
+      <label id="persona-status-label" for="persona-status-trigger">Estado</label>
+      <button
+        id="persona-status-trigger"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        aria-labelledby="persona-status-label"
+        aria-controls="persona-status-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'status'"
+        (click)="toggleFilter('status')"
+        (keydown)="handleFilterTriggerKeydown($event, 'status')"
+      >
+        <span class="whitespace-nowrap">{{ selectedFilterLabel('status') }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'status' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'status') {
+        <div
+          id="persona-status-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="persona-status-label"
+        >
+          @for (option of statusOptions; track option.value; let index = $index) {
+            <div
+              class="filter-option"
+              role="option"
+              tabindex="-1"
+              [attr.aria-selected]="option.value === selectedFilterValue('status')"
+              [class.filter-option-selected]="option.value === selectedFilterValue('status')"
+              [attr.data-filter]="'status'"
+              [attr.data-index]="index"
+              (click)="selectFilter('status', option.value)"
+              (keydown)="handleFilterOptionKeydown($event, 'status', index)"
+            >
+              {{ option.label }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <button
+      type="button"
+      class="page-button w-full px-[.8rem] py-[.35rem] md:col-span-2 md:w-auto md:justify-self-end lg:col-span-1"
+      [disabled]="!hasFilters()"
+      (click)="clearFilters()"
+    >
+      <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+      Limpiar
+    </button>
+  </div>
+
+  @if (error()) {
+    <p
+      class="mt-5 rounded-lg border border-danger-border bg-danger-bg p-4 text-danger-text"
+      role="alert"
+    >
+      {{ error() }}
+    </p>
+  }
+
+  @if (loading()) {
+    <div class="grid min-h-72 place-items-center">
+      <span class="person-spinner" role="status" aria-label="Cargando personas"></span>
+    </div>
+  } @else if (page(); as result) {
+    @if (result.totalElements === 0) {
+      <div class="mt-6 rounded-xl border border-theme-border bg-surface p-10 text-center">
+        <mat-icon class="text-3xl text-accent-text" aria-hidden="true">group_off</mat-icon>
+        @if (hasFilters()) {
+          <h2 class="mt-3 text-lg font-bold text-content">No encontramos personas</h2>
+          <p class="mt-[.35rem] text-muted">
+            Prueba modificando los filtros o limpiando la búsqueda.
+          </p>
+          <button
+            type="button"
+            class="page-button mt-5 px-[.8rem] py-[.35rem]"
+            (click)="clearFilters()"
+          >
+            <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+            Limpiar filtros
+          </button>
+        } @else {
+          <h2 class="mt-3 text-lg font-bold text-content">No hay personas registradas</h2>
+          <p class="mt-[.35rem] text-muted">
+            Cuando se registren personas, aparecerán en este listado.
+          </p>
+        }
+      </div>
+    } @else {
+      <div
+        class="mt-6 grid min-w-0 gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]"
+      >
+        @for (persona of result.content; track persona.codper) {
+          <article
+            class="persona-card relative min-w-0 rounded-xl border border-theme-border bg-card p-5 shadow-sm"
+          >
+            <div class="flex gap-4">
+              <div
+                class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-surface text-lg font-bold text-accent-text"
+              >
+                @if (photoUrl(persona); as source) {
+                  <img
+                    class="size-full object-cover"
+                    [src]="source"
+                    [alt]="'Fotografía de ' + fullName(persona)"
+                  />
+                } @else {
+                  {{ initials(persona) }}
+                }
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-[1.05rem] leading-[1.3] font-bold text-content">
+                  {{ fullName(persona) }}
+                </h2>
+                <p class="mt-[.35rem] flex items-center gap-[.35rem] text-sm text-muted">
+                  <mat-icon class="text-base" aria-hidden="true">phone</mat-icon
+                  >{{ persona.telefono }}
+                </p>
+                <div class="mt-3 flex flex-wrap gap-[.4rem]">
+                  <span
+                    class="inline-flex min-h-[1.55rem] items-center rounded-full border border-theme-border bg-surface px-[.55rem] py-[.1rem] text-xs font-[650] leading-[1.2] text-muted"
+                    >{{ typeName(persona.tipoPersona) }}</span
+                  >
+                  <span
+                    class="inline-flex min-h-[1.55rem] items-center rounded-full border border-theme-border px-[.55rem] py-[.1rem] text-xs font-[650] leading-[1.2]"
+                    [class.persona-status-active]="persona.estado === 1"
+                    [class.persona-status-inactive]="persona.estado === 0"
+                    >{{ persona.estado === 1 ? 'Activa' : 'Inactiva' }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="actions-divider mt-4 hidden justify-end gap-1 pt-3 sm:flex">
+              @if (persona.acciones.puedeEditar) {
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-edit"
+                  [attr.aria-label]="'Editar a ' + fullName(persona)"
+                  (click)="openEdit(persona)"
+                >
+                  <mat-icon aria-hidden="true">edit</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Editar</span>
+                </button>
+              }
+              <button
+                type="button"
+                class="action tooltip-trigger action-detail"
+                [attr.aria-label]="'Ver detalle de ' + fullName(persona)"
+                (click)="openDetail(persona)"
+              >
+                <mat-icon aria-hidden="true">description</mat-icon>
+                <span class="action-tooltip" role="tooltip">Ver detalle</span>
+              </button>
+              @if (persona.estado === 1 && persona.acciones.puedeDesactivar) {
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-deactivate"
+                  [attr.aria-label]="'Dar de baja a ' + fullName(persona)"
+                  (click)="openConfirm(persona)"
+                >
+                  <mat-icon aria-hidden="true">person_off</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Desactivar</span>
+                </button>
+              }
+              @if (persona.estado === 0 && persona.acciones.puedeActivar) {
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-activate"
+                  [attr.aria-label]="'Reactivar a ' + fullName(persona)"
+                  (click)="openConfirm(persona)"
+                >
+                  <mat-icon aria-hidden="true">restore</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Reactivar</span>
+                </button>
+              }
+              @if (!persona.usuario && persona.acciones.puedeCrearUsuario) {
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-user-missing"
+                  [attr.aria-label]="
+                    'Sin usuario vinculado. Crear usuario para ' + fullName(persona)
+                  "
+                  (click)="openUser(persona)"
+                >
+                  <mat-icon aria-hidden="true">lock_open</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Sin usuario vinculado</span>
+                </button>
+              }
+              @if (persona.usuario) {
+                <span class="tooltip-trigger">
+                  <button
+                    type="button"
+                    class="action action-user-linked"
+                    [attr.aria-label]="
+                      'Usuario vinculado. Cambiar contraseña de ' + fullName(persona)
+                    "
+                    [disabled]="!persona.acciones.puedeCambiarPassword"
+                    (click)="openPassword(persona)"
+                  >
+                    <mat-icon aria-hidden="true">lock</mat-icon>
+                  </button>
+                  <span class="action-tooltip" role="tooltip">Usuario vinculado</span>
+                </span>
+              }
+            </div>
+
+            <div class="actions-divider relative mt-4 flex justify-end pt-3 sm:hidden">
+              <button
+                type="button"
+                class="action tooltip-trigger"
+                [attr.aria-label]="'Acciones para ' + fullName(persona)"
+                [attr.aria-expanded]="mobileMenu() === persona.codper"
+                (click)="toggleMobileMenu(persona.codper)"
+              >
+                <mat-icon aria-hidden="true">more_vert</mat-icon>
+                <span class="action-tooltip" role="tooltip">Acciones</span>
+              </button>
+              @if (mobileMenu() === persona.codper) {
+                <div class="mobile-actions" role="menu">
+                  @if (persona.acciones.puedeEditar) {
+                    <button
+                      type="button"
+                      class="menu-action"
+                      role="menuitem"
+                      (click)="openEdit(persona)"
+                    >
+                      <mat-icon aria-hidden="true">edit</mat-icon>Editar
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="menu-action"
+                    role="menuitem"
+                    (click)="openDetail(persona)"
+                  >
+                    <mat-icon aria-hidden="true">description</mat-icon>Detalle
+                  </button>
+                  @if (persona.estado === 1 && persona.acciones.puedeDesactivar) {
+                    <button
+                      type="button"
+                      class="menu-action menu-action-danger"
+                      role="menuitem"
+                      (click)="openConfirm(persona)"
+                    >
+                      <mat-icon aria-hidden="true">person_off</mat-icon>Dar de baja
+                    </button>
+                  }
+                  @if (persona.estado === 0 && persona.acciones.puedeActivar) {
+                    <button
+                      type="button"
+                      class="menu-action menu-action-success"
+                      role="menuitem"
+                      (click)="openConfirm(persona)"
+                    >
+                      <mat-icon aria-hidden="true">restore</mat-icon>Reactivar
+                    </button>
+                  }
+                  @if (!persona.usuario && persona.acciones.puedeCrearUsuario) {
+                    <button
+                      type="button"
+                      class="menu-action"
+                      role="menuitem"
+                      (click)="openUser(persona)"
+                    >
+                      <mat-icon aria-hidden="true">lock_open</mat-icon>Crear usuario
+                    </button>
+                  }
+                  @if (persona.usuario && persona.acciones.puedeCambiarPassword) {
+                    <button
+                      type="button"
+                      class="menu-action"
+                      role="menuitem"
+                      (click)="openPassword(persona)"
+                    >
+                      <mat-icon aria-hidden="true">lock</mat-icon>Cambiar contraseña
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+
+      <nav
+        aria-label="Paginación de personas"
+        class="pagination-bar mt-7 flex min-w-0 flex-col gap-3 rounded-xl border border-theme-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <p class="text-muted">
+          <span>{{ result.totalElements }} personas</span
+          ><span class="font-bold text-content"
+            >· Página {{ result.page + 1 }} de {{ result.totalPages }}</span
+          >
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="page-button flex-1 sm:flex-none"
+            [disabled]="result.first"
+            (click)="changePage(result.page - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="page-button flex-1 sm:flex-none"
+            [disabled]="result.last"
+            (click)="changePage(result.page + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      </nav>
+    }
+  }
+</section>
+
+@if (modal() === 'form') {
+  <app-persona-form-modal
+    [persona]="selected()"
+    [photoUrl]="selected() ? photoUrl(selected()!) : null"
+    [submitting]="submitting()"
+    [feedback]="feedback()"
+    [fieldErrors]="fieldErrors()"
+    (closed)="closeModal()"
+    (saved)="submitPersona($event)"
+    (photoRemoved)="removePhoto()"
+  />
+}
+@if (modal() === 'detail' && selected(); as persona) {
+  <app-persona-detail-modal [persona]="persona" (closed)="closeModal()" />
+}
+@if (modal() === 'confirm' && selected(); as persona) {
+  <app-persona-status-confirm-modal
+    [operation]="persona.estado === 1 ? 'deactivate' : 'activate'"
+    [submitting]="submitting()"
+    (closed)="closeModal()"
+    (confirmed)="submitStatus()"
+  />
+}
+@if (modal() === 'user' && selected(); as persona) {
+  <app-persona-user-create-modal
+    [personaName]="fullName(persona)"
+    [submitting]="submitting()"
+    [feedback]="feedback()"
+    [fieldErrors]="fieldErrors()"
+    (closed)="closeModal()"
+    (submitted)="submitUser($event)"
+  />
+}
+@if (modal() === 'password' && selected()?.usuario; as user) {
+  <app-persona-password-modal
+    [login]="user.login"
+    [submitting]="submitting()"
+    [feedback]="feedback()"
+    [fieldErrors]="fieldErrors()"
+    (closed)="closeModal()"
+    (submitted)="submitPassword($event)"
+  />
+}

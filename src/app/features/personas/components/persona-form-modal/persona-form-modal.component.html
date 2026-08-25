@@ -1,0 +1,75 @@
+<div class="fixed inset-0 z-50 grid place-items-center bg-overlay p-3 print:hidden">
+  <section
+    appPersonaModalFocus
+    class="modal-panel max-h-[94dvh] w-full max-w-2xl"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="persona-form-title"
+    (escapePressed)="close()"
+  >
+    <header>
+      <div>
+        <h2 id="persona-form-title">{{ persona() ? 'Editar Persona' : 'Añadir Persona' }}</h2>
+        <p>
+          {{
+            persona()
+              ? 'Actualice los datos de la persona seleccionada.'
+              : 'Ingrese los datos para registrar una nueva persona en ORMAN.'
+          }}
+        </p>
+      </div>
+      <button type="button" aria-label="Cerrar" [disabled]="submitting()" (click)="close()">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+    @if (feedback() || photoError()) {
+      <p class="feedback" role="alert">{{ feedback() ?? photoError() }}</p>
+    }
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="body">
+        <app-persona-photo-field
+          [imageUrl]="photoUrl()"
+          [initials]="initials()"
+          [disabled]="submitting()"
+          [canRemove]="!!persona()?.foto"
+          (fileSelected)="selectPhoto($event)"
+          (removeRequested)="removePhoto()"
+          (validationError)="setPhotoError($event)"
+        ></app-persona-photo-field>
+        <div class="fields">
+          <label
+            >CI<input formControlName="ci" maxlength="20" /><small>{{
+              fieldErrors()['ci']
+            }}</small></label
+          ><label
+            >Tipo de Persona<select formControlName="tipoPersona">
+              <option value="A">Administrativo</option>
+              <option value="I">Inquilino</option>
+            </select></label
+          ><label>Nombre<input formControlName="nombre" maxlength="60" /></label
+          ><label>Apellido paterno<input formControlName="ap" /></label
+          ><label>Apellido materno<input formControlName="am" /></label
+          ><label
+            >Género<select formControlName="genero">
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select></label
+          ><label
+            >Teléfono<input formControlName="telefono" maxlength="20" /><small>{{
+              fieldErrors()['telefono']
+            }}</small></label
+          ><label
+            >Correo<input type="email" formControlName="correo" maxlength="100" /><small>{{
+              fieldErrors()['correo']
+            }}</small></label
+          >
+        </div>
+      </div>
+      <footer>
+        <button type="button" class="page-button" [disabled]="submitting()" (click)="close()">
+          Cancelar</button
+        ><button [disabled]="submitting()">{{ persona() ? 'Guardar cambios' : 'Guardar' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

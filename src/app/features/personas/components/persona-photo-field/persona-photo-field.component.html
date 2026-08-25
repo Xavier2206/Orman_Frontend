@@ -1,0 +1,29 @@
+<div class="photo-field">
+  <div class="avatar">
+    @if (preview(); as source) {
+      <img [src]="source" alt="Vista previa de la fotografía" />
+    } @else if (imageUrl(); as source) {
+      <img [src]="source" alt="Fotografía de la persona" />
+    } @else {
+      {{ initials() }}
+    }
+    <label for="persona-photo" aria-label="Cambiar fotografía"
+      ><mat-icon aria-hidden="true">photo_camera</mat-icon></label
+    >
+  </div>
+  <input
+    id="persona-photo"
+    class="sr-only"
+    type="file"
+    accept="image/jpeg,image/png"
+    [disabled]="disabled()"
+    (change)="select($event)"
+  /><label class="change" for="persona-photo"
+    ><mat-icon aria-hidden="true">photo_camera</mat-icon>Cambiar fotografía</label
+  >
+  @if (canRemove() || preview()) {
+    <button type="button" class="remove" [disabled]="disabled()" (click)="remove()">
+      Quitar fotografía
+    </button>
+  }
+</div>

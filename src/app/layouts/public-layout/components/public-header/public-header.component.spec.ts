@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
-import { AuthService } from '../../../../../core/auth/auth.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { PublicHeaderComponent } from './public-header.component';
 
 describe('PublicHeaderComponent', () => {

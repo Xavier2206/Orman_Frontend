@@ -3,10 +3,10 @@ import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 
-import { AuthService } from '../../../../../core/auth/auth.service';
-import { LoginModalComponent } from '../../../../auth/login-modal/login-modal.component';
-import { QuickMenuComponent } from '../../../../auth/quick-menu/quick-menu.component';
-import { ThemeSelectorComponent } from '../../../../../shared/components/theme-selector/theme-selector.component';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { LoginModalComponent } from '../../../../features/auth/login-modal/login-modal.component';
+import { QuickMenuComponent } from '../../../../features/auth/quick-menu/quick-menu.component';
+import { ThemeSelectorComponent } from '../../../../shared/components/theme-selector/theme-selector.component';
 
 @Component({
   selector: 'app-public-header',
