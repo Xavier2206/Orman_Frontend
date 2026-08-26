@@ -1,60 +1,201 @@
 <header class="border-b border-theme-border bg-surface text-content shadow-sm">
-  <div class="private-topbar-inner flex min-h-20 w-full flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-8">
-    <a routerLink="/app/inicio" class="flex min-h-12 min-w-0 items-center gap-2 rounded-lg" aria-label="Ir al inicio privado de ORMAN">
+  <div class="flex min-h-16 w-full items-center gap-2 px-3 sm:px-4 lg:min-h-20 lg:gap-3 lg:px-8">
+    @if (hasSidebarNavigation()) {
+      <button
+        type="button"
+        class="grid size-11 shrink-0 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:hidden"
+        aria-label="Abrir menú lateral"
+        aria-controls="private-sidebar"
+        [attr.aria-expanded]="isSidebarOpen()"
+        (click)="sidebarRequested.emit()"
+      >
+        <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+          >menu</mat-icon
+        >
+      </button>
+    }
+
+    <a
+      routerLink="/app/inicio"
+      class="flex min-w-0 shrink items-center gap-2 rounded-lg"
+      aria-label="Ir al inicio privado de ORMAN"
+    >
       <img class="h-10 w-auto shrink-0" src="/images/brand/orman-logo.svg" alt="ORMAN" />
       <span class="min-w-0">
         <span class="block text-sm font-bold tracking-[0.18em] sm:text-base">ORMAN</span>
-        <span class="hidden text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted sm:block">GESTIÓN DE PROPIEDADES</span>
+        <span
+          class="hidden text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted min-[767px]:block"
+          >GESTIÓN DE PROPIEDADES</span
+        >
+        <span
+          class="mt-0.5 block whitespace-nowrap text-[0.65rem] font-medium leading-none text-muted min-[767px]:hidden"
+          aria-label="Fecha actual abreviada"
+          >{{ shortCurrentDate }}</span
+        >
       </span>
     </a>
 
-    <p class="private-topbar-date order-last basis-full text-center text-sm font-medium text-muted lg:order-none lg:flex-1 lg:basis-auto" aria-label="Fecha actual">{{ currentDate }}</p>
+    <p
+      class="private-topbar-date hidden min-w-0 whitespace-nowrap text-center text-sm font-medium text-muted min-[767px]:block min-[767px]:flex-1"
+      aria-label="Fecha actual"
+    >
+      {{ currentDate }}
+    </p>
 
-    <div class="ml-auto flex items-center gap-1 sm:gap-2">
-      <app-theme-selector />
+    <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+      <div class="lg:hidden">
+        <app-theme-selector [compact]="true" />
+      </div>
+      <div class="hidden lg:block">
+        <app-theme-selector />
+      </div>
+
       @if (roles().length > 0) {
-        <label class="hidden items-center gap-2 rounded-lg border border-theme-border px-2 py-1 text-sm text-muted xl:flex" for="private-role-selector">
+        <label
+          class="hidden items-center gap-2 rounded-lg border border-theme-border px-2 py-1 text-sm text-muted xl:flex"
+          for="private-role-selector-desktop"
+        >
           <span>Rol:</span>
-          <select id="private-role-selector" class="max-w-40 bg-transparent py-1 font-medium text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Rol activo" [value]="selectedRoleId()" (change)="selectRole($event)">
+          <select
+            id="private-role-selector-desktop"
+            class="max-w-40 bg-transparent py-1 font-medium text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            aria-label="Rol activo"
+            (change)="selectRole($event)"
+          >
             @for (role of roles(); track role.codr) {
-              <option [value]="role.codr">{{ role.nombre }}</option>
+              <option [value]="role.codr" [selected]="role.codr === selectedRoleId()">
+                {{ role.nombre }}
+              </option>
             }
           </select>
         </label>
       } @else {
-        <span class="hidden items-center rounded-lg border border-theme-border px-3 py-2 text-sm text-muted xl:inline-flex" aria-disabled="true">Sin rol asignado</span>
+        <span
+          class="hidden items-center rounded-lg border border-theme-border px-3 py-2 text-sm text-muted xl:inline-flex"
+          aria-disabled="true"
+          >Sin rol asignado</span
+        >
       }
-      <button type="button" class="grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Notificaciones" title="Notificaciones" aria-disabled="true">
-        <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true">notifications</mat-icon>
-      </button>
+
       <div class="relative">
-        <button #profileButton type="button" class="grid size-11 place-items-center rounded-lg border border-accent bg-card text-accent-text transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Abrir perfil" aria-controls="private-profile-popover" [attr.aria-expanded]="isProfileOpen()" (click)="toggleProfile()">
-          <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true">person</mat-icon>
+        <button
+          #profileButton
+          type="button"
+          class="private-profile-trigger flex size-11 items-center justify-center rounded-lg border border-theme-border bg-card text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus xl:w-auto xl:min-w-11 xl:gap-2 xl:px-3"
+          [class.private-profile-trigger-open]="isProfileOpen()"
+          aria-label="Abrir perfil"
+          aria-haspopup="dialog"
+          aria-controls="private-profile-popover"
+          [attr.aria-expanded]="isProfileOpen()"
+          (click)="toggleProfile()"
+        >
+          @if (profileImageUrl(); as imageUrl) {
+            <img
+              class="size-7 rounded-full border border-theme-border object-cover"
+              [src]="imageUrl"
+              alt=""
+              (error)="useProfileFallback()"
+            />
+          } @else {
+            <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+              >person</mat-icon
+            >
+          }
+          <span
+            class="hidden max-w-32 truncate text-sm font-semibold xl:block"
+            [title]="shortName()"
+            >{{ shortName() }}</span
+          >
+          <mat-icon
+            class="material-symbols-rounded hidden size-4 leading-none xl:block"
+            aria-hidden="true"
+            >expand_more</mat-icon
+          >
         </button>
+
         @if (isProfileOpen()) {
-          <section id="private-profile-popover" class="private-profile-popover absolute right-0 top-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-theme-border bg-card p-5 text-content shadow-lg" role="dialog" aria-labelledby="private-profile-title">
-            <button type="button" class="absolute right-3 top-3 grid size-10 place-items-center rounded-lg text-muted hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Cerrar perfil" (click)="closeProfile()">
-              <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true">close</mat-icon>
+          <section
+            id="private-profile-popover"
+            class="private-profile-popover absolute right-0 top-[calc(100%+0.75rem)] z-30 w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-theme-border bg-card p-5 text-content shadow-lg"
+            role="dialog"
+            aria-labelledby="private-profile-title"
+          >
+            <button
+              type="button"
+              class="absolute right-3 top-3 grid size-10 place-items-center rounded-lg text-muted hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              aria-label="Cerrar perfil"
+              (click)="closeProfile()"
+            >
+              <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+                >close</mat-icon
+              >
             </button>
             <h2 id="private-profile-title" class="pr-10 text-lg font-bold">Perfil</h2>
             <div class="mt-5 flex flex-col items-center text-center">
               @if (profileImageUrl(); as imageUrl) {
-                <img class="size-16 rounded-full border border-accent object-cover" [src]="imageUrl" [alt]="visibleName() ?? loginName() ?? 'Foto de perfil'" (error)="useProfileFallback()" />
+                <img
+                  class="size-16 rounded-full border border-accent object-cover"
+                  [src]="imageUrl"
+                  [alt]="visibleName() ?? loginName() ?? 'Foto de perfil'"
+                  (error)="useProfileFallback()"
+                />
               } @else {
-                <div class="grid size-16 place-items-center rounded-full border border-accent bg-surface text-accent" aria-hidden="true">
+                <div
+                  class="grid size-16 place-items-center rounded-full border border-accent bg-surface text-accent"
+                  aria-hidden="true"
+                >
                   <mat-icon class="material-symbols-rounded size-8 leading-none">person</mat-icon>
                 </div>
               }
-              <p class="mt-3 max-w-full truncate font-semibold" [title]="visibleName() ?? loginName() ?? 'Usuario'">{{ visibleName() ?? loginName() ?? 'Usuario' }}</p>
-              @if (loginName()) { <p class="mt-1 max-w-full truncate text-sm text-muted" [title]="loginName()">{{ loginName() }}</p> }
-              <button type="button" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 font-semibold text-accent-contrast shadow-md hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60" [disabled]="isLoggingOut()" (click)="logout()">
-                {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
-              </button>
+              <p
+                class="mt-3 max-w-full truncate font-semibold"
+                [title]="visibleName() ?? loginName() ?? 'Usuario'"
+              >
+                {{ visibleName() ?? loginName() ?? 'Usuario' }}
+              </p>
+              @if (loginName()) {
+                <p class="mt-1 max-w-full truncate text-sm text-muted" [title]="loginName()">
+                  {{ loginName() }}
+                </p>
+              }
             </div>
+
+            <div class="mt-5 border-t border-theme-border pt-4 xl:hidden">
+              <p class="text-sm font-medium text-muted">Rol activo</p>
+              @if (roles().length > 0) {
+                <label class="mt-2 block" for="private-role-selector-profile">
+                  <span class="sr-only">Rol activo</span>
+                  <select
+                    id="private-role-selector-profile"
+                    class="min-h-11 w-full rounded-lg border border-theme-border bg-surface px-3 text-sm font-medium text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    (change)="selectRole($event)"
+                  >
+                    @for (role of roles(); track role.codr) {
+                      <option [value]="role.codr" [selected]="role.codr === selectedRoleId()">
+                        {{ role.nombre }}
+                      </option>
+                    }
+                  </select>
+                </label>
+              } @else {
+                <p class="mt-2 text-sm text-muted">Sin rol asignado</p>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 font-semibold text-accent-contrast shadow-md hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60"
+              [disabled]="isLoggingOut()"
+              (click)="logout()"
+            >
+              {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+            </button>
           </section>
         }
       </div>
     </div>
   </div>
-  @if (logoutError()) { <p class="sr-only" role="alert">{{ logoutError() }}</p> }
+  @if (logoutError()) {
+    <p class="sr-only" role="alert">{{ logoutError() }}</p>
+  }
 </header>

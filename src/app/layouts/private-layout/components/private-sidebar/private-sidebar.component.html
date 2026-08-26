@@ -1,47 +1,126 @@
-<nav id="private-sidebar" aria-label="Menú privado" class="private-sidebar absolute inset-y-0 left-0 z-20 h-full w-72 border-r border-theme-border bg-surface p-5 shadow-lg transition-[transform,width] duration-200 motion-reduce:transition-none lg:static lg:flex lg:h-full lg:min-h-0 lg:shadow-none" [class.sidebar-collapsed]="collapsed()" [class.sidebar-mobile-expanded]="open()">
-  <button type="button" class="sidebar-toggle mb-6 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label="Abrir o cerrar menú lateral" aria-controls="private-sidebar" [attr.aria-expanded]="open()" (click)="toggleCollapsed.emit()">
-    <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true">menu</mat-icon>
-  </button>
-  <div class="flex items-center justify-between lg:block">
-    <h2 class="text-sm font-semibold uppercase tracking-[0.16em] text-muted">MENÚ</h2>
+<nav
+  id="private-sidebar"
+  aria-label="Menú privado"
+  class="private-sidebar absolute inset-y-0 left-0 z-20 h-full w-72 border-r border-theme-border bg-surface p-5 shadow-lg transition-[transform,width,padding] duration-200 motion-reduce:transition-none lg:static lg:flex lg:h-full lg:min-h-0 lg:shadow-none"
+  [class.sidebar-collapsed]="isCollapsed()"
+  [class.sidebar-mobile-expanded]="open()"
+>
+  <div class="flex items-center justify-between">
+    @if (!isCollapsed()) {
+      <h2 class="text-sm font-semibold uppercase tracking-[0.16em] text-muted">MENÚ</h2>
+    }
+    <button
+      type="button"
+      class="sidebar-toggle hidden size-10 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors duration-150 hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none lg:grid"
+      [attr.aria-label]="isCollapsed() ? 'Expandir menú lateral' : 'Colapsar menú lateral'"
+      [attr.aria-expanded]="!isCollapsed()"
+      (click)="toggleCollapsed()"
+    >
+      <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+        >menu</mat-icon
+      >
+    </button>
     @if (open()) {
-      <button type="button" class="grid size-10 place-items-center rounded-lg border border-theme-border lg:hidden" aria-label="Cerrar menú" (click)="closed.emit()">
-        <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true">close</mat-icon>
+      <button
+        type="button"
+        class="grid size-10 place-items-center rounded-lg border border-theme-border lg:hidden"
+        aria-label="Cerrar menú"
+        (click)="closed.emit()"
+      >
+        <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+          >close</mat-icon
+        >
       </button>
     }
   </div>
-  <div class="mt-6 min-h-0 flex-1 overflow-y-auto">
+
+  <div class="mt-6 min-h-0 flex-1 overflow-y-auto" (scroll)="closeFlyoutOnScroll()">
     @if (isLoading()) {
-      <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted" role="status">Cargando navegación…</p>
+      <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted" role="status">
+        Cargando navegación…
+      </p>
     } @else if (contextError()) {
-      <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted" role="alert">{{ contextError() }}</p>
+      <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted" role="alert">
+        {{ contextError() }}
+      </p>
     } @else if (context()) {
       @if (!selectedRole()) {
-        <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">No hay opciones de navegación disponibles para esta cuenta.</p>
+        <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">
+          No hay opciones de navegación disponibles para esta cuenta.
+        </p>
       } @else if (selectedMenus().length === 0) {
-        <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">Sin menús disponibles.</p>
+        <p class="rounded-lg border border-theme-border bg-card p-4 text-sm text-muted">
+          Sin menús disponibles.
+        </p>
       } @else {
         <ul aria-label="Navegación del rol seleccionado">
           @for (menu of selectedMenus(); track menu.codm) {
-            <li class="mb-2">
-              <div class="sidebar-item flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-content" [attr.title]="collapsed() ? menu.nombre : null">
-                <span class="sidebar-item-icon grid size-7 shrink-0 place-items-center rounded-md border border-theme-border" aria-hidden="true">
-                  <mat-icon class="material-symbols-rounded size-5 leading-none">{{ menu.icono?.trim() || 'apps' }}</mat-icon>
-                </span>
-                <span class="sidebar-item-label truncate">{{ menu.nombre }}</span>
-              </div>
-              @if (menu.procesos.length > 0) {
-                <ul class="sidebar-processes ml-10 mt-1 space-y-1" [class.hidden]="collapsed()">
-                  @for (process of menu.procesos; track process.codp) {
-                    <li>
-                      @if (process.enlace?.trim()) {
-                        <button type="button" class="w-full truncate rounded-md px-2 py-1 text-left text-xs text-muted transition-colors hover:bg-card hover:text-content" [title]="process.enlace" (click)="navigate(process.enlace)">{{ process.nombre }}</button>
-                      } @else {
-                        <span class="block truncate px-2 py-1 text-xs text-muted" [title]="process.nombre">{{ process.nombre }}</span>
-                      }
-                    </li>
-                  }
-                </ul>
+            <li
+              class="sidebar-menu mb-4 last:mb-0"
+              routerLinkActive="sidebar-menu-has-active-process"
+              [routerLinkActiveOptions]="{ exact: true }"
+            >
+              @if (isCollapsed()) {
+                <button
+                  #menuTrigger
+                  type="button"
+                  class="sidebar-menu-trigger grid min-h-11 w-full place-items-center rounded-lg text-muted transition-colors duration-150 hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                  [attr.aria-label]="menu.nombre"
+                  [attr.aria-controls]="flyoutId(menu.codm)"
+                  [attr.aria-expanded]="activeFlyoutMenuId() === menu.codm"
+                  (mouseenter)="openFlyout(menu.codm, menuTrigger)"
+                  (mouseleave)="scheduleFlyoutClose()"
+                  (focus)="openFlyoutFromFocus(menu.codm, menuTrigger)"
+                  (focusout)="handleFlyoutFocusOut()"
+                  (click)="openFlyout(menu.codm, menuTrigger)"
+                >
+                  <mat-icon
+                    class="material-symbols-rounded size-5 leading-none"
+                    aria-hidden="true"
+                    >{{ menu.icono?.trim() || 'apps' }}</mat-icon
+                  >
+                </button>
+              } @else {
+                <div
+                  class="sidebar-item flex min-h-10 w-full items-center gap-3 rounded-lg px-2 text-sm font-medium text-content"
+                >
+                  <span
+                    class="sidebar-item-icon grid size-5 shrink-0 place-items-center text-muted"
+                    aria-hidden="true"
+                  >
+                    <mat-icon class="material-symbols-rounded size-5 leading-none">{{
+                      menu.icono?.trim() || 'apps'
+                    }}</mat-icon>
+                  </span>
+                  <span class="sidebar-item-label truncate">{{ menu.nombre }}</span>
+                </div>
+                @if (menu.procesos.length > 0) {
+                  <ul class="sidebar-processes ml-7 mt-1 space-y-1">
+                    @for (process of menu.procesos; track process.codp) {
+                      <li>
+                        @if (process.enlace?.trim()) {
+                          <a
+                            class="sidebar-process flex w-full items-center truncate rounded-md px-3 text-left text-[13px] font-medium text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                            [routerLink]="processCommands(process.enlace)"
+                            routerLinkActive="sidebar-process-active"
+                            [routerLinkActiveOptions]="{ exact: true }"
+                            ariaCurrentWhenActive="page"
+                            [title]="process.enlace"
+                            (click)="closeAfterNavigation()"
+                          >
+                            {{ process.nombre }}
+                          </a>
+                        } @else {
+                          <span
+                            class="block min-h-9 truncate px-3 py-2 text-[13px] text-muted"
+                            [title]="process.nombre"
+                            >{{ process.nombre }}</span
+                          >
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
               }
             </li>
           }
@@ -49,4 +128,51 @@
       }
     }
   </div>
+
+  @if (isCollapsed() && activeFlyoutMenuId() !== null && flyoutPosition(); as position) {
+    @for (menu of selectedMenus(); track menu.codm) {
+      @if (activeFlyoutMenuId() === menu.codm) {
+        <section
+          [id]="flyoutId(menu.codm)"
+          class="sidebar-flyout fixed z-30 w-60 overflow-y-auto rounded-lg border border-theme-border bg-card p-3 text-content shadow-lg motion-reduce:transition-none"
+          [style.left.px]="position.left"
+          [style.top.px]="position.top"
+          [style.max-height.px]="position.maxHeight"
+          [attr.aria-label]="menu.nombre"
+          (mouseenter)="cancelScheduledFlyoutClose()"
+          (mouseleave)="scheduleFlyoutClose()"
+          (focusout)="handleFlyoutFocusOut()"
+        >
+          <h3 class="px-2 py-1 text-sm font-semibold uppercase tracking-[0.12em] text-content">
+            {{ menu.nombre }}
+          </h3>
+          @if (menu.procesos.length > 0) {
+            <ul class="mt-2 space-y-1" aria-label="Procesos de {{ menu.nombre }}">
+              @for (process of menu.procesos; track process.codp) {
+                <li>
+                  @if (process.enlace?.trim()) {
+                    <a
+                      class="sidebar-process flex w-full items-center truncate rounded-md px-3 text-left text-[13px] font-medium text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+                      [routerLink]="processCommands(process.enlace)"
+                      routerLinkActive="sidebar-process-active"
+                      [routerLinkActiveOptions]="{ exact: true }"
+                      ariaCurrentWhenActive="page"
+                      [title]="process.enlace"
+                      (click)="closeAfterNavigation()"
+                    >
+                      {{ process.nombre }}
+                    </a>
+                  } @else {
+                    <span class="block min-h-9 truncate px-3 py-2 text-[13px] text-muted">
+                      {{ process.nombre }}
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+    }
+  }
 </nav>

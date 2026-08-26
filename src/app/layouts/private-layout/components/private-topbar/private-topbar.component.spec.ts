@@ -17,7 +17,11 @@ describe('PrivateTopbarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PrivateTopbarComponent],
-      providers: [provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
+        provideRouter([]),
+      ],
     }).compileComponents();
     auth = TestBed.inject(AuthService);
     context = TestBed.inject(AuthContextService);
@@ -52,18 +56,36 @@ describe('PrivateTopbarComponent', () => {
     fixture.detectChanges();
   }
 
-  it('should render ORMAN branding, a Spanish date, themes, real role and structural actions', () => {
+  it('should render ORMAN branding, a Spanish date, themes, real role and profile action', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('img[alt="ORMAN"]')).toBeTruthy();
     expect(element.textContent).toContain('ORMAN');
     expect(element.textContent).toContain('GESTIÓN DE PROPIEDADES');
     expect(element.querySelector('[aria-label="Fecha actual"]')?.textContent).toMatch(/de/);
+    expect(element.querySelector('[aria-label="Fecha actual abreviada"]')?.textContent).toMatch(
+      /^\s*\d+\s+[a-záéíóúñ]+\.\s+\d{4}\s*$/i,
+    );
     expect(element.querySelector('[aria-label="Seleccionar tema visual"]')).toBeTruthy();
     expect(element.querySelector('[aria-label="Rol principal"]')).toBeNull();
-    expect(element.querySelector('[aria-label="Notificaciones"]')).toBeTruthy();
+    expect(element.querySelector('[aria-label="Notificaciones"]')).toBeNull();
     expect(element.querySelector('[aria-label="Abrir perfil"]')).toBeTruthy();
-    expect([...element.querySelectorAll('mat-icon')].map((icon) => icon.textContent?.trim())).toEqual(['notifications', 'person']);
+    expect(
+      [...element.querySelectorAll('mat-icon')].map((icon) => icon.textContent?.trim()),
+    ).toEqual(['person', 'expand_more']);
+  });
+
+  it('should emit a sidebar request from the topbar hamburger when navigation is available', () => {
+    const requested = vi.fn();
+    fixture.componentRef.instance.sidebarRequested.subscribe(requested);
+    fixture.componentRef.setInput('hasSidebarNavigation', true);
+    fixture.detectChanges();
+
+    (
+      fixture.nativeElement.querySelector('[aria-label="Abrir menú lateral"]') as HTMLButtonElement
+    ).click();
+
+    expect(requested).toHaveBeenCalledOnce();
   });
 
   it('should show a disabled no-role state instead of an empty selector', () => {
@@ -76,13 +98,17 @@ describe('PrivateTopbarComponent', () => {
     });
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('#private-role-selector')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[aria-disabled="true"]')?.textContent).toContain('Sin rol asignado');
+    expect(fixture.nativeElement.querySelector('#private-role-selector-desktop')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-disabled="true"]')?.textContent).toContain(
+      'Sin rol asignado',
+    );
   });
 
   it('should open and close the profile popover with the real login and neutral avatar', async () => {
     authenticate();
-    const profileButton = fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement;
+    const profileButton = fixture.nativeElement.querySelector(
+      '[aria-label="Abrir perfil"]',
+    ) as HTMLButtonElement;
     profileButton.click();
     fixture.detectChanges();
 
@@ -92,7 +118,11 @@ describe('PrivateTopbarComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Xavier_Ortega');
     expect(fixture.nativeElement.querySelector('img.size-16')).toBeNull();
     expect(fixture.nativeElement.querySelector('[aria-label="Cerrar perfil"]')).toBeTruthy();
-    expect([...fixture.nativeElement.querySelectorAll('mat-icon')].map((icon: Element) => icon.textContent?.trim())).toContain('close');
+    expect(
+      [...fixture.nativeElement.querySelectorAll('mat-icon')].map((icon: Element) =>
+        icon.textContent?.trim(),
+      ),
+    ).toContain('close');
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await Promise.resolve();
@@ -105,11 +135,18 @@ describe('PrivateTopbarComponent', () => {
     context.reloadContext().subscribe();
     http.expectOne('/api/v1/auth/context').flush({
       usuario: { login: 'Xavier_Ortega', codper: 10 },
-      persona: { nombre: 'Xavier', ap: 'Ortega', am: 'Materno', foto: 'https://images.example.test/xavier.jpg' },
+      persona: {
+        nombre: 'Xavier',
+        ap: 'Ortega',
+        am: 'Materno',
+        foto: 'https://images.example.test/xavier.jpg',
+      },
       roles: [{ codr: 1, nombre: 'PROPIETARIO', menus: [] }],
     });
     fixture.detectChanges();
-    (fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Xavier Ortega Materno');
@@ -131,9 +168,14 @@ describe('PrivateTopbarComponent', () => {
     });
     fixture.detectChanges();
 
-    const selector = fixture.nativeElement.querySelector('#private-role-selector') as HTMLSelectElement;
+    const selector = fixture.nativeElement.querySelector(
+      '#private-role-selector-desktop',
+    ) as HTMLSelectElement;
     expect(selector.value).toBe('1');
-    expect([...selector.options].map((option) => option.text)).toEqual(['PROPIETARIO', 'ADMINISTRADOR']);
+    expect([...selector.options].map((option) => option.text)).toEqual([
+      'PROPIETARIO',
+      'ADMINISTRADOR',
+    ]);
 
     selector.value = '2';
     selector.dispatchEvent(new Event('change'));
@@ -143,11 +185,61 @@ describe('PrivateTopbarComponent', () => {
     expect(http.match('/api/v1/auth/context')).toHaveLength(0);
   });
 
+  it('should expose the same role selector inside the profile popover', () => {
+    authenticate();
+    context.reloadContext().subscribe();
+    http.expectOne('/api/v1/auth/context').flush({
+      usuario: { login: 'Xavier_Ortega', codper: 10 },
+      persona: { nombre: 'Xavier', ap: 'Ortega', am: null, foto: null },
+      roles: [
+        { codr: 1, nombre: 'PROPIETARIO', menus: [] },
+        { codr: 2, nombre: 'ADMINISTRADOR', menus: [] },
+      ],
+    });
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+
+    const selector = fixture.nativeElement.querySelector(
+      '#private-role-selector-profile',
+    ) as HTMLSelectElement;
+    expect(selector.value).toBe('1');
+    expect([...selector.options].map((option) => option.text)).toEqual([
+      'PROPIETARIO',
+      'ADMINISTRADOR',
+    ]);
+
+    selector.value = '2';
+    selector.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(context.selectedRoleId()).toBe(2);
+
+    (
+      fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+
+    expect(
+      (fixture.nativeElement.querySelector('#private-role-selector-profile') as HTMLSelectElement)
+        .value,
+    ).toBe('2');
+  });
+
   it('should reuse AuthService logout from the profile action', () => {
     authenticate();
-    (fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector('[aria-label="Abrir perfil"]') as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
-    const logoutButton = [...fixture.nativeElement.querySelectorAll('button')].find((button) => button.textContent?.includes('Cerrar sesión')) as HTMLButtonElement;
+    const logoutButton = [...fixture.nativeElement.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Cerrar sesión'),
+    ) as HTMLButtonElement;
     logoutButton.click();
 
     const request = http.expectOne('/api/v1/auth/logout');

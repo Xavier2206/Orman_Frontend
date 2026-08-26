@@ -1,50 +1,136 @@
-<div
-  class="theme-selector inline-flex rounded-full p-1 shadow-sm transition-colors duration-200 motion-reduce:transition-none"
-  role="group"
-  aria-label="Seleccionar tema visual"
->
-  @for (theme of themes; track theme.name) {
+@if (compact()) {
+  <div class="relative">
     <button
+      #compactButton
       type="button"
-      class="theme-selector-option grid size-11 place-items-center rounded-full border border-transparent text-muted transition-colors duration-200 hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-      [class.theme-selector-option-active]="activeTheme() === theme.name"
-      [class.border-accent]="activeTheme() === theme.name"
-      [class.ring-1]="activeTheme() === theme.name"
-      [class.ring-inset]="activeTheme() === theme.name"
-      [class.ring-accent]="activeTheme() === theme.name"
-      [class.shadow-sm]="activeTheme() === theme.name"
-      [class.text-accent-text]="activeTheme() === theme.name && theme.name !== 'orman'"
-      [class.text-muted]="activeTheme() !== theme.name"
-      [attr.aria-label]="theme.ariaLabel"
-      [attr.aria-pressed]="activeTheme() === theme.name"
-      [attr.title]="theme.title"
-      (click)="selectTheme(theme.name)"
+      class="grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      aria-label="Cambiar tema visual"
+      aria-haspopup="menu"
+      aria-controls="compact-theme-menu"
+      [attr.aria-expanded]="isCompactOpen()"
+      [attr.title]="'Tema actual: ' + activeThemeControl().label"
+      (click)="toggleCompactTheme()"
     >
-      @switch (theme.name) {
+      @switch (activeTheme()) {
         @case ('orman') {
-          <span class="grid size-6 place-items-center overflow-hidden" aria-hidden="true">
-            <img
-              class="size-full object-contain"
-              src="/images/brand/orman-logo.svg"
-              alt=""
-            />
-          </span>
+          <img class="size-6 object-contain" src="/images/brand/orman-logo.svg" alt="" />
         }
         @case ('light') {
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
             <circle cx="12" cy="12" r="4" />
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+            />
           </svg>
         }
         @case ('dark') {
-          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
             <path d="M20.6 15.79A8.5 8.5 0 0 1 8.21 3.4 8.5 8.5 0 1 0 20.6 15.79Z" />
           </svg>
         }
       }
-      @if (activeTheme() === theme.name) {
-        <span class="sr-only"> (activo)</span>
-      }
     </button>
-  }
-</div>
+
+    @if (isCompactOpen()) {
+      <div
+        id="compact-theme-menu"
+        class="absolute right-0 top-[calc(100%+0.5rem)] z-30 w-40 rounded-xl border border-theme-border bg-card p-1 shadow-lg"
+        role="menu"
+        aria-label="Seleccionar tema visual"
+      >
+        @for (theme of themes; track theme.name) {
+          <button
+            type="button"
+            class="flex min-h-11 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-medium text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            role="menuitemradio"
+            [attr.aria-checked]="activeTheme() === theme.name"
+            (click)="selectTheme(theme.name)"
+          >
+            <span>{{ theme.label }}</span>
+            @if (activeTheme() === theme.name) {
+              <span class="text-accent" aria-hidden="true">✓</span>
+              <span class="sr-only"> (activo)</span>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div
+    class="theme-selector inline-flex rounded-full p-1 shadow-sm transition-colors duration-200 motion-reduce:transition-none"
+    role="group"
+    aria-label="Seleccionar tema visual"
+  >
+    @for (theme of themes; track theme.name) {
+      <button
+        type="button"
+        class="theme-selector-option grid size-11 place-items-center rounded-full border border-transparent text-muted transition-colors duration-200 hover:text-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+        [class.theme-selector-option-active]="activeTheme() === theme.name"
+        [class.border-accent]="activeTheme() === theme.name"
+        [class.ring-1]="activeTheme() === theme.name"
+        [class.ring-inset]="activeTheme() === theme.name"
+        [class.ring-accent]="activeTheme() === theme.name"
+        [class.shadow-sm]="activeTheme() === theme.name"
+        [class.text-accent-text]="activeTheme() === theme.name && theme.name !== 'orman'"
+        [class.text-muted]="activeTheme() !== theme.name"
+        [attr.aria-label]="theme.ariaLabel"
+        [attr.aria-pressed]="activeTheme() === theme.name"
+        [attr.title]="theme.title"
+        (click)="selectTheme(theme.name)"
+      >
+        @switch (theme.name) {
+          @case ('orman') {
+            <span class="grid size-6 place-items-center overflow-hidden" aria-hidden="true">
+              <img class="size-full object-contain" src="/images/brand/orman-logo.svg" alt="" />
+            </span>
+          }
+          @case ('light') {
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+              />
+            </svg>
+          }
+          @case ('dark') {
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path d="M20.6 15.79A8.5 8.5 0 0 1 8.21 3.4 8.5 8.5 0 1 0 20.6 15.79Z" />
+            </svg>
+          }
+        }
+        @if (activeTheme() === theme.name) {
+          <span class="sr-only"> (activo)</span>
+        }
+      </button>
+    }
+  </div>
+}

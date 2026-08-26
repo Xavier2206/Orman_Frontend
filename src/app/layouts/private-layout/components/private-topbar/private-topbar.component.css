@@ -1,12 +1,5 @@
 :host {
   display: block;
-  --private-topbar-height: 5rem;
-}
-
-@media (max-width: 1023px) {
-  :host {
-    --private-topbar-height: 7rem;
-  }
 }
 
 .private-topbar-date {
@@ -15,6 +8,11 @@
 
 .private-profile-popover {
   animation: private-profile-enter 160ms ease-out both;
+}
+
+.private-profile-trigger-open {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent-text);
 }
 
 @keyframes private-profile-enter {

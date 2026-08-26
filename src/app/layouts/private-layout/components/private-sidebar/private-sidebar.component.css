@@ -8,21 +8,85 @@
   flex-direction: column;
 }
 
-.sidebar-item-active {
-  background: var(--theme-accent);
-  color: var(--theme-accent-contrast);
+.sidebar-item-icon,
+.sidebar-item-label {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
-.sidebar-item-active .sidebar-item-icon {
-  border-color: currentColor;
+.sidebar-menu-has-active-process .sidebar-item {
+  color: var(--theme-text);
+}
+
+.sidebar-menu-has-active-process .sidebar-item-icon {
+  color: var(--theme-accent-text);
+}
+
+.sidebar-menu-trigger {
+  position: relative;
+}
+
+.sidebar-menu-has-active-process .sidebar-menu-trigger {
+  color: var(--theme-accent-text);
+}
+
+.sidebar-menu-has-active-process .sidebar-menu-trigger::before {
+  position: absolute;
+  inset-block: 0.5rem;
+  left: 0;
+  width: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--theme-accent);
+  content: '';
+}
+
+.sidebar-process {
+  display: flex;
+  align-items: center;
+  position: relative;
+  min-height: 2.5rem;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.sidebar-process:hover {
+  background: var(--theme-card-hover);
+  color: var(--theme-text);
+}
+
+.sidebar-process-active,
+.sidebar-process-active:hover {
+  background: var(--theme-card-hover);
+  color: var(--theme-accent-text);
+  font-weight: 600;
+}
+
+.sidebar-process-active::before {
+  position: absolute;
+  inset-block: 0.5rem;
+  left: 0;
+  width: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--theme-accent);
+  content: '';
+}
+
+.sidebar-flyout {
+  animation: sidebar-flyout-enter 120ms ease;
+}
+
+@keyframes sidebar-flyout-enter {
+  from {
+    opacity: 0;
+  }
 }
 
 @media (min-width: 1024px) {
-  :host {
-    height: 100%;
-    min-height: 100%;
-  }
-
+  :host,
   .private-sidebar {
     height: 100%;
     min-height: 100%;
@@ -32,20 +96,15 @@
     width: 4.5rem;
     padding-inline: 0.75rem;
   }
+}
 
-  .private-sidebar.sidebar-collapsed .sidebar-item-label,
-  .private-sidebar.sidebar-collapsed .sidebar-processes,
-  .private-sidebar.sidebar-collapsed h2 {
-    display: none;
-  }
-
-  .private-sidebar.sidebar-collapsed .sidebar-item {
-    justify-content: center;
-    padding-inline: 0;
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-flyout {
+    animation: none;
   }
 }
 
-@media (max-width: 1023px) {
+@media not all and (min-width: 1024px) {
   .private-sidebar {
     width: min(18rem, calc(100vw - 3rem));
     transform: translateX(-100%);
@@ -57,9 +116,5 @@
     transform: translateX(0);
     visibility: visible;
     pointer-events: auto;
-  }
-
-  .sidebar-toggle {
-    display: none;
   }
 }

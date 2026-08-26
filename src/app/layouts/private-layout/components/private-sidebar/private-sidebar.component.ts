@@ -1,33 +1,193 @@
-import { Component, inject, input, output } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  Component,
+  effect,
+  HostListener,
+  inject,
+  input,
+  OnDestroy,
+  output,
+  signal,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthContextService } from '../../../../core/auth/auth-context.service';
 
+interface FlyoutPosition {
+  readonly top: number;
+  readonly left: number;
+  readonly maxHeight: number;
+}
+
 @Component({
   selector: 'app-private-sidebar',
-  imports: [MatIconModule],
+  imports: [MatIconModule, RouterLink, RouterLinkActive],
   templateUrl: './private-sidebar.component.html',
   styleUrl: './private-sidebar.component.css',
 })
-export class PrivateSidebarComponent {
+export class PrivateSidebarComponent implements OnDestroy {
+  private readonly document = inject(DOCUMENT);
   private readonly authContext = inject(AuthContextService);
-  private readonly router = inject(Router);
+  private closeFlyoutTimeout: ReturnType<typeof setTimeout> | null = null;
+  private activeFlyoutTrigger: HTMLButtonElement | null = null;
+  private ignoreNextTriggerFocus = false;
 
   protected readonly context = this.authContext.context;
   protected readonly selectedRole = this.authContext.selectedRole;
   protected readonly selectedMenus = this.authContext.selectedMenus;
   protected readonly isLoading = this.authContext.loading;
   protected readonly contextError = this.authContext.error;
+  protected readonly isCollapsed = signal(false);
+  protected readonly activeFlyoutMenuId = signal<number | null>(null);
+  protected readonly flyoutPosition = signal<FlyoutPosition | null>(null);
   readonly open = input(false);
-  readonly collapsed = input(false);
   readonly closed = output<void>();
-  readonly toggleCollapsed = output<void>();
 
-  protected navigate(enlace: string): void {
-    const normalized = enlace.trim().replace(/^\/+/, '');
-    if (!normalized) return;
-    void this.router.navigate(['/app', ...normalized.split('/')]);
+  constructor() {
+    effect(() => {
+      this.selectedRole();
+      this.selectedMenus();
+      this.closeFlyout();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.cancelScheduledFlyoutClose();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  protected handleDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape' || this.activeFlyoutMenuId() === null) {
+      return;
+    }
+
+    event.preventDefault();
+    this.closeFlyout(true);
+  }
+
+  @HostListener('window:resize')
+  protected handleWindowResize(): void {
+    if (!this.isDesktop()) {
+      this.isCollapsed.set(false);
+    }
+
+    this.closeFlyout();
+  }
+
+  protected toggleCollapsed(): void {
+    this.isCollapsed.update((isCollapsed) => !isCollapsed);
+    this.closeFlyout();
+  }
+
+  protected openFlyout(menuId: number, trigger: HTMLButtonElement): void {
+    if (!this.isCollapsed() || !this.isDesktop()) {
+      return;
+    }
+
+    this.cancelScheduledFlyoutClose();
+    this.activeFlyoutTrigger = trigger;
+    this.activeFlyoutMenuId.set(menuId);
+    this.flyoutPosition.set(this.calculateFlyoutPosition(trigger));
+  }
+
+  protected openFlyoutFromFocus(menuId: number, trigger: HTMLButtonElement): void {
+    if (this.ignoreNextTriggerFocus) {
+      this.ignoreNextTriggerFocus = false;
+      return;
+    }
+
+    this.openFlyout(menuId, trigger);
+  }
+
+  protected scheduleFlyoutClose(): void {
+    this.cancelScheduledFlyoutClose();
+    this.closeFlyoutTimeout = setTimeout(() => this.closeFlyout(), 120);
+  }
+
+  protected closeFlyoutOnScroll(): void {
+    this.closeFlyout();
+  }
+
+  protected cancelScheduledFlyoutClose(): void {
+    if (this.closeFlyoutTimeout === null) {
+      return;
+    }
+
+    clearTimeout(this.closeFlyoutTimeout);
+    this.closeFlyoutTimeout = null;
+  }
+
+  protected handleFlyoutFocusOut(): void {
+    queueMicrotask(() => {
+      if (!this.isFocusWithinFlyout()) {
+        this.closeFlyout();
+      }
+    });
+  }
+
+  protected closeAfterNavigation(): void {
+    this.closeFlyout();
     this.closed.emit();
+  }
+
+  protected processCommands(enlace: string): readonly string[] {
+    const normalized = enlace.trim().replace(/^\/+/, '');
+    return ['/app', ...normalized.split('/')];
+  }
+
+  protected flyoutId(menuId: number): string {
+    return `sidebar-flyout-${menuId}`;
+  }
+
+  private closeFlyout(restoreFocus = false): void {
+    this.cancelScheduledFlyoutClose();
+    const trigger = this.activeFlyoutTrigger;
+
+    this.activeFlyoutMenuId.set(null);
+    this.flyoutPosition.set(null);
+    this.activeFlyoutTrigger = null;
+
+    if (restoreFocus) {
+      this.ignoreNextTriggerFocus = true;
+      queueMicrotask(() => {
+        trigger?.focus();
+        this.ignoreNextTriggerFocus = false;
+      });
+    }
+  }
+
+  private calculateFlyoutPosition(trigger: HTMLButtonElement): FlyoutPosition {
+    const triggerBounds = trigger.getBoundingClientRect();
+    const viewportHeight = this.document.defaultView?.innerHeight ?? 0;
+    const viewportPadding = 16;
+
+    return {
+      left: triggerBounds.right,
+      top: triggerBounds.top,
+      maxHeight: Math.max(viewportHeight - triggerBounds.top - viewportPadding, 0),
+    };
+  }
+
+  private isFocusWithinFlyout(): boolean {
+    const activeElement = this.document.activeElement;
+    if (!(activeElement instanceof HTMLElement)) {
+      return false;
+    }
+
+    const flyoutId = this.activeFlyoutMenuId();
+    const flyout = flyoutId === null ? null : this.document.getElementById(this.flyoutId(flyoutId));
+
+    return Boolean(
+      this.activeFlyoutTrigger?.contains(activeElement) || flyout?.contains(activeElement),
+    );
+  }
+
+  private isDesktop(): boolean {
+    const matchMedia = this.document.defaultView?.matchMedia;
+    return (
+      typeof matchMedia === 'function' &&
+      matchMedia.call(this.document.defaultView, '(min-width: 1024px)').matches
+    );
   }
 }

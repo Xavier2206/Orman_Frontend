@@ -1,18 +1,26 @@
 <div class="flex h-[100dvh] flex-col overflow-hidden bg-page text-content">
-  <app-private-topbar />
+  <app-private-topbar
+    [hasSidebarNavigation]="hasSidebarNavigation()"
+    [isSidebarOpen]="isSidebarOpen()"
+    (sidebarRequested)="toggleSidebar()"
+  />
   <div class="relative flex min-h-0 w-full flex-1 items-stretch overflow-hidden">
-    @if (hasSidebarNavigation() && !isSidebarOpen()) {
-      <button type="button" class="private-sidebar-mobile-trigger absolute left-4 top-4 z-20 grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content shadow-sm transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:hidden" aria-label="Abrir menú lateral" aria-controls="private-sidebar" [attr.aria-expanded]="isSidebarOpen()" (click)="toggleSidebar()">
-        <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true">menu</mat-icon>
-      </button>
-    }
     @if (hasSidebarNavigation() && isSidebarOpen()) {
-      <button type="button" class="private-sidebar-backdrop absolute inset-0 z-10 bg-overlay lg:hidden" aria-label="Cerrar menú lateral" (click)="closeSidebar()"></button>
+      <button
+        type="button"
+        class="private-sidebar-backdrop absolute inset-0 z-10 bg-overlay lg:hidden"
+        aria-label="Cerrar menú lateral"
+        (click)="closeSidebar()"
+      ></button>
     }
     @if (hasSidebarNavigation()) {
-      <app-private-sidebar [open]="isSidebarOpen()" [collapsed]="isSidebarCollapsed()" (closed)="closeSidebar()" (toggleCollapsed)="toggleSidebarCollapsed()" />
+      <app-private-sidebar [open]="isSidebarOpen()" (closed)="closeSidebar()" />
     }
-    <main id="private-content" class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" tabindex="-1">
+    <main
+      id="private-content"
+      class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8"
+      tabindex="-1"
+    >
       <router-outlet />
     </main>
   </div>

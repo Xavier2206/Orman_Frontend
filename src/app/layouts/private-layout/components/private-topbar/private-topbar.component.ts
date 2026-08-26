@@ -1,4 +1,15 @@
-import { Component, DestroyRef, ElementRef, HostListener, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -22,6 +33,10 @@ export class PrivateTopbarComponent {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly profileButton = viewChild<ElementRef<HTMLButtonElement>>('profileButton');
 
+  readonly hasSidebarNavigation = input(false);
+  readonly isSidebarOpen = input(false);
+  readonly sidebarRequested = output<void>();
+
   protected readonly isLoggingOut = signal(false);
   protected readonly logoutError = signal<string | null>(null);
   protected readonly loginName = this.auth.loginName;
@@ -36,7 +51,14 @@ export class PrivateTopbarComponent {
       return null;
     }
 
-    return [persona.nombre, persona.ap, persona.am].filter((part): part is string => Boolean(part?.trim())).join(' ');
+    return [persona.nombre, persona.ap, persona.am]
+      .filter((part): part is string => Boolean(part?.trim()))
+      .join(' ');
+  });
+  protected readonly shortName = computed(() => {
+    const firstName = this.persona()?.nombre?.trim();
+
+    return firstName || this.loginName()?.trim() || 'Usuario';
   });
   protected readonly profileImageUrl = computed(() => {
     const reference = this.persona()?.foto?.trim();
@@ -53,24 +75,32 @@ export class PrivateTopbarComponent {
     }
   });
   protected readonly isProfileOpen = signal(false);
+  private readonly currentDateValue = new Date();
   protected readonly currentDate = new Intl.DateTimeFormat('es-ES', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date());
+  }).format(this.currentDateValue);
+  protected readonly shortCurrentDate = this.formatShortDate(this.currentDateValue);
 
   protected logout(): void {
     if (this.isLoggingOut()) return;
 
     this.isLoggingOut.set(true);
     this.logoutError.set(null);
-    this.auth.logout().pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.isLoggingOut.set(false))).subscribe({
-      next: () => void this.router.navigateByUrl('/'),
-      error: () => {
-        this.logoutError.set('No fue posible confirmar el cierre de sesión.');
-        void this.router.navigateByUrl('/');
-      },
-    });
+    this.auth
+      .logout()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isLoggingOut.set(false)),
+      )
+      .subscribe({
+        next: () => void this.router.navigateByUrl('/'),
+        error: () => {
+          this.logoutError.set('No fue posible confirmar el cierre de sesión.');
+          void this.router.navigateByUrl('/');
+        },
+      });
   }
 
   protected toggleProfile(): void {
@@ -89,6 +119,19 @@ export class PrivateTopbarComponent {
     }
   }
 
+  private formatShortDate(date: Date): string {
+    const parts = new Intl.DateTimeFormat('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).formatToParts(date);
+    const day = parts.find((part) => part.type === 'day')?.value;
+    const month = parts.find((part) => part.type === 'month')?.value;
+    const year = parts.find((part) => part.type === 'year')?.value;
+
+    return `${day} ${month?.replace('.', '')}. ${year}`;
+  }
+
   protected closeProfile(restoreFocus = true): void {
     if (!this.isProfileOpen()) {
       return;
@@ -102,7 +145,11 @@ export class PrivateTopbarComponent {
 
   @HostListener('document:pointerdown', ['$event'])
   protected handleDocumentPointerdown(event: PointerEvent): void {
-    if (this.isProfileOpen() && event.target instanceof Node && !this.hostElement.nativeElement.contains(event.target)) {
+    if (
+      this.isProfileOpen() &&
+      event.target instanceof Node &&
+      !this.hostElement.nativeElement.contains(event.target)
+    ) {
       this.closeProfile(false);
     }
   }

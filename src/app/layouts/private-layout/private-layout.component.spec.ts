@@ -48,16 +48,15 @@ describe('PrivateLayoutComponent', () => {
     expect(fixture.nativeElement.querySelector('app-private-topbar')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-private-sidebar')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('main router-outlet')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('app-private-topbar [aria-label="Abrir menú lateral"]'),
+    ).toBeTruthy();
   });
 
-  it('should keep the desktop compact control without restoring mock navigation', () => {
+  it('should render the desktop collapse control inside the Sidebar', () => {
     renderContext(rolesWithNavigation);
-    const collapse = fixture.nativeElement.querySelector('app-private-sidebar .sidebar-toggle') as HTMLButtonElement;
-    collapse.click();
-    fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.sidebar-collapsed')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-private-sidebar .sidebar-toggle')).toBeTruthy();
     expect(fixture.nativeElement.textContent).not.toContain('Dashboard');
   });
 
@@ -66,29 +65,40 @@ describe('PrivateLayoutComponent', () => {
     window.matchMedia = (() => ({ matches: true })) as unknown as typeof window.matchMedia;
     renderContext(rolesWithNavigation);
 
-    const menu = fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger') as HTMLButtonElement;
+    const menu = fixture.nativeElement.querySelector(
+      'app-private-topbar [aria-label="Abrir menú lateral"]',
+    ) as HTMLButtonElement;
     menu.click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger')).toBeNull();
     expect(fixture.nativeElement.querySelector('.private-sidebar-backdrop')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('[aria-label="Cerrar menú"]')).toBeTruthy();
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('app-private-topbar [aria-label="Abrir menú lateral"]'),
+    ).toBeTruthy();
 
-    (fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector(
+        'app-private-topbar [aria-label="Abrir menú lateral"]',
+      ) as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
     (fixture.nativeElement.querySelector('.private-sidebar-backdrop') as HTMLButtonElement).click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('app-private-topbar [aria-label="Abrir menú lateral"]'),
+    ).toBeTruthy();
     window.matchMedia = originalMatchMedia;
   });
 
   it('should remove the navigation column for users without roles or for roles without menus', () => {
     renderContext([]);
     expect(fixture.nativeElement.querySelector('app-private-sidebar')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.private-sidebar-mobile-trigger')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-private-topbar [aria-label="Abrir menú lateral"]'),
+    ).toBeNull();
 
     context.reloadContext().subscribe();
     http.expectOne('/api/v1/auth/context').flush({
