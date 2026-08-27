@@ -1,11 +1,19 @@
-import { AfterViewInit, Directive, ElementRef, OnDestroy, inject, output } from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  OnDestroy,
+  inject,
+  input,
+  output,
+} from '@angular/core';
 
 const FOCUSABLE_SELECTOR = [
-  'button:not([disabled])',
+  'button:not(:disabled)',
   '[href]',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
+  'input:not(:disabled)',
+  'select:not(:disabled)',
+  'textarea:not(:disabled)',
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
@@ -19,10 +27,17 @@ const FOCUSABLE_SELECTOR = [
 export class PersonaModalFocusDirective implements AfterViewInit, OnDestroy {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly previouslyFocused = this.host.nativeElement.ownerDocument.activeElement;
+  readonly initialFocusSelector = input<string | null>(null);
   readonly escapePressed = output<void>();
 
   ngAfterViewInit(): void {
-    queueMicrotask(() => (this.focusableElements()[0] ?? this.host.nativeElement).focus());
+    queueMicrotask(() => {
+      const initialFocus = this.initialFocusSelector()
+        ? this.host.nativeElement.querySelector<HTMLElement>(this.initialFocusSelector()!)
+        : null;
+
+      (initialFocus ?? this.focusableElements()[0] ?? this.host.nativeElement).focus();
+    });
   }
 
   protected handleKeydown(event: KeyboardEvent): void {

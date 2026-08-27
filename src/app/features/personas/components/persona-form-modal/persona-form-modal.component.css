@@ -1,6 +1,19 @@
 :host {
   display: contents;
 }
+
+.mat-icon {
+  display: inline-block;
+  font-family: 'Material Symbols Rounded' !important;
+  font-feature-settings: 'liga';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  line-height: 1;
+}
+
 .modal-panel {
   display: flex;
   flex-direction: column;
@@ -10,25 +23,48 @@
   background: var(--theme-modal-bg);
   box-shadow: var(--theme-modal-shadow);
 }
+
 header {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   padding: 1.25rem 1.25rem 0;
 }
+
+h2,
+legend {
+  color: var(--theme-text);
+}
+
 h2 {
   margin: 0;
-  color: var(--theme-text);
   font-size: 1.5rem;
 }
+
 header p {
   margin: 0.35rem 0 0;
   color: var(--theme-text-muted);
   font-size: 0.875rem;
 }
+
 header button {
+  flex: 0 0 auto;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
   color: var(--theme-text-muted);
 }
+
+header button:hover:not(:disabled) {
+  background: var(--theme-card-hover);
+  color: var(--theme-text);
+}
+
+header button:focus-visible,
+footer button:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
 .feedback {
   margin: 1rem 1.25rem 0;
   border: 1px solid var(--theme-danger-border);
@@ -37,26 +73,70 @@ header button {
   padding: 0.75rem;
   color: var(--theme-danger-text);
 }
+
 form {
   display: flex;
   min-height: 0;
   flex: 1;
   flex-direction: column;
 }
+
 .body {
   overflow-y: auto;
   padding: 1rem 1.25rem;
 }
-.fields {
+
+.form-section {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form-section + .form-section {
+  margin-top: 1.5rem;
+}
+
+legend {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+legend span,
+.field-hint {
+  color: var(--theme-text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.surname-help {
+  margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+
+.fields,
+.surname-fields {
   display: grid;
   gap: 1rem;
-  margin-top: 1.2rem;
 }
+
+.form-field {
+  min-width: 0;
+}
+
 label {
+  display: block;
   color: var(--theme-text);
   font-size: 0.875rem;
   font-weight: 600;
 }
+
+.required-marker {
+  color: var(--theme-danger-text);
+}
+
 input,
 select {
   display: block;
@@ -68,20 +148,85 @@ select {
   background: var(--theme-field);
   padding: 0.5rem 0.75rem;
   color: var(--theme-text);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
-small {
-  display: block;
+
+select option {
+  background: var(--theme-card);
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--theme-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-focus) 25%, transparent);
+}
+
+input.field-error,
+select.field-error {
+  border-color: var(--theme-danger-border);
+}
+
+input.field-valid,
+select.field-valid {
+  border-color: var(--theme-success-border);
+}
+
+input:disabled,
+select:disabled,
+fieldset:disabled label {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.field-message {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.field-message-error {
   color: var(--theme-danger-text);
-  font-weight: 400;
 }
+
+.field-message-success {
+  color: var(--theme-success-text);
+}
+
 footer {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column-reverse;
   gap: 0.75rem;
   border-top: 1px solid var(--theme-border);
   padding: 1rem 1.25rem;
   background: var(--theme-modal-secondary-bg);
 }
+
+footer button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+footer .page-button {
+  border: 1px solid var(--theme-border);
+  border-radius: 0.5rem;
+  background: var(--theme-card);
+  padding: 0.5rem 1rem;
+  color: var(--theme-text);
+  font-weight: 600;
+}
+
+footer .page-button:hover:not(:disabled) {
+  border-color: var(--theme-field-border);
+  background: var(--theme-card-hover);
+  box-shadow: var(--shadow-sm);
+}
+
 footer button:last-child {
   border-radius: 0.5rem;
   background: var(--theme-accent);
@@ -89,8 +234,57 @@ footer button:last-child {
   color: var(--theme-accent-contrast);
   font-weight: 600;
 }
+
+footer button:last-child:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.button-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (min-width: 640px) {
   .fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .personal-fields .surname-field {
+    grid-column: span 2;
+  }
+
+  .surname-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  footer button {
+    min-width: 8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  input,
+  select {
+    transition: none;
+  }
+
+  .button-spinner {
+    animation: none;
   }
 }

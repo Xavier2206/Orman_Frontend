@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-08-27 — Fase 06 en desarrollo: ajuste de grilla, botones e iconos del modal Persona
+
+### Cambiado
+
+- Tipo de Persona se integró junto a Género, Apellidos ocupa su propia fila de dos controles y Contacto conserva dos columnas; móvil vuelve a una columna sin overflow.
+- `Cancelar` ahora tiene apariencia y estados de botón secundario, manteniendo Guardar como acción primaria.
+- Los `mat-icon` de cierre y fotografía aplican localmente Material Symbols Rounded, evitando que `close` o `photo_camera` se muestren como texto.
+- Género y Tipo de Persona heredan el esquema de color activo y sus opciones usan tokens de tema cuando el navegador permite estilizar el popup nativo.
+- En Añadir, Género y Tipo de Persona quedan inicialmente vacíos; Editar conserva la recuperación de sus valores existentes.
+
+### Verificado
+
+- TypeScript correcto; 26 archivos y 161 pruebas aprobadas.
+- Build correcto; solo permanece la advertencia de presupuesto CSS ya existente en `personas-list.component.css`.
+
+## 2026-08-27 — Fase 06 en desarrollo: validación y recuperación del formulario Persona
+
+### Cambiado
+
+- El único `PersonaFormModalComponent` compartido por Añadir/Editar ahora usa validación neutral, de error y de éxito con tokens semánticos, mensajes inline accesibles y foco en el primer control inválido.
+- Se validan longitudes y obligatorios conocidos, nombre no blanco y la regla frontend de al menos un apellido; paterno y materno permanecen opcionales de forma individual.
+- La fotografía muestra errores específicos de MIME/tamaño bajo el control. Tras crear una Persona, un fallo de foto conserva la Persona creada y evita repetir POST; eliminar foto sincroniza Persona seleccionada, listado y URL local sin recarga innecesaria.
+
+### Verificado
+
+- Typecheck correcto; 26 archivos y 161 pruebas aprobadas.
+- Build de producción correcto: 341.12 kB iniciales brutos; Personas como chunk lazy de 77.72 kB. Permanece una advertencia preexistente de presupuesto CSS en `personas-list.component.css`, fuera de este cambio.
+
 ## 2026-08-20 — Fase 06 en desarrollo: auditoría técnica de Personas
 
 ### Corregido

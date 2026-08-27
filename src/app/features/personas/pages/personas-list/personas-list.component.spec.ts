@@ -72,7 +72,7 @@ describe('PersonasListComponent', () => {
       request: {
         ci: '456',
         nombre: 'Bea',
-        ap: null,
+        ap: 'Paz',
         am: null,
         genero: 'F',
         correo: 'bea@test.com',
@@ -87,6 +87,66 @@ describe('PersonasListComponent', () => {
       .expectOne('/api/v1/personas/resumen')
       .flush({ totalPersonas: 2, activas: 2, inactivas: 0, conUsuario: 0 });
     http.expectOne((r) => r.url === '/api/v1/personas').flush(page);
+  });
+  it('does not repeat POST when a photo upload fails after creation', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      feedback: { (): string | null };
+      selected: { (): { codper: number } | null };
+      submitPersona(v: unknown): void;
+    };
+    const submission = {
+      request: {
+        ci: '456',
+        nombre: 'Bea',
+        ap: 'Paz',
+        am: null,
+        genero: 'F' as const,
+        correo: 'bea@test.com',
+        telefono: '71111111',
+        tipoPersona: 'A' as const,
+        foto: null,
+      },
+      photo: new File(['jpeg'], 'persona.jpg', { type: 'image/jpeg' }),
+    };
+
+    c.submitPersona(submission);
+    http.expectOne('/api/v1/personas').flush({ ...persona, codper: 8 });
+    http
+      .expectOne('/api/v1/personas/8/foto')
+      .flush({ detail: 'No se pudo guardar la foto.' }, { status: 500, statusText: 'Error' });
+    http
+      .expectOne('/api/v1/personas/resumen')
+      .flush({ totalPersonas: 2, activas: 2, inactivas: 0, conUsuario: 0 });
+    http.expectOne((r) => r.url === '/api/v1/personas').flush(page);
+
+    expect(c.selected()?.codper).toBe(8);
+    expect(c.feedback()).toContain('La Persona fue creada correctamente');
+
+    c.submitPersona(submission);
+    const update = http.expectOne('/api/v1/personas/8');
+    expect(update.request.method).toBe('PUT');
+    update.flush({ ...persona, codper: 8 });
+    http.expectOne('/api/v1/personas/8/foto').flush({ ...persona, codper: 8, foto: 'foto.jpg' });
+    http.expectOne((r) => r.url === '/api/v1/personas').flush(page);
+    http.expectNone('/api/v1/personas/resumen');
+  });
+  it('synchronizes selected.foto after a successful photo deletion', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      removePhoto(): void;
+      selected: {
+        (): { foto: string | null } | null;
+        set(value: unknown): void;
+      };
+    };
+    c.selected.set({ ...persona, foto: 'persona.jpg' });
+
+    c.removePhoto();
+
+    http.expectOne('/api/v1/personas/7/foto').flush(null);
+    http.expectNone((r) => r.url === '/api/v1/personas');
+    expect(c.selected()?.foto).toBeNull();
   });
   it('coordinates a password update without summary refresh', () => {
     initial();

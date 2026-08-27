@@ -1,6 +1,7 @@
 <div class="fixed inset-0 z-50 grid place-items-center bg-overlay p-3 print:hidden">
   <section
     appPersonaModalFocus
+    [initialFocusSelector]="'#persona-ci'"
     class="modal-panel max-h-[94dvh] w-full max-w-2xl"
     role="dialog"
     aria-modal="true"
@@ -22,53 +23,277 @@
         <mat-icon aria-hidden="true">close</mat-icon>
       </button>
     </header>
-    @if (feedback() || photoError()) {
-      <p class="feedback" role="alert">{{ feedback() ?? photoError() }}</p>
+
+    @if (feedback()) {
+      <p class="feedback" role="alert">{{ feedback() }}</p>
     }
-    <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <form [formGroup]="form" [attr.aria-busy]="submitting()" (ngSubmit)="submit()">
       <div class="body">
-        <app-persona-photo-field
-          [imageUrl]="photoUrl()"
-          [initials]="initials()"
-          [disabled]="submitting()"
-          [canRemove]="!!persona()?.foto"
-          (fileSelected)="selectPhoto($event)"
-          (removeRequested)="removePhoto()"
-          (validationError)="setPhotoError($event)"
-        ></app-persona-photo-field>
-        <div class="fields">
-          <label
-            >CI<input formControlName="ci" maxlength="20" /><small>{{
-              fieldErrors()['ci']
-            }}</small></label
-          ><label
-            >Tipo de Persona<select formControlName="tipoPersona">
-              <option value="A">Administrativo</option>
-              <option value="I">Inquilino</option>
-            </select></label
-          ><label>Nombre<input formControlName="nombre" maxlength="60" /></label
-          ><label>Apellido paterno<input formControlName="ap" /></label
-          ><label>Apellido materno<input formControlName="am" /></label
-          ><label
-            >Género<select formControlName="genero">
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
-            </select></label
-          ><label
-            >Teléfono<input formControlName="telefono" maxlength="20" /><small>{{
-              fieldErrors()['telefono']
-            }}</small></label
-          ><label
-            >Correo<input type="email" formControlName="correo" maxlength="100" /><small>{{
-              fieldErrors()['correo']
-            }}</small></label
-          >
-        </div>
+        <fieldset class="form-section photo-section" [disabled]="submitting()">
+          <legend id="persona-photo-section-title">Fotografía <span>Opcional</span></legend>
+          <app-persona-photo-field
+            [imageUrl]="photoUrl()"
+            [initials]="initials()"
+            [disabled]="submitting()"
+            [canRemove]="!!persona()?.foto"
+            [errorMessage]="photoError() ?? fieldErrors()['foto'] ?? null"
+            (fileSelected)="selectPhoto($event)"
+            (removeRequested)="removePhoto()"
+            (validationError)="setPhotoError($event)"
+          ></app-persona-photo-field>
+        </fieldset>
+
+        <fieldset class="form-section" [disabled]="submitting()">
+          <legend>Datos personales</legend>
+          <div class="fields personal-fields">
+            <div class="form-field">
+              <label for="persona-ci"
+                >CI <span class="required-marker" aria-hidden="true">*</span></label
+              >
+              <input
+                id="persona-ci"
+                type="text"
+                formControlName="ci"
+                maxlength="20"
+                aria-required="true"
+                [class.field-error]="!!fieldMessage('ci')"
+                [class.field-valid]="fieldIsValid('ci')"
+                [attr.aria-invalid]="fieldMessage('ci') ? 'true' : null"
+                [attr.aria-describedby]="fieldMessage('ci') ? 'persona-ci-message' : null"
+              />
+              @if (fieldMessage('ci'); as message) {
+                <p id="persona-ci-message" class="field-message field-message-error" role="alert">
+                  {{ message }}
+                </p>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="persona-nombre"
+                >Nombre <span class="required-marker" aria-hidden="true">*</span></label
+              >
+              <input
+                id="persona-nombre"
+                type="text"
+                formControlName="nombre"
+                maxlength="60"
+                aria-required="true"
+                [class.field-error]="!!fieldMessage('nombre')"
+                [class.field-valid]="fieldIsValid('nombre')"
+                [attr.aria-invalid]="fieldMessage('nombre') ? 'true' : null"
+                [attr.aria-describedby]="fieldMessage('nombre') ? 'persona-nombre-message' : null"
+              />
+              @if (fieldMessage('nombre'); as message) {
+                <p
+                  id="persona-nombre-message"
+                  class="field-message field-message-error"
+                  role="alert"
+                >
+                  {{ message }}
+                </p>
+              }
+            </div>
+
+            <div class="form-field surname-field">
+              <p id="persona-surnames-help" class="field-hint surname-help">
+                Completa al menos uno de los dos apellidos.
+              </p>
+              <div class="surname-fields">
+                <div>
+                  <label for="persona-ap">Apellido paterno</label>
+                  <input
+                    id="persona-ap"
+                    type="text"
+                    formControlName="ap"
+                    maxlength="40"
+                    [class.field-error]="!!fieldMessage('ap') || !!surnameMessage()"
+                    [class.field-valid]="surnameIsValid('ap') && !fieldMessage('ap')"
+                    [attr.aria-invalid]="fieldMessage('ap') || surnameMessage() ? 'true' : null"
+                    [attr.aria-describedby]="surnameAriaDescribedBy('ap')"
+                  />
+                  @if (fieldMessage('ap'); as message) {
+                    <p
+                      id="persona-ap-message"
+                      class="field-message field-message-error"
+                      role="alert"
+                    >
+                      {{ message }}
+                    </p>
+                  }
+                </div>
+
+                <div>
+                  <label for="persona-am">Apellido materno</label>
+                  <input
+                    id="persona-am"
+                    type="text"
+                    formControlName="am"
+                    maxlength="40"
+                    [class.field-error]="!!fieldMessage('am') || !!surnameMessage()"
+                    [class.field-valid]="surnameIsValid('am') && !fieldMessage('am')"
+                    [attr.aria-invalid]="fieldMessage('am') || surnameMessage() ? 'true' : null"
+                    [attr.aria-describedby]="surnameAriaDescribedBy('am')"
+                  />
+                  @if (fieldMessage('am'); as message) {
+                    <p
+                      id="persona-am-message"
+                      class="field-message field-message-error"
+                      role="alert"
+                    >
+                      {{ message }}
+                    </p>
+                  }
+                </div>
+              </div>
+              @if (surnameMessage(); as message) {
+                <p
+                  id="persona-surnames-message"
+                  class="field-message field-message-error"
+                  role="alert"
+                >
+                  {{ message }}
+                </p>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="persona-genero"
+                >Género <span class="required-marker" aria-hidden="true">*</span></label
+              >
+              <select
+                id="persona-genero"
+                formControlName="genero"
+                aria-required="true"
+                [class.field-error]="!!fieldMessage('genero')"
+                [class.field-valid]="fieldIsValid('genero')"
+                [attr.aria-invalid]="fieldMessage('genero') ? 'true' : null"
+                [attr.aria-describedby]="fieldMessage('genero') ? 'persona-genero-message' : null"
+              >
+                <option value="" disabled>Selecciona una opción</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </select>
+              @if (fieldMessage('genero'); as message) {
+                <p
+                  id="persona-genero-message"
+                  class="field-message field-message-error"
+                  role="alert"
+                >
+                  {{ message }}
+                </p>
+              }
+            </div>
+            <div class="form-field">
+              <label for="persona-tipo"
+                >Tipo de Persona <span class="required-marker" aria-hidden="true">*</span></label
+              >
+              <select
+                id="persona-tipo"
+                formControlName="tipoPersona"
+                aria-required="true"
+                [class.field-error]="!!fieldMessage('tipoPersona')"
+                [class.field-valid]="fieldIsValid('tipoPersona')"
+                [attr.aria-invalid]="fieldMessage('tipoPersona') ? 'true' : null"
+                [attr.aria-describedby]="
+                  fieldMessage('tipoPersona') ? 'persona-tipo-message' : null
+                "
+              >
+                <option value="" disabled>Selecciona una opción</option>
+                <option value="A">Administrativo</option>
+                <option value="I">Inquilino</option>
+              </select>
+              @if (fieldMessage('tipoPersona'); as message) {
+                <p id="persona-tipo-message" class="field-message field-message-error" role="alert">
+                  {{ message }}
+                </p>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section" [disabled]="submitting()">
+          <legend>Contacto</legend>
+          <div class="fields">
+            <div class="form-field">
+              <label for="persona-correo"
+                >Correo <span class="required-marker" aria-hidden="true">*</span></label
+              >
+              <input
+                id="persona-correo"
+                type="email"
+                formControlName="correo"
+                maxlength="100"
+                aria-required="true"
+                [class.field-error]="!!fieldMessage('correo')"
+                [class.field-valid]="fieldIsValid('correo')"
+                [attr.aria-invalid]="fieldMessage('correo') ? 'true' : null"
+                [attr.aria-describedby]="
+                  fieldMessage('correo')
+                    ? 'persona-correo-message'
+                    : fieldIsValid('correo')
+                      ? 'persona-correo-valid-message'
+                      : null
+                "
+              />
+              @if (fieldMessage('correo'); as message) {
+                <p
+                  id="persona-correo-message"
+                  class="field-message field-message-error"
+                  role="alert"
+                >
+                  {{ message }}
+                </p>
+              } @else if (fieldIsValid('correo')) {
+                <p id="persona-correo-valid-message" class="field-message field-message-success">
+                  Correo válido.
+                </p>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="persona-telefono"
+                >Teléfono <span class="required-marker" aria-hidden="true">*</span></label
+              >
+              <input
+                id="persona-telefono"
+                type="text"
+                formControlName="telefono"
+                maxlength="20"
+                aria-required="true"
+                [class.field-error]="!!fieldMessage('telefono')"
+                [class.field-valid]="fieldIsValid('telefono')"
+                [attr.aria-invalid]="fieldMessage('telefono') ? 'true' : null"
+                [attr.aria-describedby]="
+                  fieldMessage('telefono') ? 'persona-telefono-message' : null
+                "
+              />
+              @if (fieldMessage('telefono'); as message) {
+                <p
+                  id="persona-telefono-message"
+                  class="field-message field-message-error"
+                  role="alert"
+                >
+                  {{ message }}
+                </p>
+              }
+            </div>
+          </div>
+        </fieldset>
       </div>
+
       <footer>
         <button type="button" class="page-button" [disabled]="submitting()" (click)="close()">
-          Cancelar</button
-        ><button [disabled]="submitting()">{{ persona() ? 'Guardar cambios' : 'Guardar' }}</button>
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="submitting()" [attr.aria-busy]="submitting()">
+          @if (submitting()) {
+            <span class="button-spinner" aria-hidden="true"></span>
+            Guardando...
+          } @else {
+            {{ persona() ? 'Guardar cambios' : 'Guardar' }}
+          }
+        </button>
       </footer>
     </form>
   </section>

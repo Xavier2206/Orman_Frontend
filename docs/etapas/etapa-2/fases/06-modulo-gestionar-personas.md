@@ -59,17 +59,37 @@ No se modificó Backend, autenticación, guards, AuthContext ni se añadió DELE
 - Las object URLs de fotografías descargadas se almacenan en un Signal con actualizaciones inmutables, de modo que su llegada notifica correctamente a la vista zoneless.
 - Los filtros dejaron de usar `$any` en el template; los eventos se estrechan explícitamente en TypeScript.
 
+## Validación visual y consistencia del formulario Persona
+
+- `PersonaFormModalComponent` sigue siendo el único formulario para Añadir y Editar: `persona === null` crea y `persona !== null` edita, conservando el estado actual en el PUT completo.
+- El formulario reactivo ahora valida CI, nombre no blanco, apellidos de hasta 40 caracteres, género, correo, teléfono y tipo de Persona. La validación de grupo exige al menos un apellido no blanco, sin convertir `ap` ni `am` en obligatorios individualmente.
+- Los controles empiezan neutrales; tras interacción o submit muestran error inline, `aria-invalid` y `aria-describedby`. Los valores válidos usan un borde semántico de éxito y Correo muestra confirmación breve. Los `fieldErrors` de ProblemDetail se presentan inline para todos los campos del formulario y fotografía.
+- La fotografía mantiene JPEG/PNG, 2 MiB, preview y revocación de object URL. Si el POST crea la Persona y falla la carga de foto, la página conserva la Persona creada, informa el resultado parcial y un reintento usa PUT de Persona/foto sin repetir POST. Al eliminar foto se actualizan en memoria la Persona seleccionada, el listado y la URL Blob sin un GET adicional.
+- El modal usa tokens semánticos existentes de error, éxito, foco, superficies y bordes; no modifica `themes.css` ni `ThemeService`. La estructura es una columna en móvil y aprovecha dos columnas desde 640 px. La directiva de foco admite un selector inicial y enfoca CI sin perder focus trap, Escape ni retorno de foco.
+- Revisión de tamaño: el template del modal (300 líneas) conserva una única responsabilidad de presentación accesible de campos y mensajes; `PersonasListComponent` (457 líneas) permanece como orquestador ya existente de los cinco modales, HTTP y estado de página. No se realizó una extracción general ajena al alcance; la sincronización local de foto se mantiene como una operación acotada de esa orquestación.
+
+## Corrección visual posterior del modal Persona
+
+- La grilla de Datos personales integra Tipo de Persona junto a Género y conserva Apellidos en una fila de dos controles; la sección Clasificación aislada desaparece. Contacto mantiene Correo/Teléfono en columnas desde 640 px y una columna en móvil.
+- `Cancelar` es ahora un botón secundario real con superficie, borde, padding, hover, foco visible y estado disabled basados en tokens semánticos.
+- Se corrigió el renderizado de `close` y `photo_camera`: `src/index.html` ya carga Material Symbols Rounded y cada CSS encapsulado que contiene `mat-icon` aplica la familia, ligaduras y variaciones tipográficas requeridas. No se ocultaron nombres de iconos ni se añadieron dependencias.
+- Los desplegables nativos de Género y Tipo de Persona heredan el `color-scheme` activo y aplican los tokens de superficie y texto a las opciones que el navegador permite estilizar, sin reemplazar el control accesible nativo.
+- En modo Añadir, Género y Tipo de Persona comienzan vacíos para exigir una selección explícita; en modo Editar se precargan desde la Persona recibida.
+
 ## Pruebas y validaciones
 
 - `npx tsc --noEmit -p tsconfig.app.json`: correcto.
 - `npm test -- --watch=false`: 26 archivos y 133 pruebas aprobadas.
 - `npm run build`: correcto; 333.85 kB iniciales brutos y Personas como chunk lazy de 51.80 kB brutos.
 - `git diff --check`: correcto.
+- Iteración de validación del formulario: `npx tsc -p tsconfig.app.json --noEmit` correcto; `npm test -- --watch=false` con 26 archivos y 161 pruebas aprobadas; `npm run build` correcto (341.12 kB iniciales brutos y Personas como chunk lazy de 78.74 kB). El build conserva una advertencia preexistente de presupuesto CSS en `personas-list.component.css`, que no fue ampliado.
 
 ## Pendientes / bloqueo de cierre
 
-La validación obligatoria con Browser no pudo iniciarse: el runtime indicó literalmente que no hay navegador disponible. Por ello no se afirma validación visual en 1440/1366/1280/1024/768/429/360, temas ni flujos autenticados; tampoco se puede cerrar esta fase como `COMPLETADA` todavía.
+La validación manual con Browser confirmó el modal de Añadir inicialmente neutral, con foco en CI, y sus mensajes inline tras un submit inválido; también confirmó la precarga en Editar y la aplicación de los tres temas. La comprobación semántica en 360 px mostró la variante móvil del listado y el modal abierto, pero la medición geométrica no respondió antes del límite del navegador; queda pendiente una revisión visual exhaustiva de todos los breakpoints antes de marcar la Fase como `COMPLETADA`.
 
 ## Riesgos
+
+La regla de al menos un apellido queda aplicada por ahora solo en Angular; debe replicarse posteriormente en Backend para proteger solicitudes externas a la interfaz.
 
 El contrato entregado no especifica el cuerpo exitoso del endpoint de foto ni el DTO de creación de Usuario. La implementación solo depende de la respuesta enriquecida de Persona cuando existe y recarga el listado para mantener consistencia.

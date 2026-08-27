@@ -15,7 +15,7 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
 - **Última fase completada:** Fase 05 de Etapa 2 — Angular Material Icons en el área privada.
 - **Estado de la Fase 05:** `COMPLETADA`.
-- **Pruebas:** `26 archivos y 133 pruebas aprobadas`.
+- **Pruebas:** `26 archivos y 161 pruebas aprobadas`.
 - **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
@@ -88,6 +88,10 @@ La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autentica
 La Fase 06 incorporó además el resumen remoto superior de Personas desde `GET /api/v1/personas/resumen`. Sus métricas no se derivan del listado, se cargan independientemente y solo se actualizan tras operaciones que modifican altas, estado o vínculo de Usuario. La página de Personas ahora orquesta componentes de modal separados, sin mover HTTP fuera de `PersonaApiService` ni introducir estado global.
 
 La auditoría técnica de la Fase 06 corrigió las acciones móviles, la gestión accesible de foco en modales y la notificación zoneless de fotografías, sin modificar contratos Backend ni ampliar funcionalidades.
+
+La iteración activa de la Fase 06 reforzó el único modal compartido de Crear/Editar Persona con validación inline accesible, regla frontend de al menos un apellido, estados neutral/error/válido basados en tokens y recuperación segura ante fallo posterior de fotografía. La validación manual confirmó el flujo base de crear y editar, el foco inicial, el submit inválido y los temas; la fase permanece `EN DESARROLLO` hasta la decisión de replicar la regla de apellidos en Backend.
+
+La corrección visual posterior del modal Persona integró Tipo de Persona junto a Género, eliminó huecos de la grilla, convirtió Cancelar en botón secundario y aplicó Material Symbols Rounded a los iconos encapsulados del modal y la fotografía, sin modificar validaciones ni contratos.
 
 ### Fases futuras por definir
 

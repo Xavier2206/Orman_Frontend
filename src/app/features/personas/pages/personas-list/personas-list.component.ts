@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, finalize, of, switchMap } from 'rxjs';
 
 import { ProblemDetail, isProblemDetail } from '../../../../core/api/problem-detail.model';
 import { PersonaDetailModalComponent } from '../../components/persona-detail-modal/persona-detail-modal.component';
@@ -224,17 +224,24 @@ export class PersonasListComponent {
   }
   protected submitPersona(event: PersonaFormSubmit): void {
     const current = this.selected();
+    const creating = current === null;
+    let persistedPersona: Persona | null = current;
+
     this.submitting.set(true);
     this.feedback.set(null);
     this.fieldErrors.set({});
     const request$ = current
       ? this.api.update(current.codper, event.request)
       : this.api.create(event.request);
+
     request$
       .pipe(
-        switchMap((persona) =>
-          event.photo ? this.api.subirFoto(persona.codper, event.photo) : [persona],
-        ),
+        switchMap((persona) => {
+          persistedPersona = persona;
+          this.selected.set(persona);
+
+          return event.photo ? this.api.subirFoto(persona.codper, event.photo) : of(persona);
+        }),
         finalize(() => this.submitting.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -244,7 +251,19 @@ export class PersonasListComponent {
           this.load();
           if (!current) this.loadResumen();
         },
-        error: (e: unknown) => this.consumeError(e),
+        error: (error: unknown) => {
+          if (creating && persistedPersona && event.photo) {
+            this.feedback.set(
+              'La Persona fue creada correctamente, pero no se pudo guardar la fotografía.',
+            );
+            this.fieldErrors.set({});
+            this.load();
+            this.loadResumen();
+            return;
+          }
+
+          this.consumeError(error);
+        },
       });
   }
   protected removePhoto(): void {
@@ -257,7 +276,12 @@ export class PersonasListComponent {
         finalize(() => this.submitting.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe({ next: () => this.load(), error: (e: unknown) => this.consumeError(e) });
+      .subscribe({
+        next: () => {
+          this.clearDeletedPhoto(p.codper);
+        },
+        error: (e: unknown) => this.consumeError(e),
+      });
   }
   protected submitStatus(): void {
     const p = this.selected();
@@ -398,6 +422,32 @@ export class PersonasListComponent {
   private revokePhotos(): void {
     this.photoUrls().forEach((url) => URL.revokeObjectURL(url));
     this.photoUrls.set(new Map());
+  }
+  private clearDeletedPhoto(codper: number): void {
+    this.selected.update((selected) =>
+      selected?.codper === codper ? { ...selected, foto: null } : selected,
+    );
+    this.page.update((page) =>
+      page
+        ? {
+            ...page,
+            content: page.content.map((persona) =>
+              persona.codper === codper ? { ...persona, foto: null } : persona,
+            ),
+          }
+        : null,
+    );
+
+    const photoUrl = this.photoUrls().get(codper);
+    if (photoUrl) {
+      URL.revokeObjectURL(photoUrl);
+    }
+
+    this.photoUrls.update((urls) => {
+      const updatedUrls = new Map(urls);
+      updatedUrls.delete(codper);
+      return updatedUrls;
+    });
   }
   private open(mode: ModalMode): void {
     this.mobileMenu.set(null);
