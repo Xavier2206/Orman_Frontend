@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-08-28 — Fase 06 en desarrollo: notificaciones privadas globales
+
+### Añadido
+
+- `ngx-sonner` 3.1.0 (MIT, peers Angular >=19) encapsulado por `OrmanNotificationService` de `core`; los features no dependen directamente de la librería.
+- Host único de notificaciones en `PrivateLayout`, con máximo de tres toast, cierre accesible, atajo nativo de Sonner, animación con respeto a `prefers-reduced-motion` y posición inferior derecha responsive.
+- Tokens semánticos completos para advertencia e información, y mapeo de superficie, texto, bordes, sombra y foco de ORMAN hacia Sonner.
+
+### Cambiado
+
+- Crear y Editar Persona muestran confirmación de éxito solo al terminar el flujo confirmado por Backend. `fieldErrors`, errores generales y el caso Persona creada + fotografía fallida conservan su contexto inline y no generan toast duplicados.
+
+### Verificado
+
+- Typecheck correcto; 27 archivos y 167 pruebas aprobadas.
+- Build de producción correcto: 353.48 kB iniciales brutos y Personas como chunk lazy de 79.57 kB. Permanece la advertencia preexistente de presupuesto CSS en `personas-list.component.css`.
+- `ng serve --host 127.0.0.1 --port 4201` compiló correctamente. La QA visual Browser queda pendiente porque no había navegador disponible en esta sesión.
+
 ## 2026-08-27 — Fase 06 en desarrollo: ajuste de grilla, botones e iconos del modal Persona
 
 ### Cambiado

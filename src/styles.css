@@ -18,6 +18,13 @@
   --color-overlay: var(--theme-overlay);
   --color-success: var(--theme-success);
   --color-warning: var(--theme-warning);
+  --color-warning-text: var(--theme-warning-text);
+  --color-warning-border: var(--theme-warning-border);
+  --color-warning-bg: var(--theme-warning-bg);
+  --color-info: var(--theme-info);
+  --color-info-text: var(--theme-info-text);
+  --color-info-border: var(--theme-info-border);
+  --color-info-bg: var(--theme-info-bg);
   --color-danger: var(--theme-danger);
   --color-danger-text: var(--theme-danger-text);
   --color-danger-border: var(--theme-danger-border);
@@ -26,6 +33,69 @@
   --color-success-border: var(--theme-success-border);
   --color-success-bg: var(--theme-success-bg);
   --color-focus: var(--theme-focus);
+}
+
+[data-sonner-toaster] {
+  --ngx-sonner-border-radius: var(--radius-lg);
+  --ngx-sonner-font-family: inherit;
+  --ngx-sonner-toast-close-button-background: var(--theme-card);
+  --ngx-sonner-toast-close-button-border: 1px solid var(--theme-border);
+  --ngx-sonner-toast-close-button-color: var(--theme-text);
+  --ngx-sonner-toast-close-button-hover-background: var(--theme-card-hover);
+  --ngx-sonner-toast-close-button-hover-border-color: var(--theme-field-border);
+  --ngx-sonner-toast-close-button-hover-color: var(--theme-text);
+  --ngx-sonner-toast-dark-error-background: var(--theme-danger-bg);
+  --ngx-sonner-toast-dark-error-border: var(--theme-danger-border);
+  --ngx-sonner-toast-dark-error-color: var(--theme-danger-text);
+  --ngx-sonner-toast-dark-info-background: var(--theme-info-bg);
+  --ngx-sonner-toast-dark-info-border: var(--theme-info-border);
+  --ngx-sonner-toast-dark-info-color: var(--theme-info-text);
+  --ngx-sonner-toast-dark-normal-background: var(--theme-card);
+  --ngx-sonner-toast-dark-normal-border-color: var(--theme-border);
+  --ngx-sonner-toast-dark-normal-color: var(--theme-text);
+  --ngx-sonner-toast-dark-success-background: var(--theme-success-bg);
+  --ngx-sonner-toast-dark-success-border: var(--theme-success-border);
+  --ngx-sonner-toast-dark-success-color: var(--theme-success-text);
+  --ngx-sonner-toast-dark-warning-background: var(--theme-warning-bg);
+  --ngx-sonner-toast-dark-warning-border: var(--theme-warning-border);
+  --ngx-sonner-toast-dark-warning-color: var(--theme-warning-text);
+  --ngx-sonner-toast-error-background: var(--theme-danger-bg);
+  --ngx-sonner-toast-error-border: var(--theme-danger-border);
+  --ngx-sonner-toast-error-color: var(--theme-danger-text);
+  --ngx-sonner-toast-focus-box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--theme-focus) 35%, transparent);
+  --ngx-sonner-toast-info-background: var(--theme-info-bg);
+  --ngx-sonner-toast-info-border: var(--theme-info-border);
+  --ngx-sonner-toast-info-color: var(--theme-info-text);
+  --ngx-sonner-toast-normal-background: var(--theme-card);
+  --ngx-sonner-toast-normal-border-color: var(--theme-border);
+  --ngx-sonner-toast-normal-color: var(--theme-text);
+  --ngx-sonner-toast-success-background: var(--theme-success-bg);
+  --ngx-sonner-toast-success-border: var(--theme-success-border);
+  --ngx-sonner-toast-success-color: var(--theme-success-text);
+  --ngx-sonner-toast-warning-background: var(--theme-warning-bg);
+  --ngx-sonner-toast-warning-border: var(--theme-warning-border);
+  --ngx-sonner-toast-warning-color: var(--theme-warning-text);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] {
+  /* Sonner inyecta esta regla globalmente; se prioriza la sombra semántica de ORMAN. */
+  box-shadow: var(--shadow-lg) !important;
+  font-size: 0.875rem;
+}
+
+[data-sonner-toaster] [data-sonner-toast]:focus-visible {
+  /* Mantiene el foco visible de ORMAN sobre la sombra base inyectada por Sonner. */
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 3px color-mix(in srgb, var(--theme-focus) 35%, transparent) !important;
+}
+
+@media (max-width: 600px) {
+  /* Sonner fija 20px en móvil; se sobrescribe para respetar el área segura del dispositivo. */
+  [data-sonner-toaster][data-y-position='bottom'] {
+    bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

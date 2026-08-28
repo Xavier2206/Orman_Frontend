@@ -39,6 +39,13 @@
   --theme-overlay: rgba(0, 15, 31, 0.72);
   --theme-success: #16a34a;
   --theme-warning: #d97706;
+  --theme-warning-text: #f5b942;
+  --theme-warning-border: color-mix(in srgb, var(--theme-warning-text) 40%, transparent);
+  --theme-warning-bg: color-mix(in srgb, var(--theme-warning-text) 7%, transparent);
+  --theme-info: #38bdf8;
+  --theme-info-text: #7dd3fc;
+  --theme-info-border: color-mix(in srgb, var(--theme-info-text) 40%, transparent);
+  --theme-info-bg: color-mix(in srgb, var(--theme-info-text) 7%, transparent);
   --theme-danger: #dc2626;
   --theme-danger-text: #ff6b6b;
   --theme-danger-border: rgba(255, 107, 107, 0.4);
@@ -174,6 +181,14 @@
   --theme-success-text: #16a34a;
   --theme-success-border: rgba(22, 163, 74, 0.4);
   --theme-success-bg: rgba(22, 163, 74, 0.04);
+  --theme-warning: #b45309;
+  --theme-warning-text: #b45309;
+  --theme-warning-border: color-mix(in srgb, var(--theme-warning-text) 40%, transparent);
+  --theme-warning-bg: color-mix(in srgb, var(--theme-warning-text) 7%, transparent);
+  --theme-info: #0369a1;
+  --theme-info-text: #0369a1;
+  --theme-info-border: color-mix(in srgb, var(--theme-info-text) 40%, transparent);
+  --theme-info-bg: color-mix(in srgb, var(--theme-info-text) 7%, transparent);
   --theme-hero-panel: #ffffff;
   --theme-hero-border: rgba(212, 169, 78, 0.55);
   --theme-hero-decoration: rgba(212, 169, 78, 0.26);

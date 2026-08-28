@@ -66,7 +66,7 @@ No se modificó Backend, autenticación, guards, AuthContext ni se añadió DELE
 - Los controles empiezan neutrales; tras interacción o submit muestran error inline, `aria-invalid` y `aria-describedby`. Los valores válidos usan un borde semántico de éxito y Correo muestra confirmación breve. Los `fieldErrors` de ProblemDetail se presentan inline para todos los campos del formulario y fotografía.
 - La fotografía mantiene JPEG/PNG, 2 MiB, preview y revocación de object URL. Si el POST crea la Persona y falla la carga de foto, la página conserva la Persona creada, informa el resultado parcial y un reintento usa PUT de Persona/foto sin repetir POST. Al eliminar foto se actualizan en memoria la Persona seleccionada, el listado y la URL Blob sin un GET adicional.
 - El modal usa tokens semánticos existentes de error, éxito, foco, superficies y bordes; no modifica `themes.css` ni `ThemeService`. La estructura es una columna en móvil y aprovecha dos columnas desde 640 px. La directiva de foco admite un selector inicial y enfoca CI sin perder focus trap, Escape ni retorno de foco.
-- Revisión de tamaño: el template del modal (300 líneas) conserva una única responsabilidad de presentación accesible de campos y mensajes; `PersonasListComponent` (457 líneas) permanece como orquestador ya existente de los cinco modales, HTTP y estado de página. No se realizó una extracción general ajena al alcance; la sincronización local de foto se mantiene como una operación acotada de esa orquestación.
+- Revisión de tamaño: el template del modal (300 líneas) conserva una única responsabilidad de presentación accesible de campos y mensajes; `PersonasListComponent` (462 líneas) permanece como orquestador cohesivo de los cinco modales, HTTP, estado de página y la emisión puntual de éxito a través de `OrmanNotificationService`. No se realizó una extracción general ajena al alcance; la sincronización local de foto se mantiene como una operación acotada de esa orquestación.
 
 ## Corrección visual posterior del modal Persona
 
@@ -76,6 +76,14 @@ No se modificó Backend, autenticación, guards, AuthContext ni se añadió DELE
 - Los desplegables nativos de Género y Tipo de Persona heredan el `color-scheme` activo y aplican los tokens de superficie y texto a las opciones que el navegador permite estilizar, sin reemplazar el control accesible nativo.
 - En modo Añadir, Género y Tipo de Persona comienzan vacíos para exigir una selección explícita; en modo Editar se precargan desde la Persona recibida.
 
+## Notificaciones globales del área privada
+
+- Se integró `ngx-sonner` 3.1.0, cuya metadata publicada declara licencia MIT y peers `@angular/common` / `@angular/core` `>=19.0.0`; es compatible con Angular 22.0.7 sin forzar dependencias ni añadir `@angular/animations`.
+- `OrmanNotificationService`, provisto en raíz, encapsula `ngx-sonner` y expone `success`, `info`, `warning`, `error` y `dismiss`. Los features no importan `toast` directamente.
+- El único host `NgxSonnerToaster` vive en `PrivateLayout`, por lo que persiste entre rutas privadas. Su tema se deriva del Signal de `ThemeService`: DÍA usa `light`; ORMAN y NOCHE usan `dark`.
+- Sonner consume variables semánticas de ORMAN para superficies, texto, bordes, foco, sombras y los cuatro tipos de notificación. Se completaron los tokens de advertencia e información sin modificar los temas existentes.
+- Crear y Editar Persona notifican únicamente después de completar el flujo confirmado. El fallo de fotografía posterior al POST mantiene su alerta contextual y reintento sin toast de éxito ni repetición de POST; `fieldErrors` continúa inline sin toast duplicado.
+
 ## Pruebas y validaciones
 
 - `npx tsc --noEmit -p tsconfig.app.json`: correcto.
@@ -83,6 +91,12 @@ No se modificó Backend, autenticación, guards, AuthContext ni se añadió DELE
 - `npm run build`: correcto; 333.85 kB iniciales brutos y Personas como chunk lazy de 51.80 kB brutos.
 - `git diff --check`: correcto.
 - Iteración de validación del formulario: `npx tsc -p tsconfig.app.json --noEmit` correcto; `npm test -- --watch=false` con 26 archivos y 161 pruebas aprobadas; `npm run build` correcto (341.12 kB iniciales brutos y Personas como chunk lazy de 78.74 kB). El build conserva una advertencia preexistente de presupuesto CSS en `personas-list.component.css`, que no fue ampliado.
+
+## Validación de notificaciones
+
+- `npx tsc --noEmit -p tsconfig.app.json` correcto; `npm test -- --watch=false` con 27 archivos y 167 pruebas aprobadas; `npm run build` correcto (353.48 kB iniciales brutos y Personas como chunk lazy de 79.57 kB).
+- `git diff --check` correcto. `ng serve --host 127.0.0.1 --port 4201` compiló correctamente, sin errores de Vite, Angular o `ngx-sonner`.
+- La sesión no dispuso de Browser para QA visual. La verificación estática confirma que el host usa tokens de tema y que Sonner respeta `prefers-reduced-motion`.
 
 ## Pendientes / bloqueo de cierre
 

@@ -1,11 +1,18 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { describe, expect, it, vi } from 'vitest';
+
+import { OrmanNotificationService } from '../../../../core/notifications/orman-notification.service';
+
 import { PersonasListComponent } from './personas-list.component';
 
 describe('PersonasListComponent', () => {
   let fixture: ComponentFixture<PersonasListComponent>;
   let http: HttpTestingController;
+  const notification = {
+    success: vi.fn(),
+  };
   const persona = {
     codper: 7,
     ci: '123',
@@ -41,8 +48,13 @@ describe('PersonasListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PersonasListComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: OrmanNotificationService, useValue: notification },
+      ],
     }).compileComponents();
+    vi.clearAllMocks();
     http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(PersonasListComponent);
   });
@@ -83,10 +95,111 @@ describe('PersonasListComponent', () => {
       photo: null,
     });
     http.expectOne('/api/v1/personas').flush({ ...persona, codper: 8 });
+    expect(notification.success).toHaveBeenCalledWith('Persona creada correctamente.');
     http
       .expectOne('/api/v1/personas/resumen')
       .flush({ totalPersonas: 2, activas: 2, inactivas: 0, conUsuario: 0 });
     http.expectOne((r) => r.url === '/api/v1/personas').flush(page);
+  });
+  it('notifies after a successful persona update', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      selected: { set(value: unknown): void };
+      submitPersona(value: unknown): void;
+    };
+    c.selected.set(persona);
+
+    c.submitPersona({
+      request: {
+        ci: persona.ci,
+        nombre: persona.nombre,
+        ap: persona.ap,
+        am: persona.am,
+        genero: persona.genero,
+        correo: persona.correo,
+        telefono: persona.telefono,
+        tipoPersona: persona.tipoPersona,
+        foto: persona.foto,
+        estado: persona.estado,
+      },
+      photo: null,
+    });
+
+    const update = http.expectOne('/api/v1/personas/7');
+    expect(update.request.method).toBe('PUT');
+    update.flush(persona);
+
+    expect(notification.success).toHaveBeenCalledWith('Persona actualizada correctamente.');
+    http.expectOne((request) => request.url === '/api/v1/personas').flush(page);
+    http.expectNone('/api/v1/personas/resumen');
+  });
+
+  it('keeps backend field errors inline without showing a success notification', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      fieldErrors: { (): Record<string, string> };
+      submitPersona(value: unknown): void;
+    };
+
+    c.submitPersona({
+      request: {
+        ci: '456',
+        nombre: 'Bea',
+        ap: 'Paz',
+        am: null,
+        genero: 'F',
+        correo: 'bea@test.com',
+        telefono: '71111111',
+        tipoPersona: 'A',
+        foto: null,
+      },
+      photo: null,
+    });
+
+    http.expectOne('/api/v1/personas').flush(
+      {
+        detail: 'El CI ya está registrado.',
+        fieldErrors: [{ field: 'ci', message: 'El CI ya está registrado.' }],
+      },
+      { status: 409, statusText: 'Conflict' },
+    );
+
+    expect(c.fieldErrors()['ci']).toBe('El CI ya está registrado.');
+    expect(notification.success).not.toHaveBeenCalled();
+  });
+
+  it('does not notify success when a persona update fails', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      selected: { set(value: unknown): void };
+      submitPersona(value: unknown): void;
+    };
+    c.selected.set(persona);
+
+    c.submitPersona({
+      request: {
+        ci: persona.ci,
+        nombre: persona.nombre,
+        ap: persona.ap,
+        am: persona.am,
+        genero: persona.genero,
+        correo: persona.correo,
+        telefono: persona.telefono,
+        tipoPersona: persona.tipoPersona,
+        foto: persona.foto,
+        estado: persona.estado,
+      },
+      photo: null,
+    });
+
+    http
+      .expectOne('/api/v1/personas/7')
+      .flush(
+        { detail: 'No fue posible actualizar la Persona.' },
+        { status: 500, statusText: 'Error' },
+      );
+
+    expect(notification.success).not.toHaveBeenCalled();
   });
   it('does not repeat POST when a photo upload fails after creation', () => {
     initial();
@@ -122,6 +235,7 @@ describe('PersonasListComponent', () => {
 
     expect(c.selected()?.codper).toBe(8);
     expect(c.feedback()).toContain('La Persona fue creada correctamente');
+    expect(notification.success).not.toHaveBeenCalled();
 
     c.submitPersona(submission);
     const update = http.expectOne('/api/v1/personas/8');

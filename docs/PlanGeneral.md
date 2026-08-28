@@ -93,6 +93,8 @@ La iteración activa de la Fase 06 reforzó el único modal compartido de Crear/
 
 La corrección visual posterior del modal Persona integró Tipo de Persona junto a Género, eliminó huecos de la grilla, convirtió Cancelar en botón secundario y aplicó Material Symbols Rounded a los iconos encapsulados del modal y la fotografía, sin modificar validaciones ni contratos.
 
+La iteración activa de la Fase 06 incorporó notificaciones privadas globales mediante `ngx-sonner` encapsulado por `OrmanNotificationService`. El host único reside en `PrivateLayout`, conserva la identidad ORMAN/DÍA/NOCHE por tokens semánticos y solo confirma por ahora Crear y Editar Persona; los errores inline y el éxito parcial de fotografía siguen siendo contextuales al modal.
+
 ### Fases futuras por definir
 
 No se registran nombres ni funcionalidades adicionales hasta que sean decididos y autorizados.

@@ -8,6 +8,14 @@ import { AuthService } from './core/auth/auth.service';
 
 describe('App', () => {
   beforeEach(async () => {
+    if (typeof window.matchMedia !== 'function') {
+      window.matchMedia = (() => ({
+        addEventListener: () => undefined,
+        matches: false,
+        removeEventListener: () => undefined,
+      })) as unknown as typeof window.matchMedia;
+    }
+
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter(routes)],

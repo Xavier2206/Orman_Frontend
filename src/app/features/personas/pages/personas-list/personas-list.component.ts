@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subject, debounceTime, distinctUntilChanged, finalize, of, switchMap } from 'rxjs';
 
 import { ProblemDetail, isProblemDetail } from '../../../../core/api/problem-detail.model';
+import { OrmanNotificationService } from '../../../../core/notifications/orman-notification.service';
 import { PersonaDetailModalComponent } from '../../components/persona-detail-modal/persona-detail-modal.component';
 import { PersonaFormModalComponent } from '../../components/persona-form-modal/persona-form-modal.component';
 import { PersonaPasswordModalComponent } from '../../components/persona-password-modal/persona-password-modal.component';
@@ -38,6 +39,7 @@ interface FilterOption {
 })
 export class PersonasListComponent {
   private readonly api = inject(PersonaApiService);
+  private readonly notification = inject(OrmanNotificationService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly search$ = new Subject<string>();
@@ -250,6 +252,10 @@ export class PersonasListComponent {
           this.closeModal();
           this.load();
           if (!current) this.loadResumen();
+
+          this.notification.success(
+            creating ? 'Persona creada correctamente.' : 'Persona actualizada correctamente.',
+          );
         },
         error: (error: unknown) => {
           if (creating && persistedPersona && event.photo) {

@@ -13,6 +13,14 @@ describe('PrivateLayoutComponent', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
+    if (typeof window.matchMedia !== 'function') {
+      window.matchMedia = (() => ({
+        addEventListener: () => undefined,
+        matches: false,
+        removeEventListener: () => undefined,
+      })) as unknown as typeof window.matchMedia;
+    }
+
     await TestBed.configureTestingModule({
       imports: [PrivateLayoutComponent],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
@@ -47,6 +55,7 @@ describe('PrivateLayoutComponent', () => {
 
     expect(fixture.nativeElement.querySelector('app-private-topbar')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-private-sidebar')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('ngx-sonner-toaster')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('main router-outlet')).toBeTruthy();
     expect(
       fixture.nativeElement.querySelector('app-private-topbar [aria-label="Abrir menú lateral"]'),

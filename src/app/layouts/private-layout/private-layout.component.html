@@ -1,4 +1,13 @@
 <div class="flex h-[100dvh] flex-col overflow-hidden bg-page text-content">
+  <ngx-sonner-toaster
+    [theme]="notificationTheme()"
+    position="bottom-right"
+    [duration]="5000"
+    [visibleToasts]="3"
+    [richColors]="true"
+    closeButton
+    offset="1.5rem"
+  />
   <app-private-topbar
     [hasSidebarNavigation]="hasSidebarNavigation()"
     [isSidebarOpen]="isSidebarOpen()"
