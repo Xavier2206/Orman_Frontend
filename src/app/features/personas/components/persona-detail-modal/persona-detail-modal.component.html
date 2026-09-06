@@ -1,4 +1,4 @@
-<div class="overlay print:hidden">
+<div class="overlay">
   <section
     appPersonaModalFocus
     class="modal-panel"
@@ -7,31 +7,192 @@
     aria-labelledby="persona-detail-title"
     (escapePressed)="closed.emit()"
   >
-    <header>
-      <h2 id="persona-detail-title">Detalle de Persona</h2>
-      <button type="button" aria-label="Cerrar" (click)="closed.emit()">
+    <header class="modal-header">
+      <div>
+        <p class="modal-kicker">Ficha administrativa</p>
+        <h2 id="persona-detail-title">Detalle de Persona</h2>
+      </div>
+      <button
+        class="icon-button"
+        type="button"
+        aria-label="Cerrar detalle"
+        (click)="closed.emit()"
+      >
         <mat-icon aria-hidden="true">close</mat-icon>
       </button>
     </header>
-    <div class="detail">
-      <div class="identity">
-        <div>{{ initials() }}</div>
-        <p>{{ name() }}</p>
-        <span>{{ persona().usuario?.login ?? 'Sin usuario vinculado' }}</span>
-      </div>
-      <p><b>Código:</b> {{ persona().codper }}</p>
-      <p><b>CI:</b> {{ persona().ci }}</p>
-      <p><b>Género:</b> {{ persona().genero === 'M' ? 'Masculino' : 'Femenino' }}</p>
-      <p><b>Correo:</b> {{ persona().correo }}</p>
-      <p><b>Teléfono:</b> {{ persona().telefono }}</p>
-      <p><b>Tipo:</b> {{ persona().tipoPersona === 'A' ? 'Administrativo' : 'Inquilino' }}</p>
-      <p><b>Estado:</b> {{ persona().estado === 1 ? 'Activo' : 'Inactivo' }}</p>
-      <p><b>Registro:</b> {{ persona().fechaRegistro | date: 'medium' }}</p>
+
+    <div class="modal-body">
+      <header class="profile-header">
+        <div class="profile-avatar">
+          @if (imageUrl(); as source) {
+            <img [src]="source" [alt]="'Fotografía de ' + name()" />
+          } @else {
+            <span>{{ initials() }}</span>
+          }
+        </div>
+        <div class="profile-copy">
+          <h3>{{ name() }}</h3>
+          <p class="profile-type">
+            <mat-icon aria-hidden="true">badge</mat-icon>
+            {{ typeName() }}
+          </p>
+          <span
+            class="status-badge"
+            [class.status-active]="persona().estado === 1"
+            [class.status-inactive]="persona().estado === 0"
+          >
+            <mat-icon aria-hidden="true">{{ statusIcon() }}</mat-icon>
+            {{ statusName() }}
+          </span>
+        </div>
+      </header>
+
+      <section class="details-section" aria-labelledby="personal-information-title">
+        <h3 id="personal-information-title" class="section-title">
+          <mat-icon aria-hidden="true">person</mat-icon>
+          Información personal
+        </h3>
+        <dl class="detail-grid">
+          <div class="detail-item">
+            <dt>CI</dt>
+            <dd>{{ persona().ci }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Género</dt>
+            <dd>{{ genderName() }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="details-section" aria-labelledby="contact-information-title">
+        <h3 id="contact-information-title" class="section-title">
+          <mat-icon aria-hidden="true">contact_mail</mat-icon>
+          Información de contacto
+        </h3>
+        <dl class="detail-grid">
+          <div class="detail-item">
+            <dt>Correo</dt>
+            <dd>{{ persona().correo }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Teléfono</dt>
+            <dd>{{ persona().telefono }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="details-section" aria-labelledby="system-information-title">
+        <h3 id="system-information-title" class="section-title">
+          <mat-icon aria-hidden="true">settings_account_box</mat-icon>
+          Información del sistema
+        </h3>
+        <dl class="detail-grid">
+          <div class="detail-item">
+            <dt>Usuario vinculado</dt>
+            <dd>{{ userName() }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>Fecha de registro</dt>
+            <dd>{{ persona().fechaRegistro | date: 'medium' }}</dd>
+          </div>
+        </dl>
+      </section>
     </div>
-    <footer>
-      <button type="button" (click)="print()">
-        <mat-icon aria-hidden="true">print</mat-icon> Imprimir / Guardar como PDF
+
+    <footer class="modal-footer">
+      <button class="print-button" type="button" (click)="print()">
+        <mat-icon aria-hidden="true">print</mat-icon>
+        Imprimir ficha
       </button>
     </footer>
   </section>
 </div>
+
+<article class="print-sheet" aria-labelledby="print-person-title">
+  <header class="print-header">
+    <div class="print-branding">
+      <img class="print-brand" src="/images/brand/orman-logo.svg" alt="Logotipo oficial de ORMAN" />
+      <div class="print-brand-copy">
+        <p class="print-brand-name">ORMAN</p>
+        <h1>FICHA DE PERSONA</h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="print-profile">
+    <div class="print-photo">
+      @if (imageUrl(); as source) {
+        <img [src]="source" [alt]="'Fotografía de ' + name()" />
+      } @else {
+        <span>{{ initials() }}</span>
+      }
+    </div>
+    <div>
+      <h2 id="print-person-title">{{ name() }}</h2>
+    </div>
+  </div>
+
+  <section class="print-section">
+    <h3>Datos personales</h3>
+    <dl class="print-grid">
+      <div>
+        <dt>Nombre completo</dt>
+        <dd>{{ name() }}</dd>
+      </div>
+      <div>
+        <dt>CI</dt>
+        <dd>{{ persona().ci }}</dd>
+      </div>
+      <div>
+        <dt>Género</dt>
+        <dd>{{ genderName() }}</dd>
+      </div>
+      <div>
+        <dt>Tipo de persona</dt>
+        <dd>{{ typeName() }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="print-section">
+    <h3>Contacto</h3>
+    <dl class="print-grid">
+      <div>
+        <dt>Correo</dt>
+        <dd>{{ persona().correo }}</dd>
+      </div>
+      <div>
+        <dt>Teléfono</dt>
+        <dd>{{ persona().telefono }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="print-section">
+    <h3>Información del sistema</h3>
+    <dl class="print-grid">
+      <div>
+        <dt>Código de persona</dt>
+        <dd>{{ persona().codper }}</dd>
+      </div>
+      <div>
+        <dt>Estado</dt>
+        <dd>{{ statusName() }}</dd>
+      </div>
+      <div>
+        <dt>Usuario</dt>
+        <dd>{{ userName() }}</dd>
+      </div>
+      <div>
+        <dt>Fecha de registro</dt>
+        <dd>{{ persona().fechaRegistro | date: 'dd/MM/yyyy' }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <footer class="print-footer">
+    <span>ORMAN · Gestión de Personas</span>
+    <span>Ficha generada el {{ generatedAt | date: 'dd/MM/yyyy' }}</span>
+  </footer>
+</article>

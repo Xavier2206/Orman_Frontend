@@ -1,8 +1,7 @@
 <section class="mx-auto w-full min-w-0 max-w-375" aria-labelledby="personas-title">
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <p class="text-sm font-semibold uppercase tracking-[.16em] text-accent-text">Gestión</p>
-      <h1 id="personas-title" class="mt-1 text-3xl font-bold text-content">Gestionar Personas</h1>
+      <h1 id="personas-title" class="text-3xl font-bold text-content">Gestionar Personas</h1>
     </div>
     <button
       type="button"
@@ -416,20 +415,26 @@
         aria-label="Paginación de personas"
         class="pagination-bar mt-7 flex min-w-0 flex-col gap-3 rounded-xl border border-theme-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
       >
-        <p class="text-muted">
-          <span>{{ result.totalElements }} personas</span
-          ><span class="font-bold text-content"
-            >· Página {{ result.page + 1 }} de {{ result.totalPages }}</span
+        <div
+          class="pagination-summary flex w-full min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:w-auto sm:justify-normal"
+        >
+          <p class="text-sm text-muted">{{ result.totalElements }} personas</p>
+          <p
+            class="inline-flex min-h-9 items-center rounded-md border border-theme-border bg-surface px-2.5 py-1 text-sm font-bold text-content"
+            aria-live="polite"
           >
-        </p>
-        <div class="flex flex-wrap gap-2">
+            Página {{ result.page + 1 }} de {{ result.totalPages }}
+          </p>
+        </div>
+        <div class="pagination-actions flex w-full gap-2 sm:w-auto">
           <button
             type="button"
             class="page-button flex-1 sm:flex-none"
             [disabled]="result.first"
             (click)="changePage(result.page - 1)"
           >
-            Anterior
+            <mat-icon aria-hidden="true">chevron_left</mat-icon>
+            <span>Anterior</span>
           </button>
           <button
             type="button"
@@ -437,7 +442,8 @@
             [disabled]="result.last"
             (click)="changePage(result.page + 1)"
           >
-            Siguiente
+            <span>Siguiente</span>
+            <mat-icon aria-hidden="true">chevron_right</mat-icon>
           </button>
         </div>
       </nav>
@@ -458,12 +464,18 @@
   />
 }
 @if (modal() === 'detail' && selected(); as persona) {
-  <app-persona-detail-modal [persona]="persona" (closed)="closeModal()" />
+  <app-persona-detail-modal
+    [persona]="persona"
+    [imageUrl]="photoUrl(persona)"
+    (closed)="closeModal()"
+  />
 }
 @if (modal() === 'confirm' && selected(); as persona) {
   <app-persona-status-confirm-modal
     [operation]="persona.estado === 1 ? 'deactivate' : 'activate'"
+    [personaName]="fullName(persona)"
     [submitting]="submitting()"
+    [feedback]="feedback()"
     (closed)="closeModal()"
     (confirmed)="submitStatus()"
   />

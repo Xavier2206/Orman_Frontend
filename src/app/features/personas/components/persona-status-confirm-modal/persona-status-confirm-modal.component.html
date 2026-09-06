@@ -5,21 +5,48 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="persona-status-title"
+    [attr.aria-describedby]="
+      feedback()
+        ? 'persona-status-description persona-status-error'
+        : 'persona-status-description'
+    "
+    [class.operation-deactivate]="operation() === 'deactivate'"
+    [class.operation-activate]="operation() === 'activate'"
+    [attr.aria-busy]="submitting()"
     (escapePressed)="close()"
   >
-    <h2 id="persona-status-title">
-      {{ operation() === 'deactivate' ? 'Dar de baja Persona' : 'Reactivar Persona' }}
-    </h2>
-    <p>
-      {{
-        operation() === 'deactivate'
-          ? '¿Deseas dar de baja a esta Persona? La Persona permanecerá registrada y podrá reactivarse posteriormente.'
-          : '¿Deseas reactivar a esta Persona?'
-      }}
-    </p>
-    <footer>
-      <button type="button" [disabled]="submitting()" (click)="close()">Cancelar</button
-      ><button [disabled]="submitting()" (click)="confirmed.emit()">Confirmar</button>
+    <header class="modal-header">
+      <div class="operation-icon" aria-hidden="true">
+        <mat-icon>{{ operationIcon() }}</mat-icon>
+      </div>
+      <h2 id="persona-status-title">{{ operationTitle() }}</h2>
+    </header>
+
+    <div class="modal-body">
+      <p class="persona-name">{{ personaName() }}</p>
+      <p id="persona-status-description" class="confirmation-message">
+        {{ operationMessage() }}
+      </p>
+      @if (feedback(); as message) {
+        <p id="persona-status-error" class="status-error" role="alert">{{ message }}</p>
+      }
+    </div>
+
+    <footer class="modal-footer">
+      <button class="secondary-button" type="button" [disabled]="submitting()" (click)="close()">
+        Cancelar
+      </button>
+      <button
+        class="confirm-button"
+        type="button"
+        [disabled]="submitting()"
+        (click)="confirmed.emit()"
+      >
+        <mat-icon aria-hidden="true">{{ operationIcon() }}</mat-icon>
+        <span aria-live="polite">
+          {{ submitting() ? submittingLabel() : actionLabel() }}
+        </span>
+      </button>
     </footer>
   </section>
 </div>

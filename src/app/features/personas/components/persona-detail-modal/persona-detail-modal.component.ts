@@ -11,11 +11,15 @@ import { PersonaModalFocusDirective } from '../persona-modal-focus.directive';
 })
 export class PersonaDetailModalComponent {
   readonly persona = input.required<Persona>();
+  readonly imageUrl = input<string | null>(null);
   readonly closed = output<void>();
+  protected readonly generatedAt = new Date();
+
   protected name(): string {
     const p = this.persona();
     return [p.nombre, p.ap, p.am].filter(Boolean).join(' ');
   }
+
   protected initials(): string {
     return (
       this.name()
@@ -25,6 +29,27 @@ export class PersonaDetailModalComponent {
         .toUpperCase() || 'P'
     );
   }
+
+  protected genderName(): string {
+    return this.persona().genero === 'M' ? 'Masculino' : 'Femenino';
+  }
+
+  protected typeName(): string {
+    return this.persona().tipoPersona === 'A' ? 'Administrativo' : 'Inquilino';
+  }
+
+  protected statusName(): string {
+    return this.persona().estado === 1 ? 'Activa' : 'Inactiva';
+  }
+
+  protected statusIcon(): string {
+    return this.persona().estado === 1 ? 'check_circle' : 'cancel';
+  }
+
+  protected userName(): string {
+    return this.persona().usuario?.login ?? 'Sin usuario vinculado';
+  }
+
   protected print(): void {
     window.print();
   }

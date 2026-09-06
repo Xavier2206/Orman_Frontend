@@ -292,8 +292,9 @@ export class PersonasListComponent {
   protected submitStatus(): void {
     const p = this.selected();
     if (!p) return;
+    const deactivating = p.estado === 1;
     this.submitting.set(true);
-    (p.estado === 1 ? this.api.desactivar(p.codper) : this.api.activar(p.codper))
+    (deactivating ? this.api.desactivar(p.codper) : this.api.activar(p.codper))
       .pipe(
         finalize(() => this.submitting.set(false)),
         takeUntilDestroyed(this.destroyRef),
@@ -303,6 +304,11 @@ export class PersonasListComponent {
           this.closeModal();
           this.load();
           this.loadResumen();
+          this.notification.success(
+            deactivating
+              ? 'Persona desactivada correctamente.'
+              : 'Persona reactivada correctamente.',
+          );
         },
         error: (e: unknown) => this.consumeError(e),
       });

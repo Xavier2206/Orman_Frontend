@@ -95,6 +95,20 @@ La corrección visual posterior del modal Persona integró Tipo de Persona junto
 
 La iteración activa de la Fase 06 incorporó notificaciones privadas globales mediante `ngx-sonner` encapsulado por `OrmanNotificationService`. El host único reside en `PrivateLayout`, conserva la identidad ORMAN/DÍA/NOCHE por tokens semánticos y solo confirma por ahora Crear y Editar Persona; los errores inline y el éxito parcial de fotografía siguen siendo contextuales al modal.
 
+La mejora integral del Detalle de Persona convirtió el modal en una ficha administrativa con cabecera de perfil, fotografía Blob autenticada o iniciales, secciones personales/de contacto/sistema, badges de tipo y estado, adaptación responsive con scroll interno y una vista de impresión independiente en hoja carta. El modal continúa siendo exclusivamente visual: recibe la Object URL que ya administra `PersonasListComponent`, sin HTTP ni contratos nuevos.
+
+La iteración posterior corrigió la impresión vacía causada por ocultar el host completo de `PersonasListComponent`: durante impresión se oculta únicamente el listado y se conserva el modal de detalle. La ficha usa una superficie blanca y texto negro independientes del tema para evitar fondos oscuros, elimina repeticiones visuales y redistribuye la información en dos columnas desde 768 px, manteniendo una columna y scroll condicionado en móvil, baja altura o zoom.
+
+La corrección final de esta mejora conserva el diseño visual aprobado del Detalle de Persona: mantiene las tres tarjetas de información apiladas, elimina únicamente reglas de redistribución completa en dos columnas y conserva el ajuste de altura/scroll relativo al viewport. La impresión continúa usando la ficha separada con fondo blanco, sin ocultar el host del listado.
+
+El ajuste puntual posterior de la ficha impresa aumentó moderadamente el tamaño de la identidad `ORMAN` y añadió aire lateral al bloque superior, manteniendo alineado el título y sin modificar el resto del contenido ni la lógica de impresión.
+
+La ficha impresa ahora reemplaza esa identidad textual por el SVG oficial `/images/brand/orman-logo.svg`, manteniendo el mismo bloque superior, un tamaño proporcional para hoja carta y una alineación independiente del tema visual.
+
+La ficha impresa conserva el SVG junto a la palabra `ORMAN`, mantiene `FICHA DE PERSONA` como subtítulo, incorpora `persona.codper` en Información del sistema y añade el pie institucional con la fecha dinámica de generación en formato `dd/MM/yyyy`. No se modifican la fotografía, el modal visual ni la lógica `window.print()`.
+
+El modal compartido de estado de Persona conserva las operaciones `activate`/`deactivate` en un único componente. Ahora muestra el nombre completo recibido desde `PersonasListComponent`, iconografía contextual, mensajes y acciones de carga específicos, además de `aria-describedby`, `aria-busy` y estilos semánticos de éxito/peligro basados en tokens existentes. La lógica HTTP permanece en `PersonasListComponent` y `PersonaApiService`.
+
 ### Fases futuras por definir
 
 No se registran nombres ni funcionalidades adicionales hasta que sean decididos y autorizados.

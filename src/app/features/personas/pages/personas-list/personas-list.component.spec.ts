@@ -71,6 +71,44 @@ describe('PersonasListComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Total Personas');
     expect(fixture.nativeElement.textContent).toContain('Ana Paz');
   });
+  it('renders the clean heading and contextual pagination controls', () => {
+    initial();
+    const heading = fixture.nativeElement.querySelector('#personas-title') as HTMLElement;
+    const pagination = fixture.nativeElement.querySelector(
+      '[aria-label="Paginación de personas"]',
+    ) as HTMLElement;
+
+    expect(heading.textContent?.trim()).toBe('Gestionar Personas');
+    expect(heading.previousElementSibling).toBeNull();
+    expect(pagination.textContent).toContain('1 personas');
+    expect(pagination.textContent).toContain('Página 1 de 1');
+    const icons = pagination.querySelectorAll('mat-icon');
+    expect(icons[0]?.textContent?.trim()).toBe('chevron_left');
+    expect(icons[1]?.textContent?.trim()).toBe('chevron_right');
+    expect(pagination.querySelectorAll('button[disabled]').length).toBe(2);
+  });
+  it('requests the next page using the incremented page index', () => {
+    http
+      .expectOne('/api/v1/personas/resumen')
+      .flush({ totalPersonas: 11, activas: 11, inactivas: 0, conUsuario: 0 });
+    http.expectOne((request) => request.url === '/api/v1/personas').flush({
+      ...page,
+      totalElements: 11,
+      totalPages: 2,
+      last: false,
+    });
+    fixture.detectChanges();
+
+    const nextButton = Array.from(
+      fixture.nativeElement.querySelectorAll('.page-button') as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('Siguiente'));
+
+    nextButton?.click();
+
+    const nextRequest = http.expectOne((request) => request.url === '/api/v1/personas');
+    expect(nextRequest.request.params.get('page')).toBe('1');
+    nextRequest.flush(page);
+  });
   it('does not reload summary for filters', () => {
     initial();
     (fixture.componentInstance as never as { setType(v: string): void }).setType('A');
@@ -132,6 +170,98 @@ describe('PersonasListComponent', () => {
     expect(notification.success).toHaveBeenCalledWith('Persona actualizada correctamente.');
     http.expectOne((request) => request.url === '/api/v1/personas').flush(page);
     http.expectNone('/api/v1/personas/resumen');
+  });
+
+  it('notifies after successfully deactivating a persona and refreshes the view', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      modal: { (): string | null };
+      openConfirm(value: typeof persona): void;
+      submitStatus(): void;
+    };
+
+    c.openConfirm(persona);
+    fixture.detectChanges();
+    c.submitStatus();
+
+    const request = http.expectOne('/api/v1/personas/7/desactivar');
+    expect(request.request.method).toBe('PATCH');
+    request.flush({ ...persona, estado: 0 });
+
+    expect(notification.success).toHaveBeenCalledWith('Persona desactivada correctamente.');
+    expect(c.modal()).toBeNull();
+
+    http.expectOne((request) => request.url === '/api/v1/personas').flush(page);
+    http
+      .expectOne('/api/v1/personas/resumen')
+      .flush({ totalPersonas: 1, activas: 0, inactivas: 1, conUsuario: 0 });
+  });
+
+  it('notifies after successfully reactivating a persona and refreshes the view', () => {
+    initial();
+    const inactivePersona = { ...persona, estado: 0 as const };
+    const c = fixture.componentInstance as never as {
+      modal: { (): string | null };
+      openConfirm(value: typeof inactivePersona): void;
+      submitStatus(): void;
+    };
+
+    c.openConfirm(inactivePersona);
+    fixture.detectChanges();
+    c.submitStatus();
+
+    const request = http.expectOne('/api/v1/personas/7/activar');
+    expect(request.request.method).toBe('PATCH');
+    request.flush({ ...inactivePersona, estado: 1 });
+
+    expect(notification.success).toHaveBeenCalledWith('Persona reactivada correctamente.');
+    expect(c.modal()).toBeNull();
+
+    http.expectOne((request) => request.url === '/api/v1/personas').flush(page);
+    http
+      .expectOne('/api/v1/personas/resumen')
+      .flush({ totalPersonas: 1, activas: 1, inactivas: 0, conUsuario: 0 });
+  });
+
+  it('keeps the status modal open and shows ProblemDetail feedback on status errors', () => {
+    initial();
+    const c = fixture.componentInstance as never as {
+      submitting: { (): boolean };
+      openConfirm(value: typeof persona): void;
+      submitStatus(): void;
+    };
+    const errorCases = [
+      { status: 404, statusText: 'Not Found', detail: 'La Persona no existe.' },
+      { status: 403, statusText: 'Forbidden', detail: 'No tiene permiso para realizar la operación.' },
+      { status: 409, statusText: 'Conflict', detail: 'Debe existir otro propietario.' },
+    ];
+
+    for (const errorCase of errorCases) {
+      c.openConfirm(persona);
+      fixture.detectChanges();
+      c.submitStatus();
+
+      http.expectOne('/api/v1/personas/7/desactivar').flush(
+        { detail: errorCase.detail, errorCode: 'STATUS_ERROR' },
+        { status: errorCase.status, statusText: errorCase.statusText },
+      );
+      fixture.detectChanges();
+
+      const modal = fixture.nativeElement.querySelector(
+        'app-persona-status-confirm-modal',
+      ) as HTMLElement;
+      const dialog = modal.querySelector('[role="dialog"]') as HTMLElement;
+      const alert = modal.querySelector('[role="alert"]') as HTMLElement;
+
+      expect(modal).not.toBeNull();
+      expect(alert.textContent).toContain(errorCase.detail);
+      expect(dialog.getAttribute('aria-describedby')).toBe(
+        'persona-status-description persona-status-error',
+      );
+      expect(dialog.getAttribute('aria-busy')).toBe('false');
+      expect(c.submitting()).toBe(false);
+      expect(notification.success).not.toHaveBeenCalled();
+    }
   });
 
   it('keeps backend field errors inline without showing a success notification', () => {
@@ -279,6 +409,30 @@ describe('PersonasListComponent', () => {
     (fixture.componentInstance as never as { openCreate(): void }).openCreate();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-persona-form-modal')).toBeTruthy();
+  });
+  it('passes the authenticated object URL to the detail modal', () => {
+    const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:persona-7');
+    const photoPage = {
+      ...page,
+      content: [{ ...persona, foto: 'persona-photo.jpg' }],
+    };
+
+    http
+      .expectOne('/api/v1/personas/resumen')
+      .flush({ totalPersonas: 1, activas: 1, inactivas: 0, conUsuario: 0 });
+    http.expectOne((r) => r.url === '/api/v1/personas').flush(photoPage);
+    http.expectOne('/api/v1/personas/7/foto').flush(new Blob(['photo'], { type: 'image/jpeg' }));
+
+    const c = fixture.componentInstance as never as {
+      openDetail(persona: typeof photoPage.content[number]): void;
+    };
+    c.openDetail(photoPage.content[0]);
+    fixture.detectChanges();
+
+    const photo = fixture.nativeElement.querySelector('.profile-avatar img') as HTMLImageElement;
+    expect(photo.src).toContain('blob:persona-7');
+
+    createObjectUrl.mockRestore();
   });
   it('exposes the available card actions in the mobile menu', () => {
     initial();

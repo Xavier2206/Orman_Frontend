@@ -1,5 +1,102 @@
 # Changelog
 
+## 2026-09-04 — Fase 06 en desarrollo: mejora UX del modal de estado de Persona
+
+### Cambiado
+
+- `PersonaStatusConfirmModalComponent` conserva un único flujo compartido y ahora recibe el nombre completo mediante `personaName`.
+- El icono, título, mensaje, tono semántico, acción y estado de carga se diferencian mediante `operation` sin mover la lógica HTTP.
+- Se añadieron `person_off`/`restore`, mensajes administrativos aprobados, `Dar de baja`/`Reactivar persona` y `Desactivando...`/`Reactivando...`.
+- Se reforzaron `aria-describedby`, `aria-busy`, foco visible y adaptación para poca altura y pantallas pequeñas usando tokens existentes.
+
+### Verificado
+
+- `npx tsc --noEmit -p tsconfig.app.json`: correcto.
+- `npm test -- --watch=false`: 27 archivos y 177 pruebas aprobadas.
+- `npm run build`: correcto; 353.48 kB iniciales brutos y Personas como chunk lazy de 93.92 kB. Persisten advertencias de presupuesto CSS en archivos previos, sin errores de compilación.
+- `git diff --check`: correcto. No se modificó `package-lock.json`.
+
+## 2026-09-04 — Fase 06 en desarrollo: ampliación institucional de la ficha impresa
+
+### Cambiado
+
+- El encabezado de `print-sheet` conserva el SVG oficial y muestra `ORMAN` junto al logo, con `FICHA DE PERSONA` debajo.
+- La sección de información del sistema incorpora `persona.codper` y conserva Estado, Usuario y Fecha de registro.
+- Se añadió el pie `ORMAN · Gestión de Personas` junto con la fecha dinámica en formato `dd/MM/yyyy`.
+- No se modificaron el modal visual, las fotografías, los datos existentes, la lógica `window.print()` ni el backend.
+
+### Verificado
+
+- Typecheck correcto.
+- Las pruebas del componente de detalle pasan; la suite global ejecutó 27 archivos y 172 de 175 pruebas. Las 3 fallas restantes pertenecen a pruebas preexistentes de `OrmanNotificationService`.
+- Build de producción correcto; se mantienen advertencias de presupuesto CSS, sin errores de compilación.
+- El SVG oficial continúa incluido en `dist/orman-frontend/browser/images/brand/orman-logo.svg`.
+- `package-lock.json` no cambió y `git diff --check` es correcto.
+
+## 2026-09-03 — Fase 06 en desarrollo: logo oficial en la ficha impresa
+
+### Cambiado
+
+- El encabezado de `print-sheet` utiliza el recurso oficial `/images/brand/orman-logo.svg` en lugar del texto institucional.
+- El logo conserva el margen lateral y la alineación del título `FICHA DE PERSONA`, con dimensiones proporcionales para hoja carta.
+
+## 2026-09-03 — Fase 06 en desarrollo: ajuste del encabezado de la ficha impresa
+
+### Cambiado
+
+- Se aumentó moderadamente el tamaño visual de `ORMAN` y se añadió margen interno al encabezado de `print-sheet`, manteniendo alineado el título `FICHA DE PERSONA`.
+- No se modificaron el contenido de la ficha, el modal en pantalla ni la lógica de impresión.
+
+## 2026-09-03 — Fase 06 en desarrollo: conservación del diseño aprobado del detalle
+
+### Cambiado
+
+- Se conservaron las tres tarjetas actuales de Información personal, Contacto e Información del sistema, retirando únicamente la redistribución completa en dos columnas.
+- El modal mantiene la altura dinámica relativa al viewport, scroll interno cuando es necesario y la cabecera de perfil aprobada.
+
+### Verificado
+
+- Typecheck correcto; 27 archivos y 175 pruebas aprobadas.
+- Build de producción correcto: 353.48 kB iniciales brutos y Personas como chunk lazy de 88.95 kB. Se mantienen advertencias de presupuesto CSS en el detalle y el listado, sin errores de compilación.
+- El servidor Angular compiló correctamente en `127.0.0.1:4201`; la QA visual manual de impresión, responsive y zoom queda pendiente porque no hubo navegador integrado disponible.
+
+## 2026-09-03 — Fase 06 en desarrollo: corrección de impresión y layout del detalle
+
+### Corregido
+
+- La impresión deja de ocultar el `print-sheet`: `PersonasListComponent` oculta solamente su sección de listado y conserva visible el componente de detalle.
+- La ficha impresa usa una superficie clara y texto oscuro independientes del tema activo, sin `overflow: hidden` que pueda recortar contenido.
+
+### Cambiado
+
+- El detalle elimina etiquetas repetidas de nombre, tipo y estado; la cabecera concentra la identidad y el estado, mientras las secciones conservan los datos administrativos restantes.
+- La información se distribuye en dos columnas desde 768 px y vuelve a una columna en pantallas menores; el modal crece hasta el límite del viewport y mantiene scroll solo cuando es necesario.
+
+### Verificado
+
+- Se mantienen fotografía autenticada mediante Blob/Object URL, Signals, focus trap, Escape, accesibilidad, modelos y API existentes.
+- Typecheck correcto; 27 archivos y 174 pruebas aprobadas.
+- Build de producción correcto: 353.48 kB iniciales brutos y Personas como chunk lazy de 89.28 kB. Se mantienen advertencias de presupuesto CSS en el detalle y el listado, sin errores de compilación.
+
+## 2026-09-03 — Fase 06 en desarrollo: ficha administrativa de Persona
+
+### Añadido
+
+- Cabecera de perfil en el detalle con fotografía protegida, fallback de iniciales, nombre completo, tipo de Persona y estado visual.
+- Secciones de Información personal, Información de contacto e Información del sistema, limitadas a los campos existentes de `Persona`.
+- Vista de impresión separada con marca ORMAN, formato hoja carta y estilos `@media print` que ocultan el modal y cubren el contenido de la pantalla.
+- Pruebas del fallback de iniciales, estructura de impresión y entrega de la Object URL al modal.
+
+### Cambiado
+
+- `PersonasListComponent` pasa al detalle la Object URL que ya obtiene mediante `PersonaApiService.getFoto()` y administra con su mapa de Signals; el modal no realiza llamadas HTTP.
+- El detalle incorpora scroll interno, distribución móvil y Material Symbols Rounded para cierre, impresión y secciones, reutilizando tokens semánticos existentes.
+
+### Verificado
+
+- Typecheck, suite completa de 27 archivos y 173 pruebas, y build de producción ejecutados después del cambio. El build no presenta errores; conserva advertencias de presupuesto CSS en el detalle y en el listado.
+- `package-lock.json` no fue modificado.
+
 ## 2026-08-28 — Fase 06 en desarrollo: notificaciones privadas globales
 
 ### Añadido
