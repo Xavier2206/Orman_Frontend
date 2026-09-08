@@ -61,13 +61,48 @@
 
           @if (isCreate()) {
             <div class="form-field state-field">
-              <label for="role-initial-state">Estado inicial</label>
-              <select id="role-initial-state" formControlName="estado">
-                <option [ngValue]="1">Activo</option>
-                <option [ngValue]="0">Inactivo</option>
-              </select>
+              <span id="role-initial-state-label" class="field-label">Estado inicial</span>
+              <div
+                class="state-options"
+                role="radiogroup"
+                aria-labelledby="role-initial-state-label"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="form.controls.estado.value === 1"
+                  [class.state-selected]="form.controls.estado.value === 1"
+                  (click)="selectInitialState(1)"
+                >
+                  <mat-icon aria-hidden="true">check_circle</mat-icon>
+                  Activo
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="form.controls.estado.value === 0"
+                  [class.state-selected]="form.controls.estado.value === 0"
+                  (click)="selectInitialState(0)"
+                >
+                  <mat-icon aria-hidden="true">block</mat-icon>
+                  Inactivo
+                </button>
+              </div>
             </div>
           }
+
+          <div class="preview" aria-label="Vista previa del Rol">
+            <span class="preview-label">Vista previa</span>
+            <div class="preview-card">
+              <strong>{{ previewName() }}</strong>
+              <span
+                class="preview-status"
+                [class.preview-status-inactive]="previewStatusValue() === 0"
+              >
+                {{ previewStatusLabel() }}
+              </span>
+            </div>
+          </div>
         </fieldset>
       </div>
 

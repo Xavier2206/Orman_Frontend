@@ -77,6 +77,24 @@ export class RolFormModalComponent implements OnInit {
     return this.fieldErrors()['nombre'] ?? null;
   }
 
+  protected previewName(): string {
+    return this.form.controls.nombre.value.trim() || 'Nuevo Rol';
+  }
+
+  protected previewStatusValue(): 0 | 1 {
+    return this.isCreate() ? this.form.controls.estado.value : (this.rol()?.estado ?? 1);
+  }
+
+  protected previewStatusLabel(): string {
+    return this.previewStatusValue() === 1 ? 'Activo' : 'Inactivo';
+  }
+
+  protected selectInitialState(state: 0 | 1): void {
+    if (!this.submitting()) {
+      this.form.controls.estado.setValue(state);
+    }
+  }
+
   protected close(): void {
     if (!this.submitting()) {
       this.closed.emit();
