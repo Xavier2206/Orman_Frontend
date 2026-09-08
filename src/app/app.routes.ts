@@ -51,6 +51,13 @@ export const routes: Routes = [
             (component) => component.RolesListComponent,
           ),
       },
+      {
+        path: 'menus/listar',
+        loadComponent: () =>
+          import('./features/menus/pages/menus-list/menus-list.component').then(
+            (component) => component.MenusListComponent,
+          ),
+      },
     ],
   },
 ];

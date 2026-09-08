@@ -1,0 +1,210 @@
+<div class="overlay">
+  <section
+    appPersonaModalFocus
+    class="modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="menu-form-title"
+    [attr.aria-describedby]="feedback() ? 'menu-form-description menu-form-feedback' : 'menu-form-description'"
+    [attr.aria-busy]="submitting()"
+    [initialFocusSelector]="'#menu-name'"
+    (escapePressed)="close()"
+  >
+    <header>
+      <div>
+        <h2 id="menu-form-title">{{ isCreate() ? 'Crear Menú' : 'Editar Menú' }}</h2>
+        <p id="menu-form-description">
+          {{
+            isCreate()
+              ? 'Registra un nuevo Menú y selecciona el icono que lo representará dentro del sistema.'
+              : 'Actualiza los datos del Menú seleccionado.'
+          }}
+        </p>
+        @if (!isCreate() && menu(); as currentMenu) {
+          <p class="menu-code">Código #{{ currentMenu.codm }}</p>
+        }
+      </div>
+      <button type="button" aria-label="Cerrar" [disabled]="submitting()" (click)="close()">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    @if (feedback(); as message) {
+      <p id="menu-form-feedback" class="feedback" role="alert">{{ message }}</p>
+    }
+
+    <form [formGroup]="form" [attr.aria-busy]="submitting()" (ngSubmit)="submit()">
+      <div class="body">
+        <fieldset [disabled]="submitting()">
+          <div class="form-field">
+            <label for="menu-name">
+              Nombre del Menú <span class="required-marker" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="menu-name"
+              type="text"
+              formControlName="nombre"
+              maxlength="100"
+              placeholder="Ej. CONTROL DE ACCESO"
+              aria-required="true"
+              [class.field-error]="!!fieldMessage()"
+              [attr.aria-invalid]="fieldMessage() ? 'true' : null"
+              [attr.aria-describedby]="fieldMessage() ? 'menu-name-message' : 'menu-name-help'"
+            />
+            <p id="menu-name-help" class="field-hint">El nombre se almacenará en mayúsculas.</p>
+            @if (fieldMessage(); as message) {
+              <p id="menu-name-message" class="field-message" role="alert">{{ message }}</p>
+            }
+          </div>
+
+          <div class="form-field">
+            <label id="menu-icon-label" for="menu-icon-trigger">Icono</label>
+            <div class="icon-trigger-row">
+              <button
+                id="menu-icon-trigger"
+                type="button"
+                class="icon-trigger"
+                aria-haspopup="dialog"
+                aria-controls="menu-icon-picker"
+                [attr.aria-expanded]="iconPickerOpen()"
+                [disabled]="submitting()"
+                (click)="toggleIconPicker()"
+              >
+                <span class="selected-icon-preview" aria-hidden="true">
+                  <mat-icon>{{ iconName(form.controls.icono.value) }}</mat-icon>
+                </span>
+                <span class="selected-icon-label">{{
+                  form.controls.icono.value || 'Seleccionar un icono'
+                }}</span>
+                <mat-icon class="trigger-chevron" aria-hidden="true">{{
+                  iconPickerOpen() ? 'expand_less' : 'expand_more'
+                }}</mat-icon>
+              </button>
+              @if (form.controls.icono.value) {
+                <button
+                  type="button"
+                  class="clear-icon-button"
+                  aria-label="Quitar icono seleccionado"
+                  title="Quitar icono seleccionado"
+                  [disabled]="submitting()"
+                  (click)="clearIcon()"
+                >
+                  <mat-icon aria-hidden="true">close</mat-icon>
+                </button>
+              }
+            </div>
+
+            @if (iconPickerOpen()) {
+              <div id="menu-icon-picker" class="icon-picker-panel" role="dialog" aria-label="Selector visual de iconos">
+                <label for="menu-icon-search">Buscar icono</label>
+                <div class="icon-search-field">
+                  <mat-icon aria-hidden="true">search</mat-icon>
+                  <input
+                    id="menu-icon-search"
+                    type="search"
+                    placeholder="Buscar icono..."
+                    [value]="iconSearch()"
+                    (input)="searchIcons($event)"
+                  />
+                </div>
+
+                <div class="icon-categories" role="tablist" aria-label="Categorías de iconos">
+                  @for (category of iconCategories; track category) {
+                    <button
+                      type="button"
+                      role="tab"
+                      [attr.aria-selected]="iconCategory() === category"
+                      [class.category-selected]="iconCategory() === category"
+                      (click)="selectIconCategory(category)"
+                    >
+                      {{ category }}
+                    </button>
+                  }
+                </div>
+
+                <div class="icon-grid" role="listbox" aria-label="Iconos disponibles">
+                  @for (icon of filteredIcons(); track icon.name) {
+                    <button
+                      type="button"
+                      class="icon-option"
+                      role="option"
+                      [attr.aria-selected]="form.controls.icono.value === icon.name"
+                      [class.icon-option-selected]="form.controls.icono.value === icon.name"
+                      [attr.title]="icon.name"
+                      (click)="selectIcon(icon.name)"
+                    >
+                      <mat-icon aria-hidden="true">{{ icon.name }}</mat-icon>
+                      <span>{{ icon.name }}</span>
+                      @if (form.controls.icono.value === icon.name) {
+                        <mat-icon class="selection-check" aria-hidden="true">check</mat-icon>
+                      }
+                    </button>
+                  } @empty {
+                    <p class="icon-empty" role="status">No se encontraron iconos.</p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (isCreate()) {
+            <div class="form-field">
+              <span id="menu-initial-state-label" class="field-label">Estado inicial</span>
+              <div class="state-options" role="radiogroup" aria-labelledby="menu-initial-state-label">
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="form.controls.estado.value === 1"
+                  [class.state-selected]="form.controls.estado.value === 1"
+                  (click)="selectInitialState(1)"
+                >
+                  <mat-icon aria-hidden="true">check_circle</mat-icon>
+                  Activo
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="form.controls.estado.value === 0"
+                  [class.state-selected]="form.controls.estado.value === 0"
+                  (click)="selectInitialState(0)"
+                >
+                  <mat-icon aria-hidden="true">block</mat-icon>
+                  Inactivo
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="preview" aria-label="Vista previa del Menú">
+            <span class="preview-label">Vista previa</span>
+            <div class="preview-card">
+              <span class="selected-icon-preview" aria-hidden="true">
+                <mat-icon>{{ iconName(form.controls.icono.value) }}</mat-icon>
+              </span>
+              <strong>{{ previewName() }}</strong>
+              @if (isCreate()) {
+                <span
+                  class="preview-status"
+                  [class.preview-status-inactive]="form.controls.estado.value === 0"
+                >
+                  {{ previewStatusLabel() }}
+                </span>
+              }
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <footer>
+        <button type="button" class="secondary-button" [disabled]="submitting()" (click)="close()">
+          Cancelar
+        </button>
+        <button type="submit" class="primary-button" [disabled]="submitting()">
+          <span aria-live="polite">{{
+            submitting() ? (isCreate() ? 'Creando...' : 'Guardando...') : (isCreate() ? 'Crear Menú' : 'Guardar cambios')
+          }}</span>
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

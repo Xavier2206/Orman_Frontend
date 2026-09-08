@@ -13,9 +13,9 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
 - **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
-- **Última fase completada:** Fase 05 de Etapa 2 — Angular Material Icons en el área privada.
+- **Última fase completada:** Fase 08 de Etapa 2 — Acciones y modales de Gestionar Menús.
 - **Estado de la Fase 05:** `COMPLETADA`.
-- **Pruebas:** `26 archivos y 161 pruebas aprobadas`.
+- **Pruebas:** `35 archivos y 239 pruebas aprobadas`.
 - **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
@@ -83,6 +83,7 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 05 — Angular Material Icons en el área privada | `COMPLETADA` | Fase 04; layout privado y `Menu.icono` disponibles | [Documento](etapas/etapa-2/fases/05-angular-material-icons.md) |
 | 06 — Módulo Gestionar Personas | `EN DESARROLLO` | Fases privadas disponibles; contrato Backend de Personas entregado | [Documento](etapas/etapa-2/fases/06-modulo-gestionar-personas.md) |
 | 07 — Gestionar Roles: listado, resumen y filtros remotos | `COMPLETADA` | Contratos confirmados de `GET /api/v1/roles` y `GET /api/v1/roles/resumen` | [Documento](etapas/etapa-2/fases/07-estructura-inicial-modulo-roles.md) |
+| 08 — Acciones y modales de Gestionar Menús | `COMPLETADA` | Contratos confirmados de lectura, creación, edición y cambio de estado; asignaciones fuera de alcance | [Documento](etapas/etapa-2/fases/08-estructura-inicial-modulo-menus.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -111,6 +112,8 @@ La ficha impresa conserva el SVG junto a la palabra `ORMAN`, mantiene `FICHA DE 
 El modal compartido de estado de Persona conserva las operaciones `activate`/`deactivate` en un único componente. Ahora muestra el nombre completo recibido desde `PersonasListComponent`, iconografía contextual, mensajes y acciones de carga específicos, además de `aria-describedby`, `aria-busy` y estilos semánticos de éxito/peligro basados en tokens existentes. La lógica HTTP permanece en `PersonasListComponent` y `PersonaApiService`.
 
 La Fase 07 implementó `features/roles`: ruta privada `/app/roles/listar`, listado paginado desde `GET /api/v1/roles`, resumen global desde `GET /api/v1/roles/resumen`, búsqueda remota con debounce, filtro remoto por estado, cards responsive y estados de carga/error/vacío mediante tokens de los tres temas. El listado usa `switchMap` para no renderizar resultados de solicitudes canceladas. Crear, Editar, Activar y Desactivar se coordinan desde `RolesListComponent` mediante dos modales compartidos, `ProblemDetail`, toasts y recargas que conservan filtros. DELETE, detalle, asignaciones Rol–Usuario, Sidebar, Menús y Procesos permanecen fuera de alcance.
+
+La Fase 08 implementó el listado funcional de `features/menus` y sus acciones administrativas: ruta privada `/app/menus/listar`, lectura paginada, resumen global, búsqueda y filtro remotos, cards responsive, iconos reales con fallback visual, formulario compartido Crear/Editar, selector visual curado de iconos, Desactivar, Reactivar, toasts y recargas diferenciadas. Las asignaciones Rol–Menú y Menú–Proceso, Sidebar y Backend permanecen fuera de alcance.
 
 ### Fases futuras por definir
 

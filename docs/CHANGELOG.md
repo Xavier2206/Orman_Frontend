@@ -1,5 +1,66 @@
 # Changelog
 
+## 2026-09-08 — Fase 08: acciones y modales de Gestionar Menús
+
+### Añadido
+
+- Botón Añadir Menú y formulario compartido para Crear y Editar.
+- Validación de nombre, estado inicial en Crear, preview y selector visual local de iconos con búsqueda y categorías.
+- Acciones responsive de Editar, Desactivar y Reactivar, con modal accesible de confirmación de estado.
+- Requests HTTP tipados para POST, PUT y PATCH, toasts de éxito y recargas del listado/resumen según la operación.
+- Pruebas de formularios, selector, acciones desktop/mobile, requests, errores, toasts y recargas.
+
+### Excluido
+
+- DELETE, detalle, asignación Rol–Menú, asignación Menú–Proceso, Sidebar, Roles y Backend.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: correctas; 4 archivos y 30 pruebas aprobadas.
+- Suite completa: correcta; 35 archivos y 239 pruebas aprobadas.
+- Build de producción: correcto; persisten advertencias de presupuesto CSS en Menús y las advertencias históricas de Personas.
+- `git diff --check`: correcto.
+- `package-lock.json`: sin cambios.
+
+## 2026-09-08 — Fase 08: listado funcional del módulo Menús
+
+### Añadido
+
+- Listado remoto paginado de Menús, resumen global, búsqueda con debounce, filtro remoto por estado y limpieza de filtros.
+- Cards responsive con estado, código e icono real de `Menu.icono`, usando `menu` como fallback visual para valores nulos o vacíos.
+- Estados de loading, vacío, error de listado y error independiente de resumen, con soporte de temas ORMAN.
+- Ruta privada lazy `/app/menus/listar`.
+- Pruebas de contratos HTTP, filtros, paginación, iconos, estados visuales, errores y concurrencia.
+
+### Excluido
+
+- Crear, Editar, Activar, Desactivar, asignaciones Rol–Menú, asignaciones Menú–Proceso, Sidebar, Menús/Procesos existentes y Backend.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: 3 archivos y 15 pruebas aprobadas.
+- Build de producción: correcto; persisten advertencias CSS preexistentes en Personas y una advertencia de presupuesto de 424 bytes en Menús.
+- `git diff --check`: correcto.
+- `package-lock.json`: sin cambios.
+
+## 2026-09-08 — Fase 08: estructura inicial del módulo Menús
+
+### Añadido
+
+- Estructura inicial `features/menus` con página base, componentes standalone de formulario y confirmación de estado, servicio injectable sin HTTP y modelo `Menu`.
+- `Menu.icono` se tipó como `string | null` y `Menu.estado` como `0 | 1`.
+- Pruebas básicas de creación y render mínimo de los tres componentes.
+
+### Excluido
+
+- Listado funcional, resumen, filtros, paginación, cards, formularios, modales funcionales, CRUD, cambio de estado, rutas, Sidebar, Menús/Procesos existentes y Backend.
+
+### Pendiente
+
+- Listado funcional, resumen, filtros, CRUD, cambio de estado e integración HTTP.
+
 ## 2026-09-06 — Fase 07: acciones de Gestionar Roles
 
 ### Añadido
