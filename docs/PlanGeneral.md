@@ -82,6 +82,7 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 04 — Selector de rol y Sidebar dinámico | `COMPLETADA` | Fase 03; contexto autenticado con roles | [Documento](etapas/etapa-2/fases/04-selector-rol-sidebar-dinamico.md) |
 | 05 — Angular Material Icons en el área privada | `COMPLETADA` | Fase 04; layout privado y `Menu.icono` disponibles | [Documento](etapas/etapa-2/fases/05-angular-material-icons.md) |
 | 06 — Módulo Gestionar Personas | `EN DESARROLLO` | Fases privadas disponibles; contrato Backend de Personas entregado | [Documento](etapas/etapa-2/fases/06-modulo-gestionar-personas.md) |
+| 07 — Gestionar Roles: listado, resumen y filtros remotos | `COMPLETADA` | Contratos confirmados de `GET /api/v1/roles` y `GET /api/v1/roles/resumen` | [Documento](etapas/etapa-2/fases/07-estructura-inicial-modulo-roles.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -108,6 +109,8 @@ La ficha impresa ahora reemplaza esa identidad textual por el SVG oficial `/imag
 La ficha impresa conserva el SVG junto a la palabra `ORMAN`, mantiene `FICHA DE PERSONA` como subtítulo, incorpora `persona.codper` en Información del sistema y añade el pie institucional con la fecha dinámica de generación en formato `dd/MM/yyyy`. No se modifican la fotografía, el modal visual ni la lógica `window.print()`.
 
 El modal compartido de estado de Persona conserva las operaciones `activate`/`deactivate` en un único componente. Ahora muestra el nombre completo recibido desde `PersonasListComponent`, iconografía contextual, mensajes y acciones de carga específicos, además de `aria-describedby`, `aria-busy` y estilos semánticos de éxito/peligro basados en tokens existentes. La lógica HTTP permanece en `PersonasListComponent` y `PersonaApiService`.
+
+La Fase 07 implementó `features/roles`: ruta privada `/app/roles/listar`, listado paginado desde `GET /api/v1/roles`, resumen global desde `GET /api/v1/roles/resumen`, búsqueda remota con debounce, filtro remoto por estado, cards responsive y estados de carga/error/vacío mediante tokens de los tres temas. El listado usa `switchMap` para no renderizar resultados de solicitudes canceladas. Crear, Editar, Activar y Desactivar se coordinan desde `RolesListComponent` mediante dos modales compartidos, `ProblemDetail`, toasts y recargas que conservan filtros. DELETE, detalle, asignaciones Rol–Usuario, Sidebar, Menús y Procesos permanecen fuera de alcance.
 
 ### Fases futuras por definir
 

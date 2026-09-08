@@ -1,0 +1,94 @@
+<div class="overlay">
+  <section
+    appPersonaModalFocus
+    [initialFocusSelector]="'#role-name'"
+    class="modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="role-form-title"
+    [attr.aria-describedby]="
+      feedback() ? 'role-form-description role-form-feedback' : 'role-form-description'
+    "
+    [attr.aria-busy]="submitting()"
+    (escapePressed)="close()"
+  >
+    <header>
+      <div>
+        <h2 id="role-form-title">{{ isCreate() ? 'Crear Rol' : 'Editar Rol' }}</h2>
+        <p id="role-form-description">
+          {{
+            isCreate()
+              ? 'Registra un nuevo Rol para utilizarlo dentro del sistema.'
+              : 'Actualiza el nombre del Rol seleccionado.'
+          }}
+        </p>
+        @if (!isCreate() && rol(); as currentRole) {
+          <p class="role-code">Código #{{ currentRole.codr }}</p>
+        }
+      </div>
+      <button type="button" aria-label="Cerrar" [disabled]="submitting()" (click)="close()">
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    @if (feedback(); as message) {
+      <p id="role-form-feedback" class="feedback" role="alert">{{ message }}</p>
+    }
+
+    <form [formGroup]="form" [attr.aria-busy]="submitting()" (ngSubmit)="submit()">
+      <div class="body">
+        <fieldset [disabled]="submitting()">
+          <div class="form-field">
+            <label for="role-name"
+              >Nombre del Rol <span class="required-marker" aria-hidden="true">*</span></label
+            >
+            <input
+              id="role-name"
+              type="text"
+              formControlName="nombre"
+              maxlength="50"
+              placeholder="Ej. SUPERVISOR"
+              aria-required="true"
+              [class.field-error]="!!fieldMessage()"
+              [attr.aria-invalid]="fieldMessage() ? 'true' : null"
+              [attr.aria-describedby]="fieldMessage() ? 'role-name-message' : 'role-name-help'"
+            />
+            <p id="role-name-help" class="field-hint">El nombre se almacenará en mayúsculas.</p>
+            @if (fieldMessage(); as message) {
+              <p id="role-name-message" class="field-message" role="alert">{{ message }}</p>
+            }
+          </div>
+
+          @if (isCreate()) {
+            <div class="form-field state-field">
+              <label for="role-initial-state">Estado inicial</label>
+              <select id="role-initial-state" formControlName="estado">
+                <option [ngValue]="1">Activo</option>
+                <option [ngValue]="0">Inactivo</option>
+              </select>
+            </div>
+          }
+        </fieldset>
+      </div>
+
+      <footer>
+        <button type="button" class="secondary-button" [disabled]="submitting()" (click)="close()">
+          Cancelar
+        </button>
+        <button type="submit" class="primary-button" [disabled]="submitting()">
+          <span aria-live="polite">
+            {{
+              submitting()
+                ? isCreate()
+                  ? 'Creando...'
+                  : 'Guardando...'
+                : isCreate()
+                  ? 'Crear Rol'
+                  : 'Guardar cambios'
+            }}
+          </span>
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

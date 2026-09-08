@@ -1,0 +1,408 @@
+<section class="roles-page mx-auto w-full min-w-0 max-w-375" aria-labelledby="roles-title">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <h1 id="roles-title" class="text-3xl font-bold text-content">Gestionar Roles</h1>
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-accent px-4 font-semibold text-accent-contrast shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-accent-hover hover:shadow-md active:scale-[.98] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
+      (click)="openCreate()"
+    >
+      <mat-icon aria-hidden="true">add</mat-icon>
+      Crear Rol
+    </button>
+  </header>
+
+  <section class="mt-6" aria-label="Resumen de Roles">
+    @if (resumenLoading()) {
+      <div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        @for (item of [1, 2, 3]; track item) {
+          <div class="summary-card">
+            <span
+              class="size-[2.55rem] shrink-0 rounded-full bg-surface animate-pulse motion-reduce:animate-none"
+            ></span>
+            <div class="grid w-3/5 gap-2">
+              <i
+                class="block h-[.65rem] w-[68%] rounded-sm bg-surface animate-pulse motion-reduce:animate-none"
+              ></i>
+              <b
+                class="block h-[1.15rem] w-[42%] rounded-sm bg-surface animate-pulse motion-reduce:animate-none"
+              ></b>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (resumen(); as data) {
+      <div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <article class="summary-card summary-total min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">group</mat-icon></span>
+          <div>
+            <p class="text-[.7rem] font-bold tracking-[.1em] text-muted uppercase">Total Roles</p>
+            <strong class="mt-[.2rem] block text-[1.65rem] leading-[1.1] text-content">{{
+              data.totalRoles
+            }}</strong>
+          </div>
+        </article>
+        <article class="summary-card summary-active min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">check_circle</mat-icon></span>
+          <div>
+            <p class="text-[.7rem] font-bold tracking-[.1em] text-muted uppercase">Activos</p>
+            <strong class="mt-[.2rem] block text-[1.65rem] leading-[1.1] text-content">{{
+              data.activos
+            }}</strong>
+          </div>
+        </article>
+        <article class="summary-card summary-inactive min-w-0">
+          <span class="summary-icon"><mat-icon aria-hidden="true">remove_circle</mat-icon></span>
+          <div>
+            <p class="text-[.7rem] font-bold tracking-[.1em] text-muted uppercase">Inactivos</p>
+            <strong class="mt-[.2rem] block text-[1.65rem] leading-[1.1] text-content">{{
+              data.inactivos
+            }}</strong>
+          </div>
+        </article>
+      </div>
+    } @else if (resumenError()) {
+      <p class="summary-error">No fue posible cargar el resumen de Roles.</p>
+    }
+  </section>
+
+  <div
+    class="mt-7 grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-theme-border bg-surface p-4 shadow-sm md:grid-cols-2 md:items-end lg:grid-cols-[minmax(260px,2.2fr)_minmax(190px,1.1fr)_auto]"
+  >
+    <div class="md:col-span-2 lg:col-span-1">
+      <label for="role-search">Buscar</label>
+      <div class="group relative mt-[.35rem]">
+        <mat-icon
+          class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted transition-colors duration-150 group-focus-within:text-accent-text motion-reduce:transition-none"
+          aria-hidden="true"
+          >search</mat-icon
+        >
+        <input
+          id="role-search"
+          class="mt-0 pl-11"
+          type="search"
+          placeholder="Buscar por nombre..."
+          [value]="filters().q"
+          (input)="search($event)"
+        />
+      </div>
+    </div>
+
+    <div class="relative">
+      <label id="role-status-label" for="role-status-trigger">Estado</label>
+      <button
+        id="role-status-trigger"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        aria-labelledby="role-status-label"
+        aria-controls="role-status-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'status'"
+        (click)="toggleFilter()"
+        (keydown)="handleFilterTriggerKeydown($event)"
+      >
+        <span class="whitespace-nowrap">{{ selectedFilterLabel() }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'status' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'status') {
+        <div
+          id="role-status-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="role-status-label"
+        >
+          @for (option of statusOptions; track option.value; let index = $index) {
+            <div
+              class="filter-option"
+              role="option"
+              tabindex="-1"
+              [attr.aria-selected]="option.value === selectedFilterValue()"
+              [class.filter-option-selected]="option.value === selectedFilterValue()"
+              [attr.data-filter]="'status'"
+              [attr.data-index]="index"
+              (click)="selectStatus(option.value)"
+              (keydown)="handleFilterOptionKeydown($event, index)"
+            >
+              {{ option.label }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="page-button w-full px-[.8rem] py-[.35rem] md:col-span-2 md:w-auto md:justify-self-end lg:col-span-1"
+      [disabled]="!hasFilters()"
+      (click)="clearFilters()"
+    >
+      <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+      Limpiar
+    </button>
+  </div>
+
+  @if (error(); as message) {
+    <p
+      class="mt-5 rounded-lg border border-danger-border bg-danger-bg p-4 text-danger-text"
+      role="alert"
+    >
+      {{ message }}
+    </p>
+  }
+
+  @if (loading()) {
+    <div
+      class="mt-6 grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+      role="status"
+      aria-label="Cargando Roles"
+    >
+      @for (card of loadingCards; track card) {
+        <article
+          class="grid min-h-30 content-start gap-3 rounded-xl border border-theme-border bg-card p-4 shadow-sm pointer-events-none"
+          aria-hidden="true"
+        >
+          <span
+            class="block h-4 w-[72%] rounded-sm bg-surface animate-pulse motion-reduce:animate-none"
+          ></span>
+          <span
+            class="block h-3 w-[45%] rounded-sm bg-surface animate-pulse motion-reduce:animate-none"
+          ></span>
+          <span
+            class="mt-3 block h-[1.65rem] w-[4.25rem] rounded-full bg-surface animate-pulse motion-reduce:animate-none"
+          ></span>
+        </article>
+      }
+    </div>
+  } @else if (page(); as result) {
+    @if (result.content.length === 0) {
+      <div
+        class="mt-6 rounded-xl border border-theme-border bg-surface p-10 text-center"
+        role="status"
+      >
+        <mat-icon class="text-3xl text-accent-text" aria-hidden="true">search_off</mat-icon>
+        @if (hasFilters()) {
+          <h2 class="mt-3 text-lg font-bold text-content">
+            No se encontraron Roles con los filtros seleccionados.
+          </h2>
+          <p class="mt-[.35rem] text-muted">
+            Prueba modificando los filtros o limpiando la búsqueda.
+          </p>
+          <button
+            type="button"
+            class="page-button mt-5 px-[.8rem] py-[.35rem]"
+            (click)="clearFilters()"
+          >
+            <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+            Limpiar filtros
+          </button>
+        } @else {
+          <h2 class="mt-3 text-lg font-bold text-content">No hay Roles registrados.</h2>
+        }
+      </div>
+    } @else {
+      <div
+        class="mt-6 grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+      >
+        @for (rol of result.content; track rol.codr) {
+          <article
+            class="role-card min-w-0 rounded-xl border border-theme-border bg-card p-4 shadow-sm"
+          >
+            <div class="flex min-w-0 flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <h2 class="break-words text-[1.05rem] leading-[1.3] font-bold text-content">
+                  {{ rol.nombre }}
+                </h2>
+                <p class="mt-[.35rem] text-sm text-muted">Código #{{ rol.codr }}</p>
+              </div>
+
+              <div class="flex max-w-full flex-wrap justify-end gap-2">
+                <span
+                  class="inline-flex min-h-[1.65rem] items-center gap-[.3rem] rounded-full border border-theme-border px-[.6rem] py-[.15rem] text-xs font-bold leading-[1.2]"
+                  [class.role-status-active]="rol.estado === 1"
+                  [class.role-status-inactive]="rol.estado === 0"
+                >
+                  {{ statusLabel(rol) }}
+                </span>
+                @if (isProtectedRole(rol)) {
+                  <span
+                    class="inline-flex min-h-[1.65rem] items-center gap-[.3rem] rounded-full border border-accent bg-surface px-[.6rem] py-[.15rem] text-xs font-bold leading-[1.2] text-accent-text"
+                  >
+                    <mat-icon aria-hidden="true">shield</mat-icon>
+                    Protegido
+                  </span>
+                }
+              </div>
+            </div>
+
+            @if (canShowActions(rol)) {
+              <div class="mt-3 hidden justify-end gap-1 border-t border-theme-border pt-3 sm:flex">
+                @if (!isProtectedRole(rol)) {
+                  <button
+                    type="button"
+                    class="group relative grid size-11 place-items-center rounded-md text-muted transition-[background-color,box-shadow,color,transform] duration-150 hover:bg-card-hover hover:text-accent-text hover:shadow-sm active:scale-[.98] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
+                    aria-label="Editar Rol"
+                    (click)="openEdit(rol)"
+                  >
+                    <mat-icon aria-hidden="true">edit</mat-icon>
+                    <span
+                      class="invisible absolute right-0 bottom-[calc(100%+.4rem)] z-40 whitespace-nowrap rounded-sm bg-surface px-2 py-[.35rem] text-xs text-content opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 motion-reduce:transition-none"
+                      role="tooltip"
+                      >Editar Rol</span
+                    >
+                  </button>
+                }
+                @if (rol.estado === 1) {
+                  <button
+                    type="button"
+                    class="group relative grid size-11 place-items-center rounded-md text-muted transition-[background-color,box-shadow,color,transform] duration-150 hover:bg-danger-bg hover:text-danger-text hover:shadow-sm active:scale-[.98] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
+                    aria-label="Desactivar Rol"
+                    (click)="openStatus(rol)"
+                  >
+                    <mat-icon aria-hidden="true">delete_outline</mat-icon>
+                    <span
+                      class="invisible absolute right-0 bottom-[calc(100%+.4rem)] z-40 whitespace-nowrap rounded-sm bg-surface px-2 py-[.35rem] text-xs text-content opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 motion-reduce:transition-none"
+                      role="tooltip"
+                      >Desactivar Rol</span
+                    >
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="group relative grid size-11 place-items-center rounded-md text-muted transition-[background-color,box-shadow,color,transform] duration-150 hover:bg-success-bg hover:text-success-text hover:shadow-sm active:scale-[.98] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
+                    aria-label="Reactivar Rol"
+                    (click)="openStatus(rol)"
+                  >
+                    <mat-icon aria-hidden="true">restore</mat-icon>
+                    <span
+                      class="invisible absolute right-0 bottom-[calc(100%+.4rem)] z-40 whitespace-nowrap rounded-sm bg-surface px-2 py-[.35rem] text-xs text-content opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 motion-reduce:transition-none"
+                      role="tooltip"
+                      >Reactivar Rol</span
+                    >
+                  </button>
+                }
+              </div>
+
+              <div
+                class="relative mt-3 flex justify-end border-t border-theme-border pt-3 sm:hidden"
+              >
+                <button
+                  type="button"
+                  class="grid size-11 place-items-center rounded-md text-muted transition-[background-color,box-shadow,color,transform] duration-150 hover:bg-surface hover:text-content hover:shadow-sm active:scale-[.98] focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
+                  aria-label="Más acciones de Rol"
+                  aria-haspopup="menu"
+                  [attr.aria-expanded]="mobileMenu() === rol.codr"
+                  (click)="toggleMobileMenu(rol.codr)"
+                >
+                  <mat-icon aria-hidden="true">more_vert</mat-icon>
+                </button>
+                @if (mobileMenu() === rol.codr) {
+                  <div
+                    class="absolute top-14 right-0 z-10 grid min-w-48 gap-[.15rem] rounded-lg border border-theme-border bg-card p-[.4rem] shadow-md"
+                    role="menu"
+                    aria-label="Acciones de {{ rol.nombre }}"
+                  >
+                    @if (!isProtectedRole(rol)) {
+                      <button
+                        class="flex min-h-11 items-center gap-2 rounded-sm px-3 py-[.55rem] text-left text-sm text-content hover:bg-card-hover focus-visible:bg-card-hover focus-visible:outline-none"
+                        type="button"
+                        role="menuitem"
+                        (click)="openEdit(rol)"
+                      >
+                        <mat-icon aria-hidden="true">edit</mat-icon>
+                        Editar Rol
+                      </button>
+                    }
+                    @if (rol.estado === 1) {
+                      <button
+                        class="flex min-h-11 items-center gap-2 rounded-sm px-3 py-[.55rem] text-left text-sm text-content hover:bg-danger-bg hover:text-danger-text focus-visible:bg-danger-bg focus-visible:text-danger-text focus-visible:outline-none"
+                        type="button"
+                        role="menuitem"
+                        (click)="openStatus(rol)"
+                      >
+                        <mat-icon aria-hidden="true">delete_outline</mat-icon>
+                        Desactivar Rol
+                      </button>
+                    } @else {
+                      <button
+                        class="flex min-h-11 items-center gap-2 rounded-sm px-3 py-[.55rem] text-left text-sm text-content hover:bg-success-bg hover:text-success-text focus-visible:bg-success-bg focus-visible:text-success-text focus-visible:outline-none"
+                        type="button"
+                        role="menuitem"
+                        (click)="openStatus(rol)"
+                      >
+                        <mat-icon aria-hidden="true">restore</mat-icon>
+                        Reactivar Rol
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </article>
+        }
+      </div>
+
+      @if (result.totalPages > 0) {
+        <nav
+          class="mt-7 flex min-w-0 flex-col gap-3 rounded-xl border border-theme-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          aria-label="Paginación de Roles"
+        >
+          <div
+            class="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:w-auto sm:justify-normal"
+          >
+            <p class="text-sm text-muted">{{ result.totalElements }} Roles</p>
+            <p
+              class="inline-flex min-h-9 items-center rounded-md border border-theme-border bg-surface px-2.5 py-1 text-sm font-bold text-content"
+              aria-live="polite"
+            >
+              Página {{ result.page + 1 }} de {{ result.totalPages }}
+            </p>
+          </div>
+          <div class="flex w-full gap-2 sm:w-auto">
+            <button
+              type="button"
+              class="page-button"
+              [disabled]="result.first"
+              (click)="changePage(result.page - 1)"
+            >
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              <span>Anterior</span>
+            </button>
+            <button
+              type="button"
+              class="page-button"
+              [disabled]="result.last"
+              (click)="changePage(result.page + 1)"
+            >
+              <span>Siguiente</span>
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </div>
+        </nav>
+      }
+    }
+  }
+
+  @if (modal() === 'form') {
+    <app-rol-form-modal
+      [mode]="formMode()"
+      [rol]="selected()"
+      [submitting]="submitting()"
+      [feedback]="feedback()"
+      [fieldErrors]="fieldErrors()"
+      (closed)="closeModal()"
+      (saved)="submitRol($event)"
+    ></app-rol-form-modal>
+  }
+
+  @if (modal() === 'status' && selected(); as selectedRole) {
+    <app-rol-status-confirm-modal
+      [operation]="statusOperation()"
+      [roleName]="selectedRole.nombre"
+      [submitting]="submitting()"
+      [feedback]="feedback()"
+      (closed)="closeModal()"
+      (confirmed)="submitStatus()"
+    ></app-rol-status-confirm-modal>
+  }
+</section>

@@ -44,6 +44,13 @@ export const routes: Routes = [
             (component) => component.PersonasListComponent,
           ),
       },
+      {
+        path: 'roles/listar',
+        loadComponent: () =>
+          import('./features/roles/pages/roles-list/roles-list.component').then(
+            (component) => component.RolesListComponent,
+          ),
+      },
     ],
   },
 ];

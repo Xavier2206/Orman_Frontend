@@ -1,5 +1,90 @@
 # Changelog
 
+## 2026-09-06 — Fase 07: acciones de Gestionar Roles
+
+### Añadido
+
+- Crear y editar Roles mediante `RolFormModalComponent` compartido, con validación de nombre, estado inicial en creación y errores de campo.
+- Activar y desactivar Roles mediante `RolStatusConfirmModalComponent` compartido.
+- Acciones desktop/mobile en cards, tooltips accesibles, protección UX de `PROPIETARIO` y toasts de éxito para las cuatro operaciones.
+- Manejo de `ProblemDetail` visible en los modales, manteniéndolos abiertos ante error y limpiando feedback al iniciar/cerrar operaciones.
+- Pruebas de contratos HTTP, recargas, notificaciones, errores, formularios, estados y protección de `PROPIETARIO`.
+
+### Excluido
+
+- DELETE, detalle de Rol, asignaciones Rol–Usuario, Menús, Procesos, Sidebar y cambios Backend.
+
+### Verificado
+
+- Typecheck: correcto.
+- `npm test -- --watch=false`: correcto; 31 archivos y 209 pruebas aprobadas.
+- `npm run build`: correcto; no hay advertencia de presupuesto CSS para Roles. Persisten dos advertencias preexistentes en componentes de Personas.
+- `git diff --check`: correcto. `package-lock.json` no fue modificado.
+
+## 2026-09-05 — Fase 07: resumen y filtros remotos de Gestionar Roles
+
+### Añadido
+
+- `GET /api/v1/roles/resumen` tipado para las métricas globales `totalRoles`, `activos` e `inactivos`.
+- Búsqueda remota por nombre con debounce de 350 ms y filtro remoto por estado, preservando filtros al paginar y omitiendo parámetros vacíos.
+- Tres tarjetas de resumen, filtros accesibles, estados vacíos diferenciados y skeletons compactos para la card de Rol.
+- Cancelación de solicitudes de listado obsoletas con `switchMap`.
+
+### Cambiado
+
+- Las cards de Rol ahora muestran solo datos reales: nombre, código, estado y la etiqueta `Protegido` para `PROPIETARIO`; se retiraron iconos principales no representados por el contrato Backend.
+- Se alinearon hover, bordes, sombras, responsive, paginación, temas y reduced motion con Gestionar Personas.
+
+### Excluido
+
+- Crear, Editar, Activar, Desactivar, modales, Sidebar, Menús, Procesos y cambios Backend.
+
+### Verificado
+
+- `npx tsc -p tsconfig.app.json --noEmit`: correcto.
+- `npm test -- --watch=false`: 30 archivos y 198 pruebas aprobadas.
+- `npm run build`: correcto; no hay advertencia de presupuesto CSS para Roles. Persisten dos advertencias preexistentes en componentes de Personas.
+- `git diff --check`: correcto. `package-lock.json` no fue modificado.
+
+## 2026-09-05 — Fase 07: primera parte funcional de Gestionar Roles
+
+### Añadido
+
+- Ruta privada `/app/roles/listar` con carga lazy de `RolesListComponent`.
+- `RolApiService.list()` para `GET /api/v1/roles`, enviando únicamente `page`, `size` y `sort=nombre,asc`.
+- Cards responsive de Roles con código, estado Activo/Inactivo e identificación visual discreta de `PROPIETARIO` como Protegido.
+- Estados loading, error con `ProblemDetail.detail` o fallback, vacío y paginación Anterior/Siguiente.
+- Pruebas de carga, parámetros HTTP, renderizado, estados, propietario y navegación de páginas.
+
+### Excluido
+
+- Crear, Editar, Activar, Desactivar, filtros, resumen, acciones de card, Sidebar, Menús, Procesos y cambios Backend.
+
+### Verificado
+
+- `npx tsc -p tsconfig.app.json --noEmit`: correcto.
+- `npm test -- --watch=false`: 30 archivos y 191 pruebas aprobadas.
+- `npm run build`: correcto; no hay warning de presupuesto CSS para Roles. Persisten warnings preexistentes en Personas.
+- `git diff --check`: correcto. `package-lock.json` no fue modificado.
+
+## 2026-09-05 — Fase 07 completada: estructura inicial de Gestionar Roles
+
+### Añadido
+
+- Estructura mínima `features/roles` con página base, componentes standalone para formulario y confirmación de estado, servicio `RolApiService` sin HTTP y modelo `Rol` limitado a `codr`, `nombre` y `estado`.
+- Pruebas básicas de creación/renderizado de los tres componentes.
+
+### Excluido
+
+- No se añadieron rutas, Sidebar, Menús, Procesos, endpoints, contratos adicionales, filtros, paginación, cards, formularios, modales definitivos ni lógica de negocio.
+
+### Verificado
+
+- `npx tsc -p tsconfig.app.json --noEmit`: correcto.
+- `npm test -- --watch=false`: 30 archivos y 186 pruebas aprobadas.
+- `npm run build`: correcto; persisten únicamente advertencias de presupuesto CSS en archivos existentes de Personas.
+- `git diff --check`: correcto. `package-lock.json` no fue modificado.
+
 ## 2026-09-04 — Fase 06 en desarrollo: mejora UX del modal de estado de Persona
 
 ### Cambiado
