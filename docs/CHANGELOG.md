@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-09-09 - Fase 11: Asignar Menús a Rol
+
+### Añadido
+
+- Pantalla privada lazy /app/asignar-menus/listar con layout master-detail.
+- Listado remoto de Roles activos con búsqueda debounced, cancelación y paginación Backend.
+- Catálogo paginado de Menús activos mediante MenuApiService.
+- Menús asignados y disponibles con búsqueda local y paginación independiente de cuatro cards.
+- Servicio AsignarMenusApiService para consultar, asignar y retirar Menús por Rol.
+- Cards responsive con Material Symbols Rounded y fallback visual menu.
+- Estados loading, error, vacío, sin selección y sin coincidencias.
+- Pruebas HTTP y de presentación para la nueva relación Rol–Menú.
+
+### APIs
+
+- GET /api/v1/roles?estado=1
+- GET /api/v1/menus?estado=1
+- GET /api/v1/roles/{codr}/menus
+- POST /api/v1/roles/{codr}/menus/{codm}
+- DELETE /api/v1/roles/{codr}/menus/{codm}
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas específicas: 3 archivos y 12 pruebas aprobadas.
+- Suite completa: 42 archivos y 293 pruebas aprobadas.
+- Build de producción correcto; se generó el chunk lazy de Asignar Menús.
+- git diff --check correcto.
+- package-lock.json sin cambios.
+
 ## 2026-09-09 - Fase 10: estructura base de Asignar Menús y Asignar Procesos
 
 ### Añadido

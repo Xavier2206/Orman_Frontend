@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable, expand, reduce } from 'rxjs';
 
 import { apiPath } from '../../../core/api/api.constants';
 import { PageResponse } from '../../personas/models/persona.model';
@@ -34,6 +34,16 @@ export class MenuApiService {
     return this.http.get<PageResponse<Menu>>(this.menusPath, { params });
   }
 
+  listActiveCatalog(): Observable<readonly Menu[]> {
+    return this.listActiveCatalogPage(0).pipe(
+      expand((response) => (response.last ? EMPTY : this.listActiveCatalogPage(response.page + 1))),
+      reduce<PageResponse<Menu>, readonly Menu[]>(
+        (menus, response) => [...menus, ...response.content],
+        [],
+      ),
+    );
+  }
+
   resumen(): Observable<MenuResumen> {
     return this.http.get<MenuResumen>(this.menusPath + '/resumen');
   }
@@ -52,5 +62,15 @@ export class MenuApiService {
 
   deactivate(codm: number): Observable<Menu> {
     return this.http.patch<Menu>(this.menusPath + '/' + codm + '/desactivar', null);
+  }
+
+  private listActiveCatalogPage(page: number): Observable<PageResponse<Menu>> {
+    return this.list({
+      q: '',
+      estado: 1,
+      page,
+      size: 10,
+      sort: 'nombre,asc',
+    });
   }
 }

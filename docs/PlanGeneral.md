@@ -13,9 +13,9 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
 - **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
-- **Última fase completada:** Fase 08 de Etapa 2 — Acciones y modales de Gestionar Menús.
+- **Última fase completada:** Fase 11 de Etapa 2 — Asignar Menús a Rol.
 - **Estado de la Fase 05:** `COMPLETADA`.
-- **Pruebas:** `35 archivos y 239 pruebas aprobadas`.
+- **Pruebas:** 42 archivos y 293 pruebas aprobadas.
 - **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
@@ -86,6 +86,7 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 08 — Acciones y modales de Gestionar Menús | `COMPLETADA` | Contratos confirmados de lectura, creación, edición y cambio de estado; asignaciones fuera de alcance | [Documento](etapas/etapa-2/fases/08-estructura-inicial-modulo-menus.md) |
 | 09 — Asignar Roles a Usuario | `COMPLETADA` | Contratos confirmados de Usuarios, Roles y asignaciones Usuario–Rol | [Documento](etapas/etapa-2/fases/09-asignar-roles-usuario.md) |
 | 10 — Estructura base de Asignar Menús y Asignar Procesos | `COMPLETADA` | Fase 09; patrón arquitectónico de `features/asignar-roles/` | [Documento](etapas/etapa-2/fases/10-estructura-asignar-menus-procesos.md) |
+| 11 — Asignar Menús a Rol | `COMPLETADA` | Fase 10; contratos confirmados de Roles, Menús y asignaciones Rol–Menú | [Documento](etapas/etapa-2/fases/11-asignar-menus.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -116,6 +117,8 @@ El modal compartido de estado de Persona conserva las operaciones `activate`/`de
 La Fase 07 implementó `features/roles`: ruta privada `/app/roles/listar`, listado paginado desde `GET /api/v1/roles`, resumen global desde `GET /api/v1/roles/resumen`, búsqueda remota con debounce, filtro remoto por estado, cards responsive y estados de carga/error/vacío mediante tokens de los tres temas. El listado usa `switchMap` para no renderizar resultados de solicitudes canceladas. Crear, Editar, Activar y Desactivar se coordinan desde `RolesListComponent` mediante dos modales compartidos, `ProblemDetail`, toasts y recargas que conservan filtros. DELETE, detalle, asignaciones Rol–Usuario, Sidebar, Menús y Procesos permanecen fuera de alcance.
 
 La Fase 08 implementó el listado funcional de `features/menus` y sus acciones administrativas: ruta privada `/app/menus/listar`, lectura paginada, resumen global, búsqueda y filtro remotos, cards responsive, iconos reales con fallback visual, formulario compartido Crear/Editar, selector visual curado de iconos, Desactivar, Reactivar, toasts y recargas diferenciadas. Las asignaciones Rol–Menú y Menú–Proceso, Sidebar y Backend permanecen fuera de alcance.
+
+La Fase 11 implementó `features/asignar-menus`: selección remota y paginada de Roles activos, detalle del Rol, catálogo paginado de Menús activos, Menús asignados y disponibles con búsqueda y paginación local, asignación, retiro, estados visuales y ruta lazy `/app/asignar-menus/listar`. No se modificaron Sidebar, permisos, AuthContext ni Backend.
 
 ### Fases futuras por definir
 

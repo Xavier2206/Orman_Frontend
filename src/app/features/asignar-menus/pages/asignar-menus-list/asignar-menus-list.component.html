@@ -1,3 +1,376 @@
-<section aria-labelledby="asignar-menus-title">
-  <h1 id="asignar-menus-title">Asignar Menús</h1>
+<section
+  class="assign-menus-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="asignar-menus-title"
+>
+  <header class="page-heading">
+    <h1 id="asignar-menus-title" class="text-3xl font-bold text-content">Asignar Menús a Rol</h1>
+    <p class="mt-2 text-muted">
+      Selecciona un Rol y administra sus Menús asignados en una sola vista.
+    </p>
+  </header>
+
+  <div class="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(19rem,25rem)_minmax(0,1fr)]">
+    <section class="panel min-w-0" aria-labelledby="roles-title">
+      <header>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="section-kicker">Directorio</p>
+            <h2 id="roles-title" class="text-xl font-bold text-content">Roles</h2>
+          </div>
+          @if (page(); as result) {
+            <span class="count-badge">{{ result.totalElements }}</span>
+          }
+        </div>
+        <label class="sr-only" for="role-search">Buscar Rol por nombre o código</label>
+        <div class="search-field mt-4">
+          <mat-icon aria-hidden="true">search</mat-icon>
+          <input
+            id="role-search"
+            type="search"
+            placeholder="Buscar Rol por nombre o código..."
+            [value]="roleQuery()"
+            (input)="searchRoles($event)"
+          />
+        </div>
+      </header>
+
+      @if (loading()) {
+        <div class="mt-5 grid gap-3" role="status" aria-label="Cargando Roles">
+          @for (placeholder of [0, 1, 2, 3]; track placeholder) {
+            <div class="role-skeleton" aria-hidden="true"><span></span><i></i></div>
+          }
+        </div>
+      } @else if (error(); as message) {
+        <p class="alert mt-5" role="alert">{{ message }}</p>
+      } @else if ((page()?.content ?? []).length === 0) {
+        <div class="empty-card mt-5" role="status">
+          <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+          <p>No se encontraron Roles.</p>
+        </div>
+      } @else {
+        <div class="mt-5 grid gap-2" role="list" aria-label="Roles disponibles">
+          @for (role of page()?.content ?? []; track role.codr) {
+            <button
+              type="button"
+              class="role-option"
+              [class.role-option-selected]="isSelected(role)"
+              [attr.aria-pressed]="isSelected(role)"
+              (click)="selectRole(role)"
+            >
+              <span class="role-option-icon" aria-hidden="true">
+                <mat-icon>admin_panel_settings</mat-icon>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block break-words text-base font-bold text-content">{{
+                  role.nombre
+                }}</span>
+                <span class="mt-1 block text-xs text-muted">Código #{{ role.codr }}</span>
+              </span>
+              <span
+                class="status-badge"
+                [class.status-active]="role.estado === 1"
+                [class.status-inactive]="role.estado === 0"
+              >
+                {{ statusLabel(role) }}
+              </span>
+            </button>
+          }
+        </div>
+
+        @if (page(); as result) {
+          @if (result.totalPages >= 1) {
+            <nav class="pagination mt-5" aria-label="Paginación de Roles">
+              <span class="text-sm text-muted" aria-live="polite">
+                Página {{ result.page + 1 }} de {{ result.totalPages }}
+              </span>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="page-button"
+                  [disabled]="result.first"
+                  (click)="changeRolePage(result.page - 1)"
+                >
+                  <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                  <span>Anterior</span>
+                </button>
+                <button
+                  type="button"
+                  class="page-button"
+                  [disabled]="result.last"
+                  (click)="changeRolePage(result.page + 1)"
+                >
+                  <span>Siguiente</span>
+                  <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                </button>
+              </div>
+            </nav>
+          }
+        }
+      }
+    </section>
+
+    <section class="panel min-w-0" aria-labelledby="selected-role-title" aria-live="polite">
+      @if (selectedRole(); as role) {
+        <header class="selected-profile">
+          <div class="profile-avatar" aria-hidden="true">
+            <mat-icon>admin_panel_settings</mat-icon>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="section-kicker">Rol seleccionado</p>
+            <h2 id="selected-role-title" class="break-words text-2xl font-bold text-content">
+              {{ role.nombre }}
+            </h2>
+            <div class="selected-role-meta">
+              <span class="text-sm text-muted">Código #{{ role.codr }}</span>
+              <span
+                class="status-badge"
+                [class.status-active]="role.estado === 1"
+                [class.status-inactive]="role.estado === 0"
+              >
+                {{ statusLabel(role) }}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        @if (assignmentLoading()) {
+          <div class="empty-card mt-6" role="status">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+            <p>Cargando Menús asignados...</p>
+          </div>
+        } @else if (assignmentError(); as message) {
+          <p class="alert mt-6" role="alert">{{ message }}</p>
+        } @else {
+          <div class="mt-6 grid min-w-0 gap-6">
+            <section aria-labelledby="assigned-menus-title">
+              <div class="section-heading">
+                <div class="min-w-0">
+                  <p class="section-kicker">Accesos configurados</p>
+                  <h3 id="assigned-menus-title" class="text-lg font-bold text-content">
+                    Menús asignados
+                  </h3>
+                </div>
+                <div class="section-tools">
+                  <span class="count-badge">{{ assignedMenus().length }}</span>
+                  <label class="sr-only" for="assigned-menu-search">
+                    Buscar Menú asignado por nombre o código
+                  </label>
+                  <div class="search-field menu-search-field">
+                    <mat-icon aria-hidden="true">search</mat-icon>
+                    <input
+                      id="assigned-menu-search"
+                      type="search"
+                      placeholder="Buscar Menú por nombre o código..."
+                      [value]="assignedMenuQuery()"
+                      (input)="searchAssignedMenus($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              @if (assignedMenus().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">menu_open</mat-icon>
+                  <p>Este Rol no tiene Menús asignados.</p>
+                </div>
+              } @else if (filteredAssignedMenuCards().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">search_off</mat-icon>
+                  <p>No se encontraron Menús asignados.</p>
+                </div>
+              } @else {
+                <div
+                  class="menus-grid mt-4"
+                  [class.menus-grid-one]="pagedAssignedMenuCards().length === 1"
+                  [class.menus-grid-two]="pagedAssignedMenuCards().length === 2"
+                  [class.menus-grid-three]="pagedAssignedMenuCards().length === 3"
+                >
+                  @for (menuCard of pagedAssignedMenuCards(); track menuCard.assignedMenu.codm) {
+                    <article class="menu-card">
+                      <div class="menu-card-heading">
+                        <span class="menu-card-icon" aria-hidden="true">
+                          <mat-icon>{{ iconName(menuCard.menu) }}</mat-icon>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                          <h4 class="break-words font-bold text-content">
+                            {{ menuCard.menu.nombre }}
+                          </h4>
+                          <p class="mt-1 text-xs text-muted">Código #{{ menuCard.menu.codm }}</p>
+                        </div>
+                        <span
+                          class="status-badge"
+                          [class.status-active]="menuCard.menu.estado === 1"
+                          [class.status-inactive]="menuCard.menu.estado === 0"
+                        >
+                          {{ statusLabel(menuCard.menu) }}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        class="menu-action menu-action-remove mt-4 w-full"
+                        [disabled]="menuActionCodm() !== null"
+                        (click)="removeMenu(menuCard.assignedMenu)"
+                      >
+                        <mat-icon aria-hidden="true">remove_circle_outline</mat-icon>
+                        {{
+                          menuActionCodm() === menuCard.assignedMenu.codm
+                            ? 'Quitando...'
+                            : 'Quitar Menú'
+                        }}
+                      </button>
+                    </article>
+                  }
+                </div>
+                @if (assignedMenuPageCount() >= 1) {
+                  <nav class="pagination mt-4" aria-label="Paginación de Menús asignados">
+                    <span class="text-sm text-muted" aria-live="polite">
+                      Página {{ assignedMenuPageIndex() + 1 }} de {{ assignedMenuPageCount() }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="assignedMenuPageIndex() === 0"
+                        (click)="changeAssignedMenuPage(-1)"
+                      >
+                        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="assignedMenuPageIndex() === assignedMenuPageCount() - 1"
+                        (click)="changeAssignedMenuPage(1)"
+                      >
+                        <span>Siguiente</span>
+                        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </nav>
+                }
+              }
+            </section>
+
+            <section aria-labelledby="available-menus-title">
+              <div class="section-heading">
+                <div class="min-w-0">
+                  <p class="section-kicker">Catálogo activo</p>
+                  <h3 id="available-menus-title" class="text-lg font-bold text-content">
+                    Menús disponibles
+                  </h3>
+                </div>
+                <div class="section-tools">
+                  @if (!menusLoading()) {
+                    <span class="count-badge">{{ availableMenus().length }}</span>
+                  }
+                  <label class="sr-only" for="available-menu-search">
+                    Buscar Menú disponible por nombre o código
+                  </label>
+                  <div class="search-field menu-search-field">
+                    <mat-icon aria-hidden="true">search</mat-icon>
+                    <input
+                      id="available-menu-search"
+                      type="search"
+                      placeholder="Buscar Menú por nombre o código..."
+                      [value]="availableMenuQuery()"
+                      (input)="searchAvailableMenus($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              @if (menusLoading()) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">sync</mat-icon>
+                  <p>Cargando catálogo de Menús...</p>
+                </div>
+              } @else if (menusError(); as message) {
+                <p class="alert mt-4" role="alert">{{ message }}</p>
+              } @else if (filteredAvailableMenus().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">menu_open</mat-icon>
+                  @if (availableMenuQuery().trim()) {
+                    <p>No se encontraron Menús disponibles.</p>
+                  } @else {
+                    <p>No hay Menús activos disponibles para asignar.</p>
+                  }
+                </div>
+              } @else {
+                <div
+                  class="menus-grid mt-4"
+                  [class.menus-grid-one]="pagedAvailableMenus().length === 1"
+                  [class.menus-grid-two]="pagedAvailableMenus().length === 2"
+                  [class.menus-grid-three]="pagedAvailableMenus().length === 3"
+                >
+                  @for (menu of pagedAvailableMenus(); track menu.codm) {
+                    <article class="menu-card">
+                      <div class="menu-card-heading">
+                        <span class="menu-card-icon" aria-hidden="true">
+                          <mat-icon>{{ iconName(menu) }}</mat-icon>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                          <h4 class="break-words font-bold text-content">{{ menu.nombre }}</h4>
+                          <p class="mt-1 text-xs text-muted">Código #{{ menu.codm }}</p>
+                        </div>
+                        <span class="status-badge status-active">{{ statusLabel(menu) }}</span>
+                      </div>
+                      <button
+                        type="button"
+                        class="menu-action menu-action-assign mt-4 w-full"
+                        [disabled]="menuActionCodm() !== null"
+                        (click)="assignMenu(menu)"
+                      >
+                        <mat-icon aria-hidden="true">add_circle_outline</mat-icon>
+                        {{ menuActionCodm() === menu.codm ? 'Asignando...' : 'Asignar Menú' }}
+                      </button>
+                    </article>
+                  }
+                </div>
+                @if (availableMenuPageCount() >= 1) {
+                  <nav class="pagination mt-4" aria-label="Paginación de Menús disponibles">
+                    <span class="text-sm text-muted" aria-live="polite">
+                      Página {{ availableMenuPageIndex() + 1 }} de {{ availableMenuPageCount() }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="availableMenuPageIndex() === 0"
+                        (click)="changeAvailableMenuPage(-1)"
+                      >
+                        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="availableMenuPageIndex() === availableMenuPageCount() - 1"
+                        (click)="changeAvailableMenuPage(1)"
+                      >
+                        <span>Siguiente</span>
+                        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </nav>
+                }
+              }
+            </section>
+          </div>
+          @if (menuActionError(); as message) {
+            <p class="alert mt-5" role="alert">{{ message }}</p>
+          }
+        }
+      } @else {
+        <div class="empty-detail">
+          <span class="empty-detail-icon">
+            <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+          </span>
+          <h2 id="selected-role-title" class="mt-4 text-xl font-bold text-content">
+            Administrar Menús
+          </h2>
+          <p class="mt-2 max-w-sm text-muted">Selecciona un Rol para administrar sus Menús.</p>
+        </div>
+      }
+    </section>
+  </div>
 </section>
