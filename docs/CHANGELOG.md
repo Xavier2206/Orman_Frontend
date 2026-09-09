@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-09-09 - Fase 10: estructura base de Asignar Menús y Asignar Procesos
+
+### Añadido
+
+- Se crearon las estructuras `features/asignar-menus/` y `features/asignar-procesos/` con sus carpetas `components`, `data`, `models` y `pages`.
+- Se añadieron las Pages standalone mínimas `AsignarMenusListComponent` y `AsignarProcesosListComponent`.
+- Se añadieron templates semánticos, hojas CSS vacías y una prueba de creación por cada Page.
+- Se documentó la fase sin crear rutas ni integración funcional.
+
+### Limitaciones
+
+- No se añadieron servicios HTTP, modelos Rol–Menú o Menú–Proceso, DTOs, mocks, componentes hijos, modales, formularios, filtros, paginadores, permisos ni lógica de asignación o retiro.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: 2 archivos y 2 pruebas aprobadas.
+- Build de producción: correcto; permanecen advertencias de presupuesto CSS preexistentes en features existentes.
+- `package-lock.json`: sin cambios.
+- `git diff --check`: correcto.
+
 ## 2026-09-09 - Fase 09: buscador de Roles asignados
 
 ### Cambiado
