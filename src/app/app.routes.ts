@@ -58,6 +58,13 @@ export const routes: Routes = [
             (component) => component.MenusListComponent,
           ),
       },
+      {
+        path: 'asignar-roles/listar',
+        loadComponent: () =>
+          import('./features/asignar-roles/pages/asignar-roles-list/asignar-roles-list.component').then(
+            (component) => component.AsignarRolesListComponent,
+          ),
+      },
     ],
   },
 ];

@@ -1,5 +1,100 @@
 # Changelog
 
+## 2026-09-09 - Fase 09: buscador de Roles asignados
+
+### Cambiado
+
+- Se añadió un buscador accesible en la misma fila del encabezado de `Roles asignados`.
+- El filtro local busca por nombre y código únicamente entre los Roles asignados al Usuario seleccionado.
+- La consulta vacía restaura las tarjetas y la paginación se recalcula sobre el resultado filtrado.
+- Se añadió el estado `No se encontraron roles asignados.` para búsquedas sin coincidencias.
+- Se reutilizó el patrón responsive del buscador de Roles disponibles sin modificar servicios ni acciones.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: correctas; 2 archivos y 31 pruebas aprobadas.
+- Build de producción: correcto; permanece la advertencia de presupuesto CSS de Asignar Roles junto con las advertencias históricas de otros módulos.
+- `package-lock.json`: sin cambios.
+- `git diff --check`: correcto; se mantienen únicamente los avisos habituales de conversión de finales de línea.
+
+## 2026-09-08 - Fase 09: buscador de Roles disponibles
+
+### Cambiado
+
+- Se añadió un buscador accesible en la misma fila del encabezado de `Roles disponibles para asignar`.
+- El filtro local busca por nombre y código, actualiza las tarjetas en tiempo real y reinicia su paginación al cambiar la consulta.
+- En móvil el encabezado puede envolver el buscador debajo del título sin alterar Roles asignados ni las acciones de asignar/quitar.
+- Se añadió el estado `No se encontraron roles disponibles.` para búsquedas sin coincidencias.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: correctas; 2 archivos y 25 pruebas aprobadas.
+- Build de producción: correcto; permanece la advertencia de presupuesto CSS histórica de Asignar Roles.
+- `package-lock.json`: sin cambios.
+- `git diff --check`: correcto; se mantienen únicamente los avisos habituales de conversión de finales de línea.
+
+## 2026-09-08 - Fase 09: corrección de paginación de Usuarios
+
+### Cambiado
+
+- El directorio de Usuarios solicita `size=5` y limita la consulta a cinco Usuarios por página.
+- El paginador de Usuarios solo aparece cuando existen más de cinco Usuarios; conserva los botones accesibles Anterior y Siguiente.
+- Se añadieron pruebas para 1, 5, 6, 10 y 11 Usuarios, incluyendo navegación y conservación de selección.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: correctas; 2 archivos y 21 pruebas aprobadas.
+- Build de producción: correcto; permanecen advertencias de presupuesto CSS históricas, incluida la hoja de Asignar Roles.
+- `package-lock.json`: sin cambios.
+- `git diff --check`: correcto; se mantienen únicamente los avisos habituales de conversión de finales de línea.
+
+## 2026-09-08 — Fase 09: Iteración visual administrativa de Asignar Roles
+
+### Cambiado
+
+- La vista master-detail de Asignar Roles incorpora directorio de Usuarios con búsqueda local, selección resaltada, ficha administrativa, cards de Roles y estados responsive con tokens de ORMAN, DÍA y NOCHE.
+- El catálogo paginado de Roles activos se centralizó en `RolApiService`; `AsignarRolesApiService` conserva Usuarios y asignaciones, sin duplicar la API de Roles.
+- La ficha consulta Persona por el `codper` confirmado del Usuario y muestra nombre compuesto junto con Estado Usuario y Estado Persona; CI se omite de esta sección por decisión visual.
+- La ficha de Usuario seleccionado ahora prioriza el login y presenta debajo el nombre completo de la Persona asociada; se eliminó el texto genérico de administración de Roles.
+- Las tarjetas del directorio de Usuarios priorizan visualmente el login y mantienen el nombre de Persona como dato secundario; el placeholder ahora dice `Buscar por login o nombre...`, sin cambiar el filtro local existente.
+- La ficha de Usuario seleccionado eliminó el bloque duplicado de Login y estados; después de su cabecera comienzan directamente las secciones de Roles.
+- La zona de Roles ahora se organiza verticalmente: Roles asignados arriba y Roles disponibles para asignar abajo, con grid responsive de dos columnas desde tablet; se retiró la fecha de asignación no disponible.
+- Ambas secciones de Roles ahora comparten un grid responsive de 1/2/3/4 columnas según el viewport y cards más compactas, sin modificar sus datos ni acciones.
+- Ambas secciones incorporan paginación independiente cuando superan cuatro tarjetas, con cuatro elementos por página y controles accesibles Anterior/Siguiente.
+- La fecha de asignación continúa explícitamente no disponible porque el contrato de Roles asignados no la expone.
+- Las cards reservan una zona de altura fija para badges opcionales; así `Protegido` se mantiene visible sin aumentar la altura de `PROPIETARIO` ni desalinear los botones de acción.
+
+### Pendiente de Backend
+
+- Exponer fecha de asignación en la respuesta de Roles asignados si el dominio la requiere visualmente.
+
+## 2026-09-08 — Fase 09: Asignar Roles a Usuario
+
+### Añadido
+
+- Pantalla privada lazy `/app/asignar-roles/listar` con layout master-detail responsive.
+- Listado paginado de Usuarios, selección visual y estados loading, error y vacío.
+- Consulta de Roles asignados y catálogo paginado de Roles activos.
+- Asignación y retiro de Roles mediante los endpoints confirmados, con feedback de `OrmanNotificationService`.
+- Modelo `Usuario` limitado a `login`, pruebas de servicio/página y documentación de la fase.
+
+### Limitaciones
+
+- `GET /api/v1/usuarios` no tiene en el frontend un contrato confirmado para nombre o estado; la pantalla muestra `login` y deja la ampliación como pendiente de confirmación Backend.
+- No se añadieron búsqueda/filtros de Usuarios, modales avanzados, confirmaciones, Sidebar, permisos, dependencias ni cambios Backend.
+
+### Verificado
+
+- Typecheck: correcto.
+- Pruebas específicas: correctas; 2 archivos y 8 pruebas aprobadas.
+- Suite completa: 37 archivos; 245 pruebas aprobadas y 3 fallas preexistentes en `orman-notification.service.spec.ts`, relacionadas con mocks de `ngx-sonner`.
+- Build de producción: correcto; el chunk lazy de Asignar Roles se generó sin advertencia propia. Persisten advertencias de presupuesto CSS preexistentes en Roles, Menús y Personas.
+- `git diff --check`: correcto.
+- `package-lock.json`: sin cambios.
+
 ## 2026-09-08 — Fase 08: acciones y modales de Gestionar Menús
 
 ### Añadido
@@ -1049,3 +1144,17 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
 - Compilación de producción satisfactoria.
 - Dos pruebas unitarias satisfactorias.
+## 2026-09-09 - Fase 09
+
+### Corregido
+
+- El buscador de Usuarios de Asignar Roles ahora usa la busqueda remota del Backend mediante `q` y elimina el filtrado local limitado a la pagina actual.
+- Se agrego debounce de 350 ms y cancelacion de solicitudes anteriores con `switchMap`; al cambiar de pagina se conserva la consulta y una nueva busqueda reinicia en la pagina 0.
+- El modelo `Usuario` incorpora `estado`, `nombre`, `ap` y `am`, y el directorio muestra login y nombre completo sin valores nulos.
+
+### Verificado
+
+- `npx tsc --noEmit -p tsconfig.app.json`: correcto.
+- 39 pruebas relacionadas aprobadas en 2 archivos.
+- `npm run build`: correcto, con advertencias de presupuesto CSS ya existentes.
+- `package-lock.json` sin cambios y `git diff --check` correcto.

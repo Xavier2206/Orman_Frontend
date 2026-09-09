@@ -84,6 +84,7 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 06 — Módulo Gestionar Personas | `EN DESARROLLO` | Fases privadas disponibles; contrato Backend de Personas entregado | [Documento](etapas/etapa-2/fases/06-modulo-gestionar-personas.md) |
 | 07 — Gestionar Roles: listado, resumen y filtros remotos | `COMPLETADA` | Contratos confirmados de `GET /api/v1/roles` y `GET /api/v1/roles/resumen` | [Documento](etapas/etapa-2/fases/07-estructura-inicial-modulo-roles.md) |
 | 08 — Acciones y modales de Gestionar Menús | `COMPLETADA` | Contratos confirmados de lectura, creación, edición y cambio de estado; asignaciones fuera de alcance | [Documento](etapas/etapa-2/fases/08-estructura-inicial-modulo-menus.md) |
+| 09 — Asignar Roles a Usuario | `COMPLETADA` | Contratos confirmados de Usuarios, Roles y asignaciones Usuario–Rol | [Documento](etapas/etapa-2/fases/09-asignar-roles-usuario.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -150,3 +151,19 @@ Una dependencia expresa orden técnico, pero cada fase requiere además autoriza
 - `CHANGELOG.md` indica **qué cambió realmente**.
 - Cada documento de fase explica **cómo y por qué** se realizó una fase.
 - La Theory explica **qué conocimiento técnico quedó consolidado** después de cerrar una Etapa.
+
+## Fase 09 — Asignar Roles a Usuario
+
+La Fase 09 implementó la pantalla privada master-detail de Asignar Roles a Usuario en `/app/asignar-roles/listar`. Su iteración visual administrativa añadió directorio con búsqueda local, ficha de Usuario y cards de Roles, centralizó el catálogo activo en `RolApiService` y consulta Persona mediante el `codper` confirmado del Usuario seleccionado. Tanto la ficha como el directorio priorizan el login y muestran el nombre completo de la Persona como información complementaria; la ficha no duplica Login ni estados antes de las secciones de Roles y el placeholder del directorio comunica búsqueda por login o nombre, sin modificar su filtro local existente. La zona de Roles se presenta verticalmente con ambas secciones usando un grid responsive compacto de 1/2/3/4 columnas según el viewport, con paginación independiente de cuatro tarjetas por página cuando corresponde; Roles asignados arriba y Roles disponibles para asignar abajo. Las cards comparten una zona reservada para badges opcionales, de modo que la etiqueta `Protegido` no altera su altura ni desalinean las acciones. La fecha de asignación permanece pendiente de un contrato Backend que la exponga y no se muestra en las cards; Angular no inventa ese dato. El detalle está documentado en [su documento de fase](etapas/etapa-2/fases/09-asignar-roles-usuario.md).
+### Corrección puntual de paginación en Fase 09
+
+El directorio de Usuarios solicita y muestra como máximo cinco elementos por página y solo presenta el paginador cuando existen más de cinco Usuarios. La navegación y la selección de Usuario se conservan sin modificar la lógica de Roles ni asignaciones. El detalle queda registrado en [el documento de la Fase 09](etapas/etapa-2/fases/09-asignar-roles-usuario.md).
+### Corrección puntual de Fase 09: búsqueda de Roles disponibles
+
+La sección `Roles disponibles para asignar` incorpora un buscador local en su encabezado, con filtrado por nombre o código, estado sin resultados y adaptación flexible para desktop, tablet y móvil. La paginación de esa sección usa el resultado filtrado; Roles asignados, asignar/quitar, servicios, modelos y Backend permanecen sin cambios.
+### Corrección puntual de Fase 09: búsqueda de Roles asignados
+
+La sección `Roles asignados` incorpora un buscador local en su encabezado, con filtrado por nombre o código, estado sin resultados y adaptación flexible para desktop, tablet y móvil. El filtrado se limita al Usuario seleccionado y no modifica las acciones de asignar o quitar, los servicios, modelos ni Backend.
+### Correccion puntual de Fase 09: busqueda remota de Usuarios
+
+El directorio de Usuarios consulta `GET /api/v1/usuarios` con `q`, `page`, `size=5` y `sort=login,asc`. La busqueda se aplica en Backend con debounce y cancelacion mediante `switchMap`; la paginacion conserva el filtro y las nuevas respuestas incluyen el nombre completo disponible para el listado. No se modifican roles, asignaciones, servicios de Persona/Rol ni Backend.

@@ -1,0 +1,386 @@
+<section
+  class="assign-roles-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="asignar-roles-title"
+>
+  <header class="page-heading">
+    <h1 id="asignar-roles-title" class="text-3xl font-bold text-content">
+      Asignar Roles a Usuario
+    </h1>
+    <p class="mt-2 text-muted">
+      Selecciona un usuario y administra los Roles asignados en una sola vista.
+    </p>
+  </header>
+
+  <div class="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(19rem,25rem)_minmax(0,1fr)]">
+    <section class="panel min-w-0" aria-labelledby="usuarios-title">
+      <header>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="section-kicker">Directorio</p>
+            <h2 id="usuarios-title" class="text-xl font-bold text-content">Usuarios</h2>
+          </div>
+          @if (page(); as result) {
+            <span class="count-badge">{{ result.totalElements }}</span>
+          }
+        </div>
+        <label class="sr-only" for="user-search">Buscar usuario por login o nombre</label>
+        <div class="search-field mt-4">
+          <mat-icon aria-hidden="true">search</mat-icon>
+          <input
+            id="user-search"
+            type="search"
+            placeholder="Buscar usuario por login o nombre..."
+            [value]="userQuery()"
+            (input)="searchUsers($event)"
+          />
+        </div>
+      </header>
+
+      @if (loading()) {
+        <div class="mt-5 grid gap-3" role="status" aria-label="Cargando usuarios">
+          @for (placeholder of [0, 1, 2, 3]; track placeholder) {
+            <div class="user-skeleton" aria-hidden="true"><span></span><i></i></div>
+          }
+        </div>
+      } @else if (error(); as message) {
+        <p class="alert mt-5" role="alert">{{ message }}</p>
+      } @else {
+        @if ((page()?.content ?? []).length === 0) {
+          <div class="empty-card mt-5" role="status">
+            <mat-icon aria-hidden="true">person_search</mat-icon>
+            <p>No se encontraron usuarios.</p>
+          </div>
+        } @else {
+          <div class="mt-5 grid gap-2" role="list" aria-label="Usuarios disponibles">
+            @for (user of page()?.content ?? []; track user.login) {
+              <button
+                type="button"
+                class="user-option"
+                [class.user-option-selected]="isSelected(user)"
+                [attr.aria-pressed]="isSelected(user)"
+                (click)="selectUser(user)"
+              >
+                <span class="user-avatar" aria-hidden="true">{{ initials(user) }}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="block break-all text-base font-bold text-content">{{
+                    user.login
+                  }}</span>
+                  @if (userDisplayName(user); as fullName) {
+                    <span class="mt-1 block break-words text-xs text-muted">{{ fullName }}</span>
+                  } @else {
+                    <span class="mt-1 block text-xs text-muted"
+                      >Selecciona para consultar sus datos personales.</span
+                    >
+                  }
+                </span>
+                <mat-icon class="user-chevron" aria-hidden="true">chevron_right</mat-icon>
+              </button>
+            }
+          </div>
+        }
+
+        @if (page(); as result) {
+          @if (result.totalPages > 1) {
+            <nav class="pagination mt-5" aria-label="Paginación de Usuarios">
+              <span class="text-sm text-muted" aria-live="polite"
+                >Página {{ result.page + 1 }} de {{ result.totalPages }}</span
+              >
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="page-button"
+                  [disabled]="result.first"
+                  (click)="changePage(result.page - 1)"
+                >
+                  <mat-icon aria-hidden="true">chevron_left</mat-icon><span>Anterior</span>
+                </button>
+                <button
+                  type="button"
+                  class="page-button"
+                  [disabled]="result.last"
+                  (click)="changePage(result.page + 1)"
+                >
+                  <span>Siguiente</span><mat-icon aria-hidden="true">chevron_right</mat-icon>
+                </button>
+              </div>
+            </nav>
+          }
+        }
+      }
+    </section>
+
+    <section class="panel min-w-0" aria-labelledby="roles-user-title" aria-live="polite">
+      @if (selectedUser(); as user) {
+        <header class="selected-profile">
+          <div class="profile-avatar" aria-hidden="true">{{ initials(user) }}</div>
+          <div class="min-w-0 flex-1">
+            <p class="section-kicker">Usuario seleccionado</p>
+            <h2 id="roles-user-title" class="break-all text-2xl font-bold text-content">
+              {{ user.login }}
+            </h2>
+            @if (personaLoading()) {
+              <p class="mt-1 text-sm text-muted">Cargando información personal...</p>
+            } @else if (selectedPersona(); as persona) {
+              <p class="mt-1 break-words text-sm text-muted">
+                {{ fullName(persona) }}
+              </p>
+            }
+          </div>
+        </header>
+
+        @if (personaError(); as message) {
+          <p class="alert mt-3" role="alert">{{ message }}</p>
+        }
+
+        @if (assignmentLoading()) {
+          <div class="empty-card mt-6" role="status">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+            <p>Cargando Roles asignados...</p>
+          </div>
+        } @else if (assignmentError(); as message) {
+          <p class="alert mt-6" role="alert">{{ message }}</p>
+        } @else {
+          <div class="mt-6 grid min-w-0 gap-6">
+            <section aria-labelledby="assigned-roles-title">
+              <div class="role-section-heading">
+                <div class="min-w-0">
+                  <p class="section-kicker">Accesos vigentes</p>
+                  <h3 id="assigned-roles-title" class="text-lg font-bold text-content">
+                    Roles asignados
+                  </h3>
+                </div>
+                <div class="role-section-tools">
+                  <span class="count-badge">{{ assignedRoles().length }}</span>
+                  <label class="sr-only" for="assigned-role-search">
+                    Buscar rol por nombre o código
+                  </label>
+                  <div class="search-field role-search-field">
+                    <mat-icon aria-hidden="true">search</mat-icon>
+                    <input
+                      id="assigned-role-search"
+                      type="search"
+                      placeholder="Buscar rol por nombre o código..."
+                      [value]="assignedRoleQuery()"
+                      (input)="searchAssignedRoles($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+              @if (assignedRoles().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">assignment_ind</mat-icon>
+                  <p>Este usuario no tiene Roles asignados.</p>
+                </div>
+              } @else if (filteredAssignedRoleCards().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">person_search</mat-icon>
+                  <p>No se encontraron roles asignados.</p>
+                </div>
+              } @else {
+                <div
+                  class="roles-grid mt-4"
+                  [class.roles-grid-one]="pagedAssignedRoleCards().length === 1"
+                  [class.roles-grid-two]="pagedAssignedRoleCards().length === 2"
+                  [class.roles-grid-three]="pagedAssignedRoleCards().length === 3"
+                >
+                  @for (roleCard of pagedAssignedRoleCards(); track roleCard.assignedRole.codr) {
+                    <article class="role-card">
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          @if (roleCard.catalogRole; as catalogRole) {
+                            <h4 class="break-words font-bold text-content">
+                              {{ catalogRole.nombre }}
+                            </h4>
+                            <p class="mt-1 text-xs text-muted">Código #{{ catalogRole.codr }}</p>
+                          } @else {
+                            <h4 class="break-words font-bold text-content">
+                              Código #{{ roleCard.assignedRole.codr }}
+                            </h4>
+                          }
+                        </div>
+                        <span
+                          class="status-badge"
+                          [class.status-active]="
+                            (roleCard.catalogRole ?? roleCard.assignedRole).estado === 1
+                          "
+                          [class.status-inactive]="
+                            (roleCard.catalogRole ?? roleCard.assignedRole).estado === 0
+                          "
+                          >{{ statusLabel(roleCard.catalogRole ?? roleCard.assignedRole) }}</span
+                        >
+                      </div>
+                      <div class="role-badges mt-2">
+                        @if (isProtectedRole(roleCard.catalogRole ?? roleCard.assignedRole)) {
+                          <span class="protected-badge">Protegido</span>
+                        }
+                      </div>
+                      <button
+                        type="button"
+                        class="role-action role-action-remove mt-3 w-full"
+                        [disabled]="roleActionCodr() !== null"
+                        (click)="removeRole(roleCard.assignedRole)"
+                      >
+                        <mat-icon aria-hidden="true">remove_circle_outline</mat-icon
+                        >{{
+                          roleActionCodr() === roleCard.assignedRole.codr
+                            ? 'Quitando...'
+                            : 'Quitar Rol'
+                        }}
+                      </button>
+                    </article>
+                  }
+                </div>
+                @if (assignedRolePageCount() > 1) {
+                  <nav class="pagination mt-4" aria-label="Paginación de Roles asignados">
+                    <span class="text-sm text-muted" aria-live="polite">
+                      Página {{ assignedRolePageIndex() + 1 }} de {{ assignedRolePageCount() }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="assignedRolePageIndex() === 0"
+                        (click)="changeAssignedRolePage(-1)"
+                      >
+                        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="assignedRolePageIndex() === assignedRolePageCount() - 1"
+                        (click)="changeAssignedRolePage(1)"
+                      >
+                        <span>Siguiente</span>
+                        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </nav>
+                }
+              }
+            </section>
+
+            <section aria-labelledby="available-roles-title">
+              <div class="role-section-heading">
+                <div class="min-w-0">
+                  <p class="section-kicker">Catálogo activo</p>
+                  <h3 id="available-roles-title" class="text-lg font-bold text-content">
+                    Roles disponibles para asignar
+                  </h3>
+                </div>
+                <div class="role-section-tools">
+                  @if (!rolesLoading()) {
+                    <span class="count-badge">{{ availableRoles().length }}</span>
+                  }
+                  <label class="sr-only" for="available-role-search">
+                    Buscar rol por nombre o código
+                  </label>
+                  <div class="search-field role-search-field">
+                    <mat-icon aria-hidden="true">search</mat-icon>
+                    <input
+                      id="available-role-search"
+                      type="search"
+                      placeholder="Buscar rol por nombre o código..."
+                      [value]="roleQuery()"
+                      (input)="searchAvailableRoles($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+              @if (rolesLoading()) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">sync</mat-icon>
+                  <p>Cargando catálogo de Roles...</p>
+                </div>
+              } @else if (rolesError(); as message) {
+                <p class="alert mt-4" role="alert">{{ message }}</p>
+              } @else if (filteredAvailableRoles().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">verified</mat-icon>
+                  @if (roleQuery().trim()) {
+                    <p>No se encontraron roles disponibles.</p>
+                  } @else {
+                    <p>No hay Roles activos disponibles para asignar.</p>
+                  }
+                </div>
+              } @else {
+                <div
+                  class="roles-grid mt-4"
+                  [class.roles-grid-one]="pagedAvailableRoles().length === 1"
+                  [class.roles-grid-two]="pagedAvailableRoles().length === 2"
+                  [class.roles-grid-three]="pagedAvailableRoles().length === 3"
+                >
+                  @for (role of pagedAvailableRoles(); track role.codr) {
+                    <article class="role-card">
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <h4 class="break-words font-bold text-content">{{ role.nombre }}</h4>
+                          <p class="mt-1 text-xs text-muted">Código #{{ role.codr }}</p>
+                        </div>
+                        <span class="status-badge status-active">{{ statusLabel(role) }}</span>
+                      </div>
+                      <div class="role-badges mt-2">
+                        @if (isProtectedRole(role)) {
+                          <span class="protected-badge">Protegido</span>
+                        }
+                      </div>
+                      <button
+                        type="button"
+                        class="role-action role-action-assign mt-3 w-full"
+                        [disabled]="roleActionCodr() !== null"
+                        (click)="assignRole(role)"
+                      >
+                        <mat-icon aria-hidden="true">add_circle_outline</mat-icon
+                        >{{ roleActionCodr() === role.codr ? 'Asignando...' : 'Asignar Rol' }}
+                      </button>
+                    </article>
+                  }
+                </div>
+                @if (availableRolePageCount() > 1) {
+                  <nav class="pagination mt-4" aria-label="Paginación de Roles disponibles">
+                    <span class="text-sm text-muted" aria-live="polite">
+                      Página {{ availableRolePageIndex() + 1 }} de {{ availableRolePageCount() }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="availableRolePageIndex() === 0"
+                        (click)="changeAvailableRolePage(-1)"
+                      >
+                        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="availableRolePageIndex() === availableRolePageCount() - 1"
+                        (click)="changeAvailableRolePage(1)"
+                      >
+                        <span>Siguiente</span>
+                        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </nav>
+                }
+              }
+            </section>
+          </div>
+          @if (roleActionError(); as message) {
+            <p class="alert mt-5" role="alert">{{ message }}</p>
+          }
+        }
+      } @else {
+        <div class="empty-detail">
+          <span class="empty-detail-icon"
+            ><mat-icon aria-hidden="true">manage_accounts</mat-icon></span
+          >
+          <h2 id="roles-user-title" class="mt-4 text-xl font-bold text-content">
+            Administrar Roles
+          </h2>
+          <p class="mt-2 max-w-sm text-muted">Selecciona un usuario para administrar sus roles.</p>
+        </div>
+      }
+    </section>
+  </div>
+</section>
