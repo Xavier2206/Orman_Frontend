@@ -72,6 +72,13 @@ export const routes: Routes = [
             (component) => component.AsignarMenusListComponent,
           ),
       },
+      {
+        path: 'asignar-procesos/listar',
+        loadComponent: () =>
+          import('./features/asignar-procesos/pages/asignar-procesos-list/asignar-procesos-list.component').then(
+            (component) => component.AsignarProcesosListComponent,
+          ),
+      },
     ],
   },
 ];

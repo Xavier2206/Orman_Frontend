@@ -1,5 +1,54 @@
 # Changelog
 
+## 2026-09-09 - Corrección de contratos de Asignar Procesos
+
+### Cambiado
+
+- Se ajustó `Proceso` al contrato confirmado con `estado: 0 | 1`.
+- Se incorporó `MeProResponse` para tipar la respuesta real de Menú–Proceso, incluyendo `nombreProceso`, `enlaceProceso` y `estadoProceso`.
+- `ProcesoApiService` agrega todas las páginas del catálogo y filtra localmente los Procesos activos sin enviar `q` ni `estado`.
+- `AsignarProcesosApiService` tipa la respuesta de asignación y mantiene POST sin body y DELETE sin body.
+- La Page adapta las tarjetas asignadas/disponibles a los nombres reales de la respuesta y recarga el contexto de navegación después de asignar o retirar, preservando el Rol seleccionado.
+- Se actualizaron las pruebas HTTP, de catálogo y de presentación.
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas relacionadas: 5 archivos y 35 pruebas aprobadas.
+- Build de producción correcto; se generó el chunk lazy de Asignar Procesos.
+- `git diff --check` correcto; permanecen avisos de conversión LF/CRLF.
+- `package-lock.json` sin cambios.
+
+## 2026-09-09 - Fase 12: Asignar Procesos a Menú
+
+### Añadido
+
+- Pantalla privada lazy `/app/asignar-procesos/listar` con layout master-detail.
+- Listado remoto de Menús activos con búsqueda, selección y paginación Backend.
+- Catálogo paginado de Procesos mediante `ProcesoApiService`.
+- Procesos asignados y disponibles con búsqueda local y paginación independiente.
+- `AsignarProcesosApiService` para consultar, asignar y retirar Procesos por Menú.
+- Cards responsive, Material Symbols Rounded, estados loading/error/vacío y accesibilidad equivalente a Asignar Menús.
+- Pruebas HTTP y de presentación para la relación Menú–Proceso.
+
+### APIs
+
+- GET `/api/v1/menus?estado=1`
+- GET `/api/v1/procesos?page=&size=&sort=`
+- GET `/api/v1/menus/{codm}/procesos`
+- POST `/api/v1/menus/{codm}/procesos/{codp}`
+- DELETE `/api/v1/menus/{codm}/procesos/{codp}`
+
+### Verificado
+
+- Typecheck correcto.
+- Prettier correcto en archivos del alcance.
+- Pruebas específicas: 3 archivos y 12 pruebas aprobadas.
+- Build de producción correcto; se generó el chunk lazy de Asignar Procesos.
+- `git diff --check` correcto; permanecen avisos de conversión LF/CRLF.
+- Suite completa: 43 archivos aprobados y 1 archivo con 3 fallos preexistentes de aislamiento en `OrmanNotificationService`; su prueba aislada pasa.
+- `package-lock.json` sin cambios.
+
 ## 2026-09-09 - Fase 11: Asignar Menús a Rol
 
 ### Añadido

@@ -1,6 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, concatMap, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  concatMap,
+  finalize,
+  map,
+  of,
+  shareReplay,
+  tap,
+  throwError,
+} from 'rxjs';
 
 import { apiPath } from '../api/api.constants';
 import { AuthContext, AuthContextRol } from './auth-context.model';
@@ -87,8 +97,19 @@ export class AuthContextService {
   }
 
   reloadContext(): Observable<AuthContext> {
+    const selectedRoleId = this.selectedRoleIdState();
+
     this.clearContext();
-    return this.loadContext();
+    return this.loadContext().pipe(
+      tap((context) => {
+        if (
+          selectedRoleId !== null &&
+          context.roles.some((role) => role.codr === selectedRoleId)
+        ) {
+          this.selectedRoleIdState.set(selectedRoleId);
+        }
+      }),
+    );
   }
 
   selectRole(codr: number): void {

@@ -120,6 +120,7 @@ input:focus,
 }
 .action {
   display: grid;
+  flex: 0 0 2.75rem;
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
@@ -130,6 +131,10 @@ input:focus,
     box-shadow 130ms ease,
     color 130ms ease,
     transform 130ms ease;
+}
+.action:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
 }
 .action:hover:not(:disabled) {
   background: var(--theme-surface);
@@ -145,7 +150,7 @@ input:focus,
 }
 .action-edit:hover:not(:disabled),
 .action-user-missing:hover:not(:disabled) {
-  background: var(--theme-card-hover);
+  background: var(--theme-surface);
   color: var(--theme-accent-text);
 }
 .action-user-missing {

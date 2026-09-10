@@ -87,6 +87,7 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 09 — Asignar Roles a Usuario | `COMPLETADA` | Contratos confirmados de Usuarios, Roles y asignaciones Usuario–Rol | [Documento](etapas/etapa-2/fases/09-asignar-roles-usuario.md) |
 | 10 — Estructura base de Asignar Menús y Asignar Procesos | `COMPLETADA` | Fase 09; patrón arquitectónico de `features/asignar-roles/` | [Documento](etapas/etapa-2/fases/10-estructura-asignar-menus-procesos.md) |
 | 11 — Asignar Menús a Rol | `COMPLETADA` | Fase 10; contratos confirmados de Roles, Menús y asignaciones Rol–Menú | [Documento](etapas/etapa-2/fases/11-asignar-menus.md) |
+| 12 — Asignar Procesos a Menú | `COMPLETADA` | Fase 11; contratos confirmados de Menú–Proceso | [Documento](etapas/etapa-2/fases/12-asignar-procesos.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -119,6 +120,8 @@ La Fase 07 implementó `features/roles`: ruta privada `/app/roles/listar`, lista
 La Fase 08 implementó el listado funcional de `features/menus` y sus acciones administrativas: ruta privada `/app/menus/listar`, lectura paginada, resumen global, búsqueda y filtro remotos, cards responsive, iconos reales con fallback visual, formulario compartido Crear/Editar, selector visual curado de iconos, Desactivar, Reactivar, toasts y recargas diferenciadas. Las asignaciones Rol–Menú y Menú–Proceso, Sidebar y Backend permanecen fuera de alcance.
 
 La Fase 11 implementó `features/asignar-menus`: selección remota y paginada de Roles activos, detalle del Rol, catálogo paginado de Menús activos, Menús asignados y disponibles con búsqueda y paginación local, asignación, retiro, estados visuales y ruta lazy `/app/asignar-menus/listar`. No se modificaron Sidebar, permisos, AuthContext ni Backend.
+
+La Fase 12 implementó `features/asignar-procesos`: selección remota y paginada de Menús activos, detalle del Menú, catálogo paginado de Procesos, Procesos asignados y disponibles con búsqueda y paginación local, asignación, retiro, estados visuales y ruta lazy `/app/asignar-procesos/listar`. Posteriormente se corrigió el tipado y consumo de `Proceso` y `MeProResponse` según el contrato Backend confirmado, se filtró localmente el catálogo por `estado === 1` sin agregar parámetros no soportados y se recargó `AuthContext` preservando el Rol seleccionado después de las mutaciones. No se modificaron Sidebar, permisos ni Backend.
 
 ### Fases futuras por definir
 

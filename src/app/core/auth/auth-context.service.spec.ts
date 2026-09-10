@@ -160,4 +160,23 @@ describe('AuthContextService', () => {
     context.selectRole(99);
     expect(context.selectedRoleId()).toBe(2);
   });
+
+  it('should preserve the selected role when reloading the context', () => {
+    authenticate();
+    context.loadContext().subscribe();
+    const roles = [
+      ...contextWithNavigation.roles,
+      { codr: 2, nombre: 'ADMINISTRADOR', menus: [] },
+    ];
+    http.expectOne('/api/v1/auth/context').flush({ ...contextWithNavigation, roles });
+
+    context.selectRole(2);
+    context.reloadContext().subscribe();
+
+    const reloadRequest = http.expectOne('/api/v1/auth/context');
+    reloadRequest.flush({ ...contextWithNavigation, roles });
+
+    expect(context.selectedRoleId()).toBe(2);
+    expect(context.selectedRole()?.nombre).toBe('ADMINISTRADOR');
+  });
 });

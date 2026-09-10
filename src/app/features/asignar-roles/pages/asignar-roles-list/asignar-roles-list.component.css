@@ -348,7 +348,13 @@
 }
 
 .empty-detail-icon .mat-icon {
-  font-size: 2rem;
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  line-height: 1;
 }
 
 .alert {

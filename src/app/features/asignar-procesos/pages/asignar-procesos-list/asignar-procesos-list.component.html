@@ -1,3 +1,386 @@
-<section aria-labelledby="asignar-procesos-title">
-  <h1 id="asignar-procesos-title">Asignar Procesos</h1>
+<section
+  class="assign-processes-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="asignar-procesos-title"
+>
+  <header class="page-heading">
+    <h1 id="asignar-procesos-title" class="text-3xl font-bold text-content">
+      Asignar Procesos a Menú
+    </h1>
+    <p class="mt-2 text-muted">
+      Selecciona un Menú y administra sus Procesos asignados en una sola vista.
+    </p>
+  </header>
+
+  <div class="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(19rem,25rem)_minmax(0,1fr)]">
+    <section class="panel min-w-0" aria-labelledby="menus-title">
+      <header>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="section-kicker">Directorio</p>
+            <h2 id="menus-title" class="text-xl font-bold text-content">Menús</h2>
+          </div>
+          @if (page(); as result) {
+            <span class="count-badge">{{ result.totalElements }}</span>
+          }
+        </div>
+        <label class="sr-only" for="menu-search">Buscar Menú por nombre o código</label>
+        <div class="search-field mt-4">
+          <mat-icon aria-hidden="true">search</mat-icon>
+          <input
+            id="menu-search"
+            type="search"
+            placeholder="Buscar Menú por nombre o código..."
+            [value]="menuQuery()"
+            (input)="searchMenus($event)"
+          />
+        </div>
+      </header>
+
+      @if (loading()) {
+        <div class="mt-5 grid gap-3" role="status" aria-label="Cargando Menús">
+          @for (placeholder of [0, 1, 2, 3]; track placeholder) {
+            <div class="menu-skeleton" aria-hidden="true"><span></span><i></i></div>
+          }
+        </div>
+      } @else if (error(); as message) {
+        <p class="alert mt-5" role="alert">{{ message }}</p>
+      } @else if ((page()?.content ?? []).length === 0) {
+        <div class="empty-card mt-5" role="status">
+          <mat-icon aria-hidden="true">menu_open</mat-icon>
+          <p>No se encontraron Menús.</p>
+        </div>
+      } @else {
+        <div class="mt-5 grid gap-2" role="list" aria-label="Menús disponibles">
+          @for (menu of page()?.content ?? []; track menu.codm) {
+            <button
+              type="button"
+              class="menu-option"
+              [class.menu-option-selected]="isSelected(menu)"
+              [attr.aria-pressed]="isSelected(menu)"
+              (click)="selectMenu(menu)"
+            >
+              <span class="menu-option-icon" aria-hidden="true">
+                <mat-icon>{{ iconName(menu) }}</mat-icon>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block break-words text-base font-bold text-content">{{
+                  menu.nombre
+                }}</span>
+                <span class="mt-1 block text-xs text-muted">Código #{{ menu.codm }}</span>
+              </span>
+              <span
+                class="status-badge"
+                [class.status-active]="menu.estado === 1"
+                [class.status-inactive]="menu.estado === 0"
+              >
+                {{ statusLabel(menu) }}
+              </span>
+            </button>
+          }
+        </div>
+
+        @if (page(); as result) {
+          @if (result.totalPages >= 1) {
+            <nav class="pagination mt-5" aria-label="Paginación de Menús">
+              <span class="text-sm text-muted" aria-live="polite">
+                Página {{ result.page + 1 }} de {{ result.totalPages }}
+              </span>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="page-button"
+                  [disabled]="result.first"
+                  (click)="changeMenuPage(result.page - 1)"
+                >
+                  <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                  <span>Anterior</span>
+                </button>
+                <button
+                  type="button"
+                  class="page-button"
+                  [disabled]="result.last"
+                  (click)="changeMenuPage(result.page + 1)"
+                >
+                  <span>Siguiente</span>
+                  <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                </button>
+              </div>
+            </nav>
+          }
+        }
+      }
+    </section>
+
+    <section class="panel min-w-0" aria-labelledby="selected-menu-title" aria-live="polite">
+      @if (selectedMenu(); as menu) {
+        <header class="selected-profile">
+          <div class="profile-avatar" aria-hidden="true">
+            <mat-icon>{{ iconName(menu) }}</mat-icon>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="section-kicker">Menú seleccionado</p>
+            <h2 id="selected-menu-title" class="break-words text-2xl font-bold text-content">
+              {{ menu.nombre }}
+            </h2>
+            <div class="selected-menu-meta">
+              <span class="text-sm text-muted">Código #{{ menu.codm }}</span>
+              <span
+                class="status-badge"
+                [class.status-active]="menu.estado === 1"
+                [class.status-inactive]="menu.estado === 0"
+              >
+                {{ statusLabel(menu) }}
+              </span>
+            </div>
+          </div>
+        </header>
+
+        @if (assignmentLoading()) {
+          <div class="empty-card mt-6" role="status">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+            <p>Cargando Procesos asignados...</p>
+          </div>
+        } @else if (assignmentError(); as message) {
+          <p class="alert mt-6" role="alert">{{ message }}</p>
+        } @else {
+          <div class="mt-6 grid min-w-0 gap-6">
+            <section aria-labelledby="assigned-processes-title">
+              <div class="section-heading">
+                <div class="min-w-0">
+                  <p class="section-kicker">Accesos configurados</p>
+                  <h3 id="assigned-processes-title" class="text-lg font-bold text-content">
+                    Procesos asignados
+                  </h3>
+                </div>
+                <div class="section-tools">
+                  <span class="count-badge">{{ assignedProcesses().length }}</span>
+                  <label class="sr-only" for="assigned-process-search">
+                    Buscar Proceso asignado por nombre o código
+                  </label>
+                  <div class="search-field process-search-field">
+                    <mat-icon aria-hidden="true">search</mat-icon>
+                    <input
+                      id="assigned-process-search"
+                      type="search"
+                      placeholder="Buscar Proceso por nombre o código..."
+                      [value]="assignedProcessQuery()"
+                      (input)="searchAssignedProcesses($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              @if (assignedProcesses().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">account_tree</mat-icon>
+                  <p>Este Menú no tiene Procesos asignados.</p>
+                </div>
+              } @else if (filteredAssignedProcesses().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">search_off</mat-icon>
+                  <p>No se encontraron Procesos asignados.</p>
+                </div>
+              } @else {
+                <div
+                  class="processes-grid mt-4"
+                  [class.processes-grid-one]="pagedAssignedProcesses().length === 1"
+                  [class.processes-grid-two]="pagedAssignedProcesses().length === 2"
+                  [class.processes-grid-three]="pagedAssignedProcesses().length === 3"
+                >
+                  @for (process of pagedAssignedProcesses(); track process.codp) {
+                    <article class="process-card">
+                      <div class="process-card-heading">
+                        <span class="process-card-icon" aria-hidden="true">
+                          <mat-icon>account_tree</mat-icon>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                          <h4 class="break-words font-bold text-content">
+                            {{ process.nombreProceso }}
+                          </h4>
+                          <p class="mt-1 text-xs text-muted">Código #{{ process.codp }}</p>
+                        </div>
+                        <span
+                          class="status-badge"
+                          [class.status-active]="process.estadoProceso === 1"
+                          [class.status-inactive]="process.estadoProceso === 0"
+                        >
+                          {{ statusLabel(process) }}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        class="menu-action menu-action-remove mt-4 w-full"
+                        [disabled]="processActionCodp() !== null"
+                        (click)="removeProcess(process)"
+                      >
+                        <mat-icon aria-hidden="true">remove_circle_outline</mat-icon>
+                        {{
+                          processActionCodp() === process.codp ? 'Quitando...' : 'Quitar Proceso'
+                        }}
+                      </button>
+                    </article>
+                  }
+                </div>
+                @if (assignedProcessPageCount() >= 1) {
+                  <nav class="pagination mt-4" aria-label="Paginación de Procesos asignados">
+                    <span class="text-sm text-muted" aria-live="polite">
+                      Página {{ assignedProcessPageIndex() + 1 }} de
+                      {{ assignedProcessPageCount() }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="assignedProcessPageIndex() === 0"
+                        (click)="changeAssignedProcessPage(-1)"
+                      >
+                        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="assignedProcessPageIndex() === assignedProcessPageCount() - 1"
+                        (click)="changeAssignedProcessPage(1)"
+                      >
+                        <span>Siguiente</span>
+                        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </nav>
+                }
+              }
+            </section>
+
+            <section aria-labelledby="available-processes-title">
+              <div class="section-heading">
+                <div class="min-w-0">
+                  <p class="section-kicker">Catálogo de Procesos</p>
+                  <h3 id="available-processes-title" class="text-lg font-bold text-content">
+                    Procesos disponibles
+                  </h3>
+                </div>
+                <div class="section-tools">
+                  @if (!processesLoading()) {
+                    <span class="count-badge">{{ availableProcesses().length }}</span>
+                  }
+                  <label class="sr-only" for="available-process-search">
+                    Buscar Proceso disponible por nombre o código
+                  </label>
+                  <div class="search-field process-search-field">
+                    <mat-icon aria-hidden="true">search</mat-icon>
+                    <input
+                      id="available-process-search"
+                      type="search"
+                      placeholder="Buscar Proceso por nombre o código..."
+                      [value]="availableProcessQuery()"
+                      (input)="searchAvailableProcesses($event)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              @if (processesLoading()) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">sync</mat-icon>
+                  <p>Cargando catálogo de Procesos...</p>
+                </div>
+              } @else if (processesError(); as message) {
+                <p class="alert mt-4" role="alert">{{ message }}</p>
+              } @else if (filteredAvailableProcesses().length === 0) {
+                <div class="empty-card mt-4" role="status">
+                  <mat-icon aria-hidden="true">account_tree</mat-icon>
+                  @if (availableProcessQuery().trim()) {
+                    <p>No se encontraron Procesos disponibles.</p>
+                  } @else {
+                    <p>No hay Procesos disponibles para asignar.</p>
+                  }
+                </div>
+              } @else {
+                <div
+                  class="processes-grid mt-4"
+                  [class.processes-grid-one]="pagedAvailableProcesses().length === 1"
+                  [class.processes-grid-two]="pagedAvailableProcesses().length === 2"
+                  [class.processes-grid-three]="pagedAvailableProcesses().length === 3"
+                >
+                  @for (process of pagedAvailableProcesses(); track process.codp) {
+                    <article class="process-card">
+                      <div class="process-card-heading">
+                        <span class="process-card-icon" aria-hidden="true">
+                          <mat-icon>account_tree</mat-icon>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                          <h4 class="break-words font-bold text-content">{{ process.nombre }}</h4>
+                          <p class="mt-1 text-xs text-muted">Código #{{ process.codp }}</p>
+                        </div>
+                        <span
+                          class="status-badge"
+                          [class.status-active]="process.estado === 1"
+                          [class.status-inactive]="process.estado === 0"
+                        >
+                          {{ statusLabel(process) }}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        class="menu-action menu-action-assign mt-4 w-full"
+                        [disabled]="processActionCodp() !== null"
+                        (click)="assignProcess(process)"
+                      >
+                        <mat-icon aria-hidden="true">add_circle_outline</mat-icon>
+                        {{
+                          processActionCodp() === process.codp ? 'Asignando...' : 'Asignar Proceso'
+                        }}
+                      </button>
+                    </article>
+                  }
+                </div>
+                @if (availableProcessPageCount() >= 1) {
+                  <nav class="pagination mt-4" aria-label="Paginación de Procesos disponibles">
+                    <span class="text-sm text-muted" aria-live="polite">
+                      Página {{ availableProcessPageIndex() + 1 }} de
+                      {{ availableProcessPageCount() }}
+                    </span>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="availableProcessPageIndex() === 0"
+                        (click)="changeAvailableProcessPage(-1)"
+                      >
+                        <mat-icon aria-hidden="true">chevron_left</mat-icon>
+                        <span>Anterior</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="page-button"
+                        [disabled]="availableProcessPageIndex() === availableProcessPageCount() - 1"
+                        (click)="changeAvailableProcessPage(1)"
+                      >
+                        <span>Siguiente</span>
+                        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+                      </button>
+                    </div>
+                  </nav>
+                }
+              }
+            </section>
+          </div>
+          @if (processActionError(); as message) {
+            <p class="alert mt-5" role="alert">{{ message }}</p>
+          }
+        }
+      } @else {
+        <div class="empty-detail">
+          <span class="empty-detail-icon">
+            <mat-icon aria-hidden="true">account_tree</mat-icon>
+          </span>
+          <h2 id="selected-menu-title" class="mt-4 text-xl font-bold text-content">
+            Administrar Procesos
+          </h2>
+          <p class="mt-2 max-w-sm text-muted">Selecciona un Menú para administrar sus Procesos.</p>
+        </div>
+      }
+    </section>
+  </div>
 </section>
