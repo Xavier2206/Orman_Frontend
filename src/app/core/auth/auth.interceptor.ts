@@ -4,6 +4,7 @@ import { catchError, switchMap, throwError } from 'rxjs';
 
 import { isProblemDetail } from '../api/problem-detail.model';
 import { AuthService } from './auth.service';
+import { SKIP_AUTH_INTERCEPTOR } from './auth-http-context';
 
 const AUTH_ENDPOINTS_WITHOUT_BEARER = [
   '/api/v1/auth/login',
@@ -16,13 +17,14 @@ const RETRIED_AFTER_REFRESH = new HttpContextToken<boolean>(() => false);
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
+  const skipAuth = request.context.get(SKIP_AUTH_INTERCEPTOR);
   const requestPath = request.url.split('?')[0];
   const isAuthEndpointWithoutBearer = AUTH_ENDPOINTS_WITHOUT_BEARER.includes(
     requestPath as (typeof AUTH_ENDPOINTS_WITHOUT_BEARER)[number],
   );
   const token = auth.accessToken();
   const authenticatedRequest =
-    token && !isAuthEndpointWithoutBearer
+    token && !isAuthEndpointWithoutBearer && !skipAuth
       ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
       : request;
 
@@ -40,6 +42,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         errorCode === 'TOKEN_EXPIRED' &&
         token &&
         !isAuthEndpointWithoutBearer &&
+        !skipAuth &&
         !request.context.get(RETRIED_AFTER_REFRESH)
       ) {
         return auth.refreshAccessToken().pipe(

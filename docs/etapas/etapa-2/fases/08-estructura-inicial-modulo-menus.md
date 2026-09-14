@@ -95,3 +95,29 @@ Implementar la pantalla de listado y sus acciones administrativas confirmadas si
 ## Pendientes
 
 Quedan pendientes asignación Rol–Menú, asignación Menú–Proceso, detalle de Menú y cualquier operación no confirmada. DELETE no existe en el contrato Backend.
+
+## Corrección de centrado de iconos posterior — 2026-09-13
+
+### Objetivo
+
+Corregir la alineación visual de los iconos circulares en las tarjetas resumen del listado de Menús.
+
+### Observación e implementación
+
+Las tarjetas utilizaban `align-items: flex-start`, mientras que el glifo Material heredaba una altura de línea superior a su tamaño visual. Se ajustó únicamente el CSS del listado para centrar verticalmente el contenido de cada tarjeta y para que la caja tipográfica del icono tenga centrado explícito mediante `grid`, `place-items: center` y `line-height: 1`.
+
+### Archivos modificados
+
+- `src/app/features/menus/pages/menus-list/menus-list.component.css`
+- `docs/PlanGeneral.md`
+- `docs/CHANGELOG.md`
+- Este documento de Fase, como registro posterior de la corrección.
+
+### Validación
+
+- Las pruebas focalizadas de Menús aprobaron 30 de 30 casos en 4 archivos.
+- `npx tsc --noEmit -p tsconfig.app.json` finalizó correctamente.
+- Prettier se ejecutó sobre el CSS modificado.
+- El centrado se verificó en navegador para anchos de 320, 360, 390, 430, 768, 1280, 1536 y 1856 px, sin overflow de página, y en los temas ORMAN, DÍA y NOCHE.
+- La suite completa registró 343 de 346 pruebas aprobadas; las tres fallas restantes corresponden a `orman-notification.service.spec.ts` y son ajenas a esta corrección.
+- El build estándar no pudo completar la descarga de Google Fonts por un error DNS de `fonts.googleapis.com`; el fallback sin optimización quedó limitado por presupuestos CSS existentes.

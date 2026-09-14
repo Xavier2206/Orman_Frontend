@@ -1,14 +1,20 @@
 import {
   HttpClient,
+  HttpContext,
   HttpErrorResponse,
   provideHttpClient,
   withInterceptors,
   withXsrfConfiguration,
 } from '@angular/common/http';
-import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  TestRequest,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { authInterceptor } from './auth.interceptor';
+import { SKIP_AUTH_INTERCEPTOR } from './auth-http-context';
 import { AuthService } from './auth.service';
 import { DEVICE_ID_STORAGE_KEY } from './device.service';
 
@@ -145,6 +151,20 @@ describe('AuthService and authInterceptor', () => {
     loginRequest.flush(authenticatedResponse);
   });
 
+  it('should not send the access token to external service requests marked to skip auth', () => {
+    authenticate();
+
+    client
+      .get('https://nominatim.openstreetmap.org/search', {
+        context: new HttpContext().set(SKIP_AUTH_INTERCEPTOR, true),
+      })
+      .subscribe();
+    const externalRequest = http.expectOne('https://nominatim.openstreetmap.org/search');
+
+    expect(externalRequest.request.headers.has('Authorization')).toBe(false);
+    externalRequest.flush([]);
+  });
+
   it('should use the standard XSRF cookie and header for refresh without Bearer', () => {
     document.cookie = 'XSRF-TOKEN=csrf-token; Path=/';
 
@@ -216,14 +236,20 @@ describe('AuthService and authInterceptor', () => {
       ['/api/v1/first', '/api/v1/second'].includes(request.url),
     );
     expect(retries).toHaveLength(2);
-    expect(retries.every((request) => request.request.headers.get('Authorization') === 'Bearer refreshed-token')).toBe(true);
+    expect(
+      retries.every(
+        (request) => request.request.headers.get('Authorization') === 'Bearer refreshed-token',
+      ),
+    ).toBe(true);
     retries.forEach((request) => request.flush({ ok: true }));
   });
 
   it('should not refresh a retry again and should clear the session after refresh failure', () => {
     authenticate();
     let requestError: HttpErrorResponse | undefined;
-    client.get('/api/v1/protected-resource').subscribe({ error: (error) => (requestError = error) });
+    client
+      .get('/api/v1/protected-resource')
+      .subscribe({ error: (error) => (requestError = error) });
     expire(http.expectOne('/api/v1/protected-resource'));
     expire(http.expectOne('/api/v1/auth/refresh'), 'SESSION_EXPIRED');
 

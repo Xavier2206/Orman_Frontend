@@ -1,0 +1,76 @@
+<section
+  class="cover-field"
+  [class.cover-field-disabled]="disabled()"
+  aria-labelledby="cover-title"
+>
+  <div class="cover-field-heading">
+    <div>
+      <p id="cover-title" class="cover-title">Portada de la propiedad</p>
+      <p class="cover-help">Selecciona una imagen JPG o PNG de hasta 5 MiB.</p>
+    </div>
+    @if (loading()) {
+      <span class="cover-status" role="status">Cargando</span>
+    } @else if (removalPending()) {
+      <span class="cover-status cover-status-pending">Pendiente</span>
+    } @else if (selectedFileName()) {
+      <span class="cover-status cover-status-pending">Por guardar</span>
+    } @else if (imageUrl()) {
+      <span class="cover-status cover-status-ready">Disponible</span>
+    } @else {
+      <span class="cover-status">Sin portada</span>
+    }
+  </div>
+
+  <div class="cover-frame">
+    @if (loading()) {
+      <div class="cover-loading" role="status" aria-label="Cargando portada">
+        <mat-icon aria-hidden="true">progress_activity</mat-icon>
+        Cargando portada…
+      </div>
+    } @else if (imageUrl(); as source) {
+      <img [src]="source" [alt]="'Portada de ' + propertyName()" />
+    } @else {
+      <div
+        class="cover-placeholder"
+        role="img"
+        [attr.aria-label]="'Propiedad sin portada: ' + propertyName()"
+      >
+        <mat-icon aria-hidden="true">image</mat-icon>
+        <span>Portada no disponible</span>
+      </div>
+    }
+  </div>
+
+  <div class="cover-actions">
+    <label class="cover-file-button" for="property-cover-input">
+      <mat-icon aria-hidden="true">{{ imageUrl() ? 'photo_camera' : 'upload' }}</mat-icon>
+      {{ imageUrl() ? 'Cambiar portada' : 'Seleccionar portada' }}
+    </label>
+    @if (canRemove()) {
+      <button
+        type="button"
+        class="cover-remove-button"
+        [disabled]="disabled() || loading()"
+        (click)="remove()"
+      >
+        <mat-icon aria-hidden="true">{{ removalPending() ? 'undo' : 'delete' }}</mat-icon>
+        {{ removalPending() ? 'Restaurar portada' : 'Eliminar portada' }}
+      </button>
+    }
+  </div>
+
+  <input
+    id="property-cover-input"
+    class="sr-only"
+    type="file"
+    accept="image/jpeg,image/png"
+    [disabled]="disabled() || loading()"
+    (change)="select($event)"
+  />
+
+  @if (errorMessage(); as message) {
+    <p class="cover-message cover-message-error" role="alert">{{ message }}</p>
+  } @else if (selectedFileName(); as fileName) {
+    <p class="cover-message cover-message-success">{{ fileName }} lista para guardar.</p>
+  }
+</section>

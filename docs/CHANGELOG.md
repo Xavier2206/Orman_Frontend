@@ -1,5 +1,295 @@
 # Changelog
 
+## 2026-09-13 - Consolidación documental del módulo Propiedades
+
+### Cambiado
+
+- Se consolidó el trabajo de Propiedades en la Fase 13 y en el documento canónico
+  `docs/etapas/etapa-2/fases/13-propiedades.md`.
+- El `PlanGeneral.md` ahora contiene una única entrada `13 — Propiedades`, con estado
+  `COMPLETADA`.
+- Se actualizaron los índices y referencias documentales; el historial de cambios relevantes se
+  conserva en este changelog.
+
+### Conservado
+
+- No se modificaron código frontend, backend, configuración, dependencias ni pruebas.
+- No se renumeraron fases ajenas ni se ejecutaron operaciones Git.
+
+## 2026-09-13 - Fase 19: Retiro de la acción redundante del formulario de Propiedades
+
+### Cambiado
+
+- Se eliminó `Volver a propiedades` del encabezado reutilizado por Crear y Editar Propiedad porque duplicaba la acción `Cancelar`.
+- Se retiraron únicamente los estilos sin uso de `form-back-button` y se añadió una aserción de template para evitar su regreso.
+
+### Conservado
+
+- `Cancelar` continúa usando `cancel()` y sigue siendo la salida del formulario junto a Guardar.
+- Título, campos, validaciones, portada, preview, mapa, API, rutas, temas y Backend no cambiaron.
+- No se ejecutaron `git add`, `git commit` ni `git push`.
+
+## 2026-09-13 - Fase 18: Reparación de assets del marcador Leaflet
+
+### Corregido
+
+- Se diagnosticó el icono roto del marcador en Crear y Editar mediante Browser/DevTools: el `IMG` recibía `http://localhost:4200/leaflet/marker-icon.png` con dimensiones naturales `0×0` porque el servidor `ng serve` antiguo devolvía 404.
+- Se reinició la sesión local de desarrollo para cargar la configuración de assets ya existente en `angular.json`; no se añadió una copia manual ni se cambió la lógica del mapa.
+
+### Verificado
+
+- `marker-icon.png` responde y se renderiza en `25×41`; `marker-shadow.png` en `41×41`; `marker-icon-2x.png` está incluido y se sirve en `50×82`.
+- Crear y Editar conservan click, arrastre, coordenadas, zoom y marcador inicial; ORMAN, DÍA y NOCHE mantienen el marcador visible.
+- Build de producción, typecheck, pruebas focalizadas, Prettier y `git diff --check` ejecutados; los resultados completos quedan en el documento de la Fase 18.
+- No se modificaron Backend, API, rutas, formulario, portada, preview ni dependencias. No se ejecutaron `git add`, `git commit` ni `git push`.
+
+## 2026-09-13 - Fase 17: Reacomodo financiero y limpieza de ubicación de Propiedades
+
+### Cambiado
+
+- `Datos financieros` e `Inversión inicial` ahora se muestran debajo de `Nombre` dentro de `Datos generales`, manteniendo el selector `CASA`/`EDIFICIO` en la columna derecha desde tablet y escritorio.
+- Se eliminaron `Buscar ubicación`, `Usar mi ubicación`, los resultados de búsqueda, `navigator.geolocation` y toda la lógica/configuración/modelado de transporte exclusiva de esas acciones.
+- El mapa conserva click, arrastre del marcador, coordenadas, reverse geocoding, zoom, atribución y tiles OSM; la reversa sigue completando solo dirección/ciudad vacías y no sobrescribe Referencia.
+- Se corrigió la junta horizontal de tiles causada por una separación subpíxel en Chromium con DPR fraccional: los tiles reales se solapan aproximadamente `0.99 px`, sin overlay.
+- No se modificaron API de Propiedades, rutas, portada, preview, listado, resumen, Backend ni contratos REST. `package-lock.json` y cambios locales previos fueron preservados.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 7 archivos y 70 pruebas aprobadas.
+- Suite completa: 50 archivos; 381 pruebas aprobadas de 384. Permanecen 3 fallos preexistentes en `OrmanNotificationService`.
+- Typecheck, Prettier, build de producción y `git diff --check` ejecutados. El build es correcto y conserva advertencias históricas de presupuesto CSS, incluida la hoja del formulario en `10.29 kB` frente al warning de `4 kB`.
+- Browser autenticado: Crear y Editar comprobados en `320`, `360`, `390`, `430`, `768`, `1280`, `1366`, `1440`, `1600` y `1920 px` según la ruta; sin overflow horizontal. Mapa y selector validados en ORMAN, DÍA y NOCHE; ORMAN restaurado y consola sin errores.
+- No se ejecutaron `git add`, `git commit` ni `git push`.
+
+## 2026-09-13 - Fase 16: Selector y ubicación cartográfica de Propiedades
+
+### Añadido y cambiado
+
+- Se reemplazó el `<select>` de tipo por tarjetas radio accesibles con valores `CASA` y `EDIFICIO`.
+- Se reorganizaron los campos existentes en Datos generales, Ubicación y Datos financieros sin
+  duplicar `FormControl`.
+- Se incorporó mapa Leaflet 1.9.4 directo con tiles OpenStreetMap, atribución visible, marcador
+  arrastrable, click, búsqueda explícita Nominatim, reverse geocoding y GPS manual.
+- La reversa solo completa dirección y ciudad vacías; no sobrescribe texto manual ni referencia.
+- Las peticiones Nominatim omiten el Bearer mediante `HttpContext` y respetan un intervalo mínimo
+  de un segundo. No se modificó Backend, portada, preview, rutas ni contratos.
+
+### Verificado
+
+- Pruebas focalizadas: 3 archivos y 41 pruebas aprobadas.
+- Suite completa: 51 archivos y 388 pruebas aprobadas.
+- Typecheck, Prettier, build de producción y `git diff --check` correctos. El build conserva
+  advertencias de presupuesto CSS existentes; el formulario queda en 10.24 kB con umbral de error
+  de 12 kB y Leaflet está declarado como CommonJS permitido.
+- Browser: Crear y Editar verificados con mapa, búsqueda, click, arrastre, selector accesible,
+  temas ORMAN/DÍA/NOCHE y sin overflow en 320, 360, 390, 430, 768, 1280, 1366, 1440, 1600 y
+  1920 px. El listado y el tema ORMAN quedaron restaurados.
+- Se añadieron `leaflet` y `@types/leaflet`; `package-lock.json` cambió por estas dependencias.
+- No se ejecutaron `git add`, `git commit` ni `git push`.
+
+## 2026-09-13 - Fase 15: Portada y layout de Propiedades
+
+### Añadido y cambiado
+
+- Se amplió la pantalla de Crear/Editar Propiedad con composición responsive de columna principal y sidebar, manteniendo una sola columna en tablet y móvil.
+- Se añadió el selector visual de portada con preview local, validación JPG/PNG de hasta 5 MiB, placeholder, estados de carga/error y cambios pendientes.
+- `PropiedadApiService` consume `GET`, `PUT` multipart con `foto` y `DELETE /api/v1/propiedades/{codprop}/portada` con tipos explícitos.
+- Crear persiste primero la propiedad y después la portada opcional; Editar aplica el reemplazo o eliminación después del `PUT` de datos. Un fallo de portada no repite el guardado de la propiedad.
+- Las cards consumen `tienePortada` y Blob autenticado, liberan sus Object URL y no usan la referencia legacy `portadaUrl` como imagen interna.
+- La vista previa muestra únicamente nombre, tipo, ciudad, inversión y portada. No se añadieron campos de la referencia visual que no existen en el contrato.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 5 archivos y 61 pruebas aprobadas.
+- Suite completa: 50 archivos y 379 pruebas aprobadas en la última ejecución.
+- Typecheck, Prettier y build de producción correctos; el build genera el chunk lazy `propiedad-form-component`.
+- El build conserva advertencias de presupuesto CSS del proyecto y registra `propiedad-form.component.css` (7.74 kB) y `propiedad-card.component.css` (4.33 kB) sobre el presupuesto de 4 kB.
+- `package-lock.json` no cambió, no se modificó Backend y no se ejecutaron operaciones Git.
+- Browser: shell público y restauración de ORMAN comprobados; la validación privada queda pendiente de una sesión Backend válida porque la sesión disponible expiró y las credenciales de prueba fueron rechazadas.
+
+## 2026-09-13 - Fase 14: Crear y editar Propiedades
+
+### Añadido y cambiado
+
+- Se añadió una única página standalone reutilizable para crear en `/app/propiedades/nueva` y editar en `/app/propiedades/:codprop/editar`.
+- El listado incorpora el botón `Añadir propiedad` al nivel del título y conecta `editRequested` de cada card con la ruta de edición correspondiente.
+- `PropiedadApiService` consume los contratos confirmados de detalle, creación y actualización con tipos explícitos.
+- El alta toma `codperPropietaria` desde `AuthService.codper()`, envía `estado: 1` y no solicita ni expone propietario, estado ni portada.
+- La edición carga el detalle antes de renderizar el formulario y preserva `codperPropietaria`, `estado` y `portadaUrl` en el `PUT` completo.
+- Se validan requeridos, longitudes, tipo permitido, inversión no negativa, rangos de coordenadas y la regla de latitud/longitud como pareja. Los `ProblemDetail.fieldErrors` se muestran junto a sus controles.
+- No se implementaron activar/desactivar, detalle funcional, Unidades, fotografías, contratos, pagos ni cambios Backend.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 5 archivos y 47 pruebas aprobadas.
+- Suite completa: 49 archivos, 357 pruebas aprobadas y 3 fallos preexistentes en `OrmanNotificationService`.
+- Typecheck y Prettier correctos.
+- Build de producción correcto y con chunk lazy `propiedad-form-component`; no introdujo una nueva advertencia de presupuesto CSS. Se mantienen advertencias históricas en otros componentes.
+- Browser revisado antes y después: botón en el encabezado, navegación Crear/Editar, carga real de detalle, formulario vacío en Crear y campos técnicos no visibles. En 320, 360, 390, 430, 768, 1280, 1366, 1440, 1600 y 1920 px no hubo overflow; el formulario usa una columna en móvil y dos desde tablet. ORMAN, DÍA y NOCHE verificados y ORMAN restaurado.
+- `package-lock.json` no cambió y no se ejecutaron operaciones Git.
+
+## 2026-09-13 - Centrar iconos del resumen de Menús
+
+### Cambiado
+
+- Se corrigió la alineación vertical de los iconos circulares de las tarjetas resumen de Menús.
+- La caja tipográfica de los iconos Material ahora utiliza centrado explícito con `grid`, `place-items: center` y `line-height: 1`.
+- No se modificaron datos, lógica, API ni acciones.
+
+### Verificado
+
+- Pruebas focalizadas de Menús: 4 archivos y 30 pruebas aprobadas.
+- Typecheck y Prettier correctos.
+- Centrado verificado en navegador para anchos de 320, 360, 390, 430, 768, 1280, 1536 y 1856 px, y en los temas ORMAN, DÍA y NOCHE.
+- Suite completa: 48 archivos y 343 de 346 pruebas aprobadas; las 3 fallas pertenecen al servicio histórico de notificaciones y no están relacionadas con este cambio.
+- El build de producción quedó bloqueado por DNS al intentar obtener la fuente externa de Google Fonts (`fonts.googleapis.com`). El fallback sin optimización solo expuso límites de presupuesto existentes.
+- `package-lock.json` no cambió y no se ejecutaron operaciones Git.
+
+## 2026-09-13 - Corrección de alineación en las tarjetas de Propiedades
+
+### Cambiado
+
+- Las métricas inferiores reutilizan desde `lg` las mismas proporciones de columna (`1.2fr / 1fr`) y separación de la fila superior.
+- Se eliminó en desktop el `border-top` aislado de `INVERSIÓN INICIAL`; el separador continúa disponible en móvil y tablet.
+- No se modificaron contenido, datos, métricas, ocupación, modelo, API, servicios, iconos, botones ni lógica.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 4 archivos y 33 pruebas aprobadas.
+- Suite completa: 48 archivos y 346 pruebas aprobadas.
+- Typecheck y Prettier correctos; build de producción correcto con advertencias de presupuesto CSS existentes, incluida la hoja de la card.
+- Browser validado en 320, 360, 390, 430, 768, 1280, 1366, 1440, 1536, 1600 y 1920 px: guías desktop coincidentes, apilado responsive y sin overflow.
+- Temas ORMAN, DÍA y NOCHE revisados; ORMAN restaurado. `package-lock.json` sin cambios y sin commits realizados.
+
+## 2026-09-13 - Reubicar inversión y métricas en las tarjetas de Propiedades
+
+### Cambiado
+
+- Se reordenaron únicamente los bloques visuales de `PropiedadCardComponent`: identidad a la izquierda e inversión a la derecha en la fila superior; Unidades y Ocupación en la fila inferior.
+- En móvil y tablet se conserva un flujo vertical limpio para evitar columnas estrechas.
+- Se conservaron contenido, métricas, iconos, botones, portada, placeholder, proporciones, tokens de tema y altura compacta; no se modificaron modelo, API, servicios ni lógica.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 4 archivos y 33 pruebas aprobadas.
+- Suite completa: 48 archivos y 346 pruebas aprobadas.
+- Typecheck y Prettier correctos; build de producción correcto con advertencias de presupuesto CSS existentes, incluida la hoja de la card.
+- Revisión real en navegador en 320, 360, 390, 430, 768, 1280, 1366, 1440, 1536, 1600 y 1920 px; grid 1/2/3 y sin overflow horizontal.
+- Temas ORMAN, DÍA y NOCHE revisados; ORMAN restaurado. La respuesta Backend disponible mostró `0%`; `87,5%` y `100%` permanecen cubiertos por las pruebas de la card.
+- `package-lock.json` sin cambios y sin commits realizados.
+
+## 2026-09-12 - Redistribuir métricas en las tarjetas de Propiedades
+
+### Cambiado
+
+- Se actualizó `Propiedad` para tipar `unidadesHabilitadas`, `unidadesOcupadas` y `ocupacion`, además de `cantidadUnidades`.
+- `PropiedadCardComponent` usa una grilla interna desde `lg`: identidad e inversión a la izquierda, métricas de Unidades y Ocupación a la derecha, y acciones a todo el ancho inferior.
+- Unidades muestra el total recibido por Backend con `meeting_room`, singular/plural y el auxiliar de unidades habilitadas.
+- Ocupación muestra directamente `ocupacion`, el auxiliar `X de Y ocupada(s)` y una barra `progressbar` accesible, sin recalcular el valor en Angular.
+- En móvil y tablet las métricas usan dos columnas compactas; no se modificaron HTTP, resumen superior, portada, placeholder, filtros, paginación, navegación ni gestión de Unidades.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 4 archivos y 33 pruebas aprobadas.
+- Suite completa: 48 archivos; 343 pruebas aprobadas y 3 fallos preexistentes en `OrmanNotificationService`.
+- Typecheck y Prettier correctos; build de producción correcto con advertencias de presupuesto CSS, incluida `propiedad-card.component.css` con 240 bytes sobre su presupuesto.
+- Revisión real en navegador en 320, 360, 390, 430, 768, 1280, 1366, 1440, 1536, 1600 y 1920 px; temas ORMAN, DÍA y NOCHE revisados, sin overflow horizontal y ORMAN restaurado.
+- `package-lock.json` sin cambios y sin commits realizados.
+
+## 2026-09-12 - Mostrar cantidad de unidades en Propiedades
+
+### Cambiado
+
+- `Propiedad` incorpora el campo obligatorio `cantidadUnidades`, recibido directamente desde `GET /api/v1/propiedades`.
+- `PropiedadCardComponent` muestra una línea secundaria compacta con `meeting_room` después de dirección/ciudad y antes de inversión inicial.
+- La etiqueta conserva singular y plural: `0 Unidades`, `1 Unidad`, `2 Unidades` y `3 Unidades`.
+- No se añadió endpoint, petición adicional, conteo Angular, navegación ni gestión del módulo de Unidades. No se modificaron `PropiedadesResumenComponent`, portada, placeholder, proporción, filtros ni paginación.
+
+### Verificado
+
+- Pruebas focalizadas de Propiedades: 4 archivos y 31 pruebas aprobadas.
+- Suite completa: 48 archivos y 344 pruebas aprobadas.
+- Typecheck, Prettier y build de producción correctos; las advertencias del build corresponden a presupuestos CSS preexistentes de otros features.
+- Revisión real del navegador en 320, 360, 390, 430, 768, 1280, 1366, 1440, 1600 y 1920 px; temas ORMAN, DÍA y NOCHE revisados, sin overflow horizontal.
+- `package-lock.json` sin cambios y sin commits realizados.
+
+## 2026-09-12 - Corrección responsive de escritorio del listado de Propiedades
+
+### Cambiado
+
+- Se compactaron las tarjetas del resumen global en escritorio: de una altura mínima de `10.5rem` a `8.5rem`, con padding, gaps, iconos y tipografía ligeramente menores.
+- `PropiedadCardComponent` conserva portada `16:9` en móvil y tablet, y usa proporción `2.2:1` desde `1024px` para reducir el peso visual de imagen y placeholder.
+- La tarjeta redujo su espaciado interno en desktop y el listado incorpora tres columnas desde `2xl` (`1536px`), manteniendo una columna en móvil y dos desde `md`.
+- No se modificaron API, modelos, cálculos, filtros, búsqueda, acciones, temas ni la lógica de paginación. El paginador sigue después del grid y se renderiza con la condición existente `totalPages > 0`.
+
+### Verificado
+
+- Revisión visual real en navegador en 320, 360, 390, 430, 768, 1280, 1366, 1440, 1600 y 1920 px.
+- Temas ORMAN, DÍA y NOCHE revisados; ORMAN quedó restaurado y no se detectó overflow horizontal.
+- Pruebas focalizadas de Propiedades: 4 archivos y 29 pruebas aprobadas.
+- Suite completa: 48 archivos y 342 pruebas aprobadas.
+- Typecheck, Prettier y build de producción correctos; las advertencias del build corresponden a presupuestos CSS preexistentes de otros features.
+- `package-lock.json` sin cambios y sin commits realizados.
+
+## 2026-09-12 - Corrección responsive del resumen de Propiedades
+
+### Cambiado
+
+- El resumen de Propiedades usa una cuadrícula 2×2 en móvil y conserva 2×2 en tablet y 4×1 en escritorio.
+- En móvil se redujeron únicamente padding, gaps, iconos, tamaños tipográficos, altura mínima y grosor de la barra para evitar cuatro cards verticales demasiado altas.
+- Los títulos y textos auxiliares mantienen su contenido y pueden envolver palabras sin truncarse; no se modificaron API, modelos, cálculos, estados, filtros ni paginación.
+
+### Verificado
+
+- Revisión visual real en navegador en 320, 360, 375, 390, 412, 430, tablet (768) y escritorio (1280) px.
+- Se revisaron los temas ORMAN, DÍA y NOCHE; no se detectó overflow horizontal y la barra conserva su accesibilidad.
+- Suite completa: 48 archivos y 342 pruebas aprobadas.
+- Typecheck, Prettier y build de producción correctos; `package-lock.json` sin cambios.
+
+## 2026-09-12 - Fase 13: Resumen de Propiedades
+
+### Añadido
+
+- Se añadió `PropiedadResumen` para tipar la respuesta real de `GET /api/v1/propiedades/resumen`.
+- `PropiedadApiService.getResumen()` consume el resumen global sin enviar `codperPropietaria`.
+- Se incorporó `PropiedadesResumenComponent` sobre el listado, con inversión, propiedades activas, unidades y ocupación global.
+- El resumen mantiene loading y error independientes del listado; los filtros y la paginación no vuelven a solicitarlo.
+- La ocupación usa el valor recibido por Backend en una barra `progressbar` accesible y el grid responde a móvil, tablet y escritorio.
+
+### Verificado
+
+- Pruebas del feature: 29 pruebas aprobadas en 4 archivos (las cinco del resumen quedaron verificadas dentro de la suite completa).
+- Suite completa: 48 archivos; 339 pruebas aprobadas y 3 fallos preexistentes en `OrmanNotificationService`.
+- Typecheck correcto y build de producción correcto.
+- `package-lock.json` sin cambios.
+
+## 2026-09-11 - Fase 13: Listado de Propiedades
+
+### Añadido y cambiado
+
+- Se implementó el listado lazy `/app/propiedades/listar` con tarjetas inmobiliarias responsive y estados de carga, error, vacío y sin coincidencias.
+- Se actualizaron los modelos para reflejar únicamente el contrato real de `PropiedadResponse`.
+- Se añadió búsqueda remota por `q` con debounce y cancelación mediante `switchMap`.
+- Se añadieron los filtros de tipo `CASA`/`EDIFICIO` y estado numérico `1`/`0`, sin filtro independiente de ciudad.
+- Se añadió paginación de servidor con `page` base cero, `size=20`, `sort=nombre,asc` y resumen `Mostrando X de Y propiedades`.
+- Se creó `PropiedadCardComponent` con portada, placeholder temático, badges, inversión en bolivianos y outputs visuales preparados para acciones futuras.
+
+### Corrección de iconos
+
+- Se corrigió el recorte de iconos causado porque Propiedades no declaraba la familia Material Symbols Rounded ni sus ligaduras; la regla global de Angular Material `.mat-icon` (`24px` y `overflow: hidden`) terminaba mostrando y recortando el texto normal. La solución local del feature restaura la fuente, las ligaduras, las variaciones y `overflow: visible`, sin añadir dependencias.
+
+### Verificado
+
+- Pruebas focalizadas: 3 archivos y 17 pruebas aprobadas.
+- Typecheck y Prettier correctos.
+- Build de producción correcto, con chunk lazy de Propiedades y sin nuevas advertencias CSS en este feature.
+- `git diff --check` correcto; permanecen avisos de conversión LF/CRLF.
+- `package-lock.json` sin cambios.
+
+### Fuera de alcance
+
+- Crear, editar, detalle funcional, activar/desactivar, unidades, fotografías, contratos, pagos, notificaciones, KPIs, ocupación, rentabilidad, ingresos y nueva propiedad funcional quedan pendientes de fases posteriores autorizadas.
+
 ## 2026-09-09 - Corrección de contratos de Asignar Procesos
 
 ### Cambiado
@@ -797,7 +1087,6 @@
 - Se creó `docs/PlanGeneral.md` como documento maestro de planificación por Etapas y Fases.
 - El plan enlaza la documentación histórica, registra estados y deja identificada la primera fase pendiente de Etapa 2.
 
-
 ## 2026-08-11 - Reorganizacion documental por Etapas
 
 ### Anadido
@@ -1244,6 +1533,7 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 
 - Compilación de producción satisfactoria.
 - Dos pruebas unitarias satisfactorias.
+
 ## 2026-09-09 - Fase 09
 
 ### Corregido

@@ -1,0 +1,163 @@
+<article
+  class="property-card group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-theme-border bg-card shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-accent hover:bg-card-hover hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none"
+  [attr.aria-label]="'Propiedad ' + propiedad().nombre"
+>
+  <div class="property-card-cover relative aspect-[16/9] overflow-hidden bg-surface">
+    @if (coverUrl(); as portadaUrl) {
+      <img
+        class="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:transform-none"
+        [src]="portadaUrl"
+        [alt]="'Portada de ' + propiedad().nombre"
+      />
+    } @else if (coverLoading()) {
+      <div
+        class="property-placeholder size-full"
+        role="status"
+        [attr.aria-label]="'Cargando portada de ' + propiedad().nombre"
+      >
+        <div class="property-placeholder-art">
+          <span class="property-placeholder-icon">
+            <mat-icon aria-hidden="true">progress_activity</mat-icon>
+          </span>
+          <span>Cargando portada</span>
+        </div>
+      </div>
+    } @else {
+      <div
+        class="property-placeholder size-full"
+        role="img"
+        [attr.aria-label]="
+          propiedad().tienePortada
+            ? 'Portada no disponible: ' + propiedad().nombre
+            : 'Propiedad sin portada: ' + propiedad().nombre
+        "
+      >
+        <div class="property-placeholder-art">
+          <span class="property-placeholder-icon">
+            <mat-icon aria-hidden="true">domain</mat-icon>
+          </span>
+          <span>Portada no disponible</span>
+        </div>
+      </div>
+    }
+
+    <span class="property-badge property-type-badge absolute top-3 left-3">
+      {{ propiedad().tipo }}
+    </span>
+    <span
+      class="property-badge property-status-badge absolute top-3 right-3"
+      [class.property-status-active]="propiedad().estado === 1"
+      [class.property-status-inactive]="propiedad().estado === 0"
+    >
+      {{ statusLabel(propiedad().estado) }}
+    </span>
+  </div>
+
+  <div
+    class="property-card-body flex min-h-48 flex-1 flex-col gap-3 p-4 sm:gap-4 sm:p-5 lg:gap-2 lg:p-3"
+  >
+    <div class="property-card-identity min-w-0">
+      <h2 class="break-words text-xl leading-tight font-bold text-content">
+        {{ propiedad().nombre }}
+      </h2>
+      <p class="property-address mt-2 flex items-start gap-2 text-sm text-muted lg:mt-1">
+        <mat-icon aria-hidden="true">location_on</mat-icon>
+        <span class="min-w-0 break-words"
+          >{{ propiedad().direccion }}, {{ propiedad().ciudad }}</span
+        >
+      </p>
+    </div>
+
+    <div class="investment-block border-t border-theme-border pt-3 lg:pt-2">
+      <p class="text-xs font-semibold tracking-[0.08em] text-muted uppercase">Inversión inicial</p>
+      <p class="mt-1 break-words text-lg font-bold text-content">
+        {{ formatInvestment(propiedad().inversionInicial) }}
+      </p>
+    </div>
+
+    <div class="property-metrics grid grid-cols-2 gap-2">
+      <div class="property-metric min-w-0">
+        <p class="property-metric-label">Unidades</p>
+        <p class="property-metric-value">
+          <mat-icon aria-hidden="true">meeting_room</mat-icon>
+          {{ unitCountLabel(propiedad().cantidadUnidades) }}
+        </p>
+        <p class="property-metric-note">
+          {{ enabledUnitCountLabel(propiedad().unidadesHabilitadas) }}
+        </p>
+      </div>
+
+      <div class="property-metric property-occupancy min-w-0">
+        <p class="property-metric-label">Ocupación</p>
+        <p class="property-metric-value">{{ formatOccupancy(propiedad().ocupacion) }}</p>
+        <p class="property-metric-note">
+          {{ occupancyLabel(propiedad().unidadesOcupadas, propiedad().unidadesHabilitadas) }}
+        </p>
+        <div
+          class="property-occupancy-progress"
+          role="progressbar"
+          [attr.aria-label]="'Ocupación de ' + propiedad().nombre"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="propiedad().ocupacion"
+          [attr.aria-valuetext]="formatOccupancy(propiedad().ocupacion)"
+        >
+          <span
+            class="property-occupancy-progress-value"
+            [style.width.%]="propiedad().ocupacion"
+          ></span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="property-actions mt-auto flex flex-wrap justify-end gap-2 border-t border-theme-border pt-3 lg:pt-2"
+    >
+      <button
+        type="button"
+        class="property-action-button property-action-edit"
+        [attr.aria-label]="'Editar ' + propiedad().nombre"
+        (click)="editRequested.emit()"
+      >
+        <mat-icon aria-hidden="true">edit</mat-icon>
+        <span class="sr-only">Editar</span>
+        <span class="property-action-tooltip" role="tooltip">Editar</span>
+      </button>
+      <button
+        type="button"
+        class="property-action-button property-action-detail"
+        [attr.aria-label]="'Ver detalle de ' + propiedad().nombre"
+        (click)="detailRequested.emit()"
+      >
+        <mat-icon aria-hidden="true">description</mat-icon>
+        <span class="sr-only">Ver detalle</span>
+        <span class="property-action-tooltip" role="tooltip">Ver detalle</span>
+      </button>
+      @if (propiedad().estado === 1) {
+        <button
+          type="button"
+          class="property-action-button property-action-deactivate"
+          aria-label="Desactivar propiedad"
+          title="Desactivar propiedad"
+          (click)="deactivateRequested.emit()"
+        >
+          <mat-icon aria-hidden="true">delete_outline</mat-icon>
+          <span class="sr-only">Desactivar propiedad</span>
+          <span class="property-action-tooltip" role="tooltip">Desactivar propiedad</span>
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="property-action-button property-action-activate"
+          aria-label="Activar propiedad"
+          title="Activar propiedad"
+          (click)="activateRequested.emit()"
+        >
+          <mat-icon aria-hidden="true">restore</mat-icon>
+          <span class="sr-only">Activar propiedad</span>
+          <span class="property-action-tooltip" role="tooltip">Activar propiedad</span>
+        </button>
+      }
+    </div>
+  </div>
+</article>

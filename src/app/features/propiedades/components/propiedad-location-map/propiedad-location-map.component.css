@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.property-location-map-shell {
+  min-height: 18rem;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--theme-field-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-surface);
+}
+
+@media (max-width: 40rem) {
+  .property-location-map-shell {
+    min-height: 16rem;
+  }
+}

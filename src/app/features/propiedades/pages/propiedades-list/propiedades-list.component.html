@@ -1,4 +1,275 @@
-<section aria-labelledby="propiedades-title">
-  <h1 id="propiedades-title">{{ title() }}</h1>
-  <p>La estructura del módulo está preparada para su implementación futura.</p>
+<section
+  class="property-list-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="propiedades-title"
+>
+  <header>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="page-kicker">Gestión inmobiliaria</p>
+        <h1 id="propiedades-title" class="mt-2 text-3xl font-bold text-content">
+          {{ title() }}
+        </h1>
+      </div>
+      <button type="button" class="add-property-button" (click)="createProperty()">
+        <mat-icon aria-hidden="true">add_home</mat-icon>
+        Añadir propiedad
+      </button>
+    </div>
+    <p class="mt-2 max-w-2xl text-sm text-muted">
+      Gestiona y consulta tus propiedades inmobiliarias.
+    </p>
+  </header>
+
+  <app-propiedades-resumen
+    class="mt-6 block"
+    [resumen]="resumen()"
+    [loading]="resumenLoading()"
+    [error]="resumenError()"
+  />
+
+  <section
+    class="filters-panel mt-6 grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-theme-border bg-surface p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-[minmax(18rem,2fr)_minmax(11rem,1fr)_minmax(11rem,1fr)_auto]"
+    aria-label="Filtros de propiedades"
+  >
+    <div class="min-w-0 sm:col-span-2 lg:col-span-1">
+      <label for="property-search">Buscar propiedades</label>
+      <div class="search-field group relative mt-[.35rem]">
+        <mat-icon
+          class="property-icon pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted transition-colors duration-150 group-focus-within:text-accent-text motion-reduce:transition-none"
+          aria-hidden="true"
+          >search</mat-icon
+        >
+        <input
+          id="property-search"
+          class="mt-0 pl-11"
+          type="search"
+          autocomplete="off"
+          placeholder="Buscar por nombre, dirección o ciudad..."
+          [value]="searchQuery()"
+          (input)="search($event)"
+        />
+      </div>
+    </div>
+
+    <div class="relative min-w-0">
+      <span id="property-type-label" class="filter-label">Tipo de propiedad</span>
+      <button
+        id="property-type-trigger"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        aria-labelledby="property-type-label"
+        aria-controls="property-type-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'type'"
+        (click)="toggleFilter('type')"
+        (keydown)="handleFilterTriggerKeydown($event, 'type')"
+      >
+        <span class="filter-value">{{ selectedFilterLabel('type') }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'type' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'type') {
+        <div
+          id="property-type-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="property-type-label"
+        >
+          @for (option of typeOptions; track option.value; let index = $index) {
+            <div
+              class="filter-option"
+              role="option"
+              tabindex="-1"
+              [attr.aria-selected]="option.value === selectedFilterValue('type')"
+              [class.filter-option-selected]="option.value === selectedFilterValue('type')"
+              [attr.data-filter]="'type'"
+              [attr.data-index]="index"
+              (click)="selectFilter('type', option.value)"
+              (keydown)="handleFilterOptionKeydown($event, 'type', index)"
+            >
+              {{ option.label }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="relative min-w-0">
+      <span id="property-status-label" class="filter-label">Estado</span>
+      <button
+        id="property-status-trigger"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        aria-labelledby="property-status-label"
+        aria-controls="property-status-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'status'"
+        (click)="toggleFilter('status')"
+        (keydown)="handleFilterTriggerKeydown($event, 'status')"
+      >
+        <span class="filter-value">{{ selectedFilterLabel('status') }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'status' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'status') {
+        <div
+          id="property-status-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="property-status-label"
+        >
+          @for (option of statusOptions; track option.value; let index = $index) {
+            <div
+              class="filter-option"
+              role="option"
+              tabindex="-1"
+              [attr.aria-selected]="option.value === selectedFilterValue('status')"
+              [class.filter-option-selected]="option.value === selectedFilterValue('status')"
+              [attr.data-filter]="'status'"
+              [attr.data-index]="index"
+              (click)="selectFilter('status', option.value)"
+              (keydown)="handleFilterOptionKeydown($event, 'status', index)"
+            >
+              {{ option.label }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="page-button w-full sm:col-span-2 sm:justify-self-end lg:col-span-1 lg:w-auto"
+      [disabled]="!hasFilters()"
+      (click)="clearFilters()"
+    >
+      <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+      Limpiar
+    </button>
+  </section>
+
+  @if (loading()) {
+    <div
+      class="property-grid mt-6 grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2"
+      role="status"
+      aria-label="Cargando propiedades"
+      aria-busy="true"
+    >
+      @for (card of loadingCards; track card) {
+        <article
+          class="property-skeleton overflow-hidden rounded-2xl border border-theme-border bg-card shadow-sm"
+          aria-hidden="true"
+        >
+          <span class="property-skeleton-cover block aspect-[16/9] bg-surface"></span>
+          <div class="grid gap-4 p-5">
+            <span class="property-skeleton-line h-5 w-3/4 rounded-sm"></span>
+            <span class="property-skeleton-line h-4 w-full rounded-sm"></span>
+            <span class="property-skeleton-line h-5 w-1/2 rounded-sm"></span>
+            <span class="property-skeleton-line h-10 w-full rounded-md"></span>
+          </div>
+        </article>
+      }
+    </div>
+  } @else if (error(); as message) {
+    <p
+      class="mt-6 rounded-xl border border-danger-border bg-danger-bg p-4 text-danger-text"
+      role="alert"
+    >
+      {{ message }}
+    </p>
+  } @else if (page(); as result) {
+    @if (result.totalElements === 0) {
+      <div
+        class="empty-state mt-6 rounded-2xl border border-theme-border bg-surface p-10 text-center"
+        role="status"
+      >
+        <mat-icon class="empty-state-icon text-accent-text" aria-hidden="true">{{
+          hasFilters() ? 'search_off' : 'domain_disabled'
+        }}</mat-icon>
+        <h2 class="mt-4 text-lg font-bold text-content">
+          {{
+            hasFilters()
+              ? 'No se encontraron propiedades con los filtros aplicados.'
+              : 'No existen propiedades registradas.'
+          }}
+        </h2>
+        <p class="mx-auto mt-2 max-w-lg text-sm text-muted">
+          {{
+            hasFilters()
+              ? 'Prueba modificando los filtros o limpiándolos.'
+              : 'Cuando se registre una propiedad, aparecerá aquí con su información principal.'
+          }}
+        </p>
+        @if (hasFilters()) {
+          <button type="button" class="page-button mt-5 px-4" (click)="clearFilters()">
+            <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+            Limpiar filtros
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="property-grid mt-6 grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
+        @for (propiedad of result.content; track propiedad.codprop) {
+          <app-propiedad-card
+            [propiedad]="propiedad"
+            (editRequested)="editProperty(propiedad)"
+            (detailRequested)="detailProperty(propiedad)"
+            (activateRequested)="activateProperty(propiedad)"
+            (deactivateRequested)="deactivateProperty(propiedad)"
+          />
+        }
+      </div>
+
+      @if (result.totalPages > 0) {
+        <nav
+          class="pagination-bar mt-6 flex min-w-0 flex-col gap-3 rounded-xl border border-theme-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          aria-label="Paginación de propiedades"
+        >
+          <div class="min-w-0">
+            <p class="text-sm text-muted" aria-live="polite">
+              Mostrando {{ result.content.length }} de {{ result.totalElements }} propiedades
+            </p>
+            <p class="mt-1 text-xs text-muted">
+              Página {{ result.page + 1 }} de {{ result.totalPages }}
+            </p>
+          </div>
+          <div class="flex w-full gap-2 sm:w-auto">
+            <button
+              type="button"
+              class="page-button flex-1 px-3 sm:flex-none"
+              [disabled]="result.first"
+              aria-label="Página anterior"
+              (click)="changePage(result.page - 1)"
+            >
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              <span>Anterior</span>
+            </button>
+            <button
+              type="button"
+              class="page-button flex-1 px-3 sm:flex-none"
+              [disabled]="result.last"
+              aria-label="Página siguiente"
+              (click)="changePage(result.page + 1)"
+            >
+              <span>Siguiente</span>
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </div>
+        </nav>
+      }
+    }
+  }
+
+  @if (modal() === 'status' && selected(); as selectedProperty) {
+    <app-propiedad-status-confirm-modal
+      [operation]="statusOperation()"
+      [propertyName]="selectedProperty.nombre"
+      [submitting]="submitting()"
+      [feedback]="feedback()"
+      (closed)="closeModal()"
+      (confirmed)="submitStatus()"
+    />
+  }
 </section>

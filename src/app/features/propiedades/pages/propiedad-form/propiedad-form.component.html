@@ -1,0 +1,421 @@
+<section
+  class="propiedad-form-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="propiedad-form-title"
+>
+  <header class="form-page-header">
+    <div class="form-page-header-layout">
+      <div class="form-page-header-copy">
+        <div class="form-page-header-text">
+          <p class="page-kicker">Gestión Propiedades</p>
+          <h1 id="propiedad-form-title">{{ title() }}</h1>
+        </div>
+      </div>
+      <div class="form-header-actions">
+        <button
+          type="button"
+          class="form-secondary-button"
+          [disabled]="submitting()"
+          (click)="cancel()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          form="propiedad-form"
+          class="form-primary-button"
+          [disabled]="submitting() || loading() || !!loadingError()"
+        >
+          <mat-icon aria-hidden="true">{{ submitting() ? 'progress_activity' : 'save' }}</mat-icon>
+          {{ submitting() ? 'Guardando...' : isEdit() ? 'Guardar cambios' : 'Guardar propiedad' }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <section class="form-panel form-loading" aria-label="Cargando propiedad" aria-busy="true">
+      <span class="loading-line loading-line-title"></span>
+      <span class="loading-line"></span>
+      <span class="loading-line"></span>
+      <span class="loading-line loading-line-short"></span>
+    </section>
+  } @else if (loadingError(); as message) {
+    <section class="form-panel form-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <div>
+        <h2>No se puede editar la propiedad</h2>
+        <p>{{ message }}</p>
+      </div>
+      <button
+        type="button"
+        class="inline-flex min-h-11 w-fit items-center justify-center rounded-md border border-theme-border bg-card px-4 py-2 text-sm font-bold text-content hover:bg-card-hover hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--theme-focus)]"
+        (click)="cancel()"
+      >
+        Volver al listado
+      </button>
+    </section>
+  } @else {
+    <form
+      class="form-panel"
+      id="propiedad-form"
+      [formGroup]="form"
+      [attr.aria-busy]="submitting()"
+      (ngSubmit)="submit()"
+    >
+      @if (feedback(); as message) {
+        <p class="form-feedback" role="alert">{{ message }}</p>
+      }
+
+      <div class="property-form-layout">
+        <div class="property-form-main">
+          <fieldset [disabled]="submitting()">
+            <section class="form-section" aria-labelledby="general-data-title">
+              <div class="section-heading">
+                <mat-icon aria-hidden="true">home_work</mat-icon>
+                <div>
+                  <h2 id="general-data-title">Datos generales</h2>
+                  <p>Identifica y ubica el inmueble dentro de tu cartera.</p>
+                </div>
+              </div>
+
+              <div class="form-grid general-data-grid">
+                <div class="general-name-column">
+                  <div class="form-field">
+                    <label for="property-name">Nombre <span aria-hidden="true">*</span></label>
+                    <input
+                      id="property-name"
+                      type="text"
+                      formControlName="nombre"
+                      maxlength="120"
+                      autocomplete="organization"
+                      aria-required="true"
+                      [class.field-error]="!!fieldMessage('nombre')"
+                      [attr.aria-invalid]="fieldMessage('nombre') ? 'true' : null"
+                    />
+                    @if (fieldMessage('nombre'); as message) {
+                      <p class="field-message" role="alert">{{ message }}</p>
+                    }
+                  </div>
+
+                  <section class="financial-inline" aria-labelledby="financial-data-title">
+                    <div class="section-heading">
+                      <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+                      <div>
+                        <h2 id="financial-data-title">Datos financieros</h2>
+                        <p>Registra la inversión inicial del inmueble.</p>
+                      </div>
+                    </div>
+
+                    <div class="form-field investment-field">
+                      <label for="property-investment"
+                        >Inversión inicial <span aria-hidden="true">*</span></label
+                      >
+                      <div
+                        class="currency-input"
+                        [class.field-error]="!!fieldMessage('inversionInicial')"
+                      >
+                        <span aria-hidden="true">Bs</span>
+                        <input
+                          id="property-investment"
+                          type="number"
+                          formControlName="inversionInicial"
+                          min="0"
+                          step="0.01"
+                          inputmode="decimal"
+                          aria-required="true"
+                          [attr.aria-invalid]="fieldMessage('inversionInicial') ? 'true' : null"
+                        />
+                      </div>
+                      @if (fieldMessage('inversionInicial'); as message) {
+                        <p class="field-message" role="alert">{{ message }}</p>
+                      }
+                    </div>
+                  </section>
+                </div>
+
+                <div class="form-field general-type-field">
+                  <span id="property-type-label" class="form-label"
+                    >Tipo <span aria-hidden="true">*</span></span
+                  >
+                  <div
+                    class="property-type-options"
+                    role="radiogroup"
+                    aria-labelledby="property-type-label"
+                    aria-required="true"
+                    [class.field-error]="!!fieldMessage('tipo')"
+                    [attr.aria-invalid]="fieldMessage('tipo') ? 'true' : null"
+                  >
+                    <label
+                      class="property-type-card"
+                      [class.property-type-card-selected]="form.controls.tipo.value === 'EDIFICIO'"
+                    >
+                      <input
+                        type="radio"
+                        name="tipo"
+                        formControlName="tipo"
+                        value="EDIFICIO"
+                        aria-label="Edificio"
+                      />
+                      <span class="property-type-card-icon" aria-hidden="true">
+                        <mat-icon>business</mat-icon>
+                      </span>
+                      <span class="property-type-card-copy">
+                        <strong>Edificio</strong>
+                        <span>Inmueble vertical o de varias unidades.</span>
+                      </span>
+                      <mat-icon class="property-type-card-check" aria-hidden="true"
+                        >check_circle</mat-icon
+                      >
+                    </label>
+
+                    <label
+                      class="property-type-card"
+                      [class.property-type-card-selected]="form.controls.tipo.value === 'CASA'"
+                    >
+                      <input
+                        type="radio"
+                        name="tipo"
+                        formControlName="tipo"
+                        value="CASA"
+                        aria-label="Casa"
+                      />
+                      <span class="property-type-card-icon" aria-hidden="true">
+                        <mat-icon>home</mat-icon>
+                      </span>
+                      <span class="property-type-card-copy">
+                        <strong>Casa</strong>
+                        <span>Vivienda independiente.</span>
+                      </span>
+                      <mat-icon class="property-type-card-check" aria-hidden="true"
+                        >check_circle</mat-icon
+                      >
+                    </label>
+                  </div>
+                  @if (fieldMessage('tipo'); as message) {
+                    <p id="property-type-message" class="field-message" role="alert">
+                      {{ message }}
+                    </p>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <section class="form-section" aria-labelledby="location-title">
+              <div class="section-heading">
+                <mat-icon aria-hidden="true">location_on</mat-icon>
+                <div>
+                  <h2 id="location-title">Ubicación</h2>
+                  <p id="coordinates-help">Ingresa ambas coordenadas o déjalas vacías.</p>
+                </div>
+              </div>
+
+              <div
+                class="location-section-layout grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start"
+              >
+                <div class="location-controls grid min-w-0 content-start gap-4">
+                  <div class="form-grid">
+                    <div class="form-field form-field-wide">
+                      <label for="property-address"
+                        >Dirección <span aria-hidden="true">*</span></label
+                      >
+                      <input
+                        id="property-address"
+                        type="text"
+                        formControlName="direccion"
+                        maxlength="200"
+                        autocomplete="street-address"
+                        aria-required="true"
+                        [class.field-error]="!!fieldMessage('direccion')"
+                        [attr.aria-invalid]="fieldMessage('direccion') ? 'true' : null"
+                      />
+                      @if (fieldMessage('direccion'); as message) {
+                        <p class="field-message" role="alert">{{ message }}</p>
+                      }
+                    </div>
+
+                    <div class="form-field">
+                      <label for="property-city">Ciudad <span aria-hidden="true">*</span></label>
+                      <input
+                        id="property-city"
+                        type="text"
+                        formControlName="ciudad"
+                        maxlength="100"
+                        autocomplete="address-level2"
+                        aria-required="true"
+                        [class.field-error]="!!fieldMessage('ciudad')"
+                        [attr.aria-invalid]="fieldMessage('ciudad') ? 'true' : null"
+                      />
+                      @if (fieldMessage('ciudad'); as message) {
+                        <p class="field-message" role="alert">{{ message }}</p>
+                      }
+                    </div>
+
+                    <div class="form-field">
+                      <label for="property-reference">Referencia</label>
+                      <input
+                        id="property-reference"
+                        type="text"
+                        formControlName="referencia"
+                        maxlength="255"
+                        [class.field-error]="!!fieldMessage('referencia')"
+                        [attr.aria-invalid]="fieldMessage('referencia') ? 'true' : null"
+                      />
+                      @if (fieldMessage('referencia'); as message) {
+                        <p class="field-message" role="alert">{{ message }}</p>
+                      }
+                    </div>
+
+                    <div class="form-field">
+                      <label for="property-latitude">Latitud</label>
+                      <input
+                        id="property-latitude"
+                        type="number"
+                        formControlName="latitud"
+                        min="-90"
+                        max="90"
+                        step="any"
+                        inputmode="decimal"
+                        aria-describedby="coordinates-help"
+                        [class.field-error]="!!fieldMessage('latitud') || !!coordinatesMessage()"
+                        [attr.aria-invalid]="
+                          fieldMessage('latitud') || coordinatesMessage() ? 'true' : null
+                        "
+                      />
+                      @if (fieldMessage('latitud'); as message) {
+                        <p class="field-message" role="alert">{{ message }}</p>
+                      }
+                    </div>
+
+                    <div class="form-field">
+                      <label for="property-longitude">Longitud</label>
+                      <input
+                        id="property-longitude"
+                        type="number"
+                        formControlName="longitud"
+                        min="-180"
+                        max="180"
+                        step="any"
+                        inputmode="decimal"
+                        aria-describedby="coordinates-help"
+                        [class.field-error]="!!fieldMessage('longitud') || !!coordinatesMessage()"
+                        [attr.aria-invalid]="
+                          fieldMessage('longitud') || coordinatesMessage() ? 'true' : null
+                        "
+                      />
+                      @if (fieldMessage('longitud'); as message) {
+                        <p class="field-message" role="alert">{{ message }}</p>
+                      }
+                    </div>
+                  </div>
+
+                  @if (coordinatesMessage(); as message) {
+                    <p class="coordinates-message" role="alert">{{ message }}</p>
+                  }
+
+                  @if (locationFeedback(); as message) {
+                    <p
+                      class="m-0 flex items-start gap-2 rounded-md border border-info-border bg-info-bg px-3 py-2 text-xs leading-[1.4] text-info-text"
+                      [class.location-feedback-error]="locationReverseState() === 'error'"
+                      [attr.role]="locationReverseState() === 'error' ? 'alert' : 'status'"
+                      aria-live="polite"
+                    >
+                      {{ message }}
+                    </p>
+                  }
+
+                  @if (locationSuggestion(); as suggestion) {
+                    <p
+                      class="location-suggestion m-0 flex items-start gap-2 rounded-md border border-info-border bg-info-bg px-3 py-2 text-xs leading-[1.4] text-info-text"
+                    >
+                      <mat-icon aria-hidden="true">info</mat-icon>
+                      Referencia aproximada del mapa: {{ suggestion }}
+                    </p>
+                  }
+                </div>
+
+                <div class="location-map-column grid min-w-0 content-start gap-3">
+                  <div
+                    class="location-map-heading flex items-start justify-between gap-3 max-sm:flex-col"
+                  >
+                    <div>
+                      <span class="location-map-label text-sm font-bold text-content"
+                        >Mapa interactivo</span
+                      >
+                      <p class="m-0 mt-1 text-xs text-muted">
+                        Haz clic o arrastra el marcador para ajustar la ubicación.
+                      </p>
+                    </div>
+                    <span
+                      class="location-map-badge shrink-0 rounded-full border border-theme-border px-2 py-1 text-[.625rem] font-bold uppercase text-accent-text"
+                      >OpenStreetMap</span
+                    >
+                  </div>
+                  <app-propiedad-location-map
+                    [coordinates]="mapCoordinates()"
+                    (coordinatesSelected)="handleMapCoordinates($event)"
+                  />
+                </div>
+              </div>
+            </section>
+          </fieldset>
+        </div>
+
+        <aside class="property-form-sidebar" aria-label="Portada y vista previa">
+          <app-propiedad-cover-field
+            [imageUrl]="coverDisplayUrl()"
+            [propertyName]="propertyPreview().nombre"
+            [disabled]="submitting()"
+            [loading]="coverLoading()"
+            [canRemove]="coverCanRemove()"
+            [removalPending]="coverDeletePending()"
+            [selectedFileName]="selectedCoverFile()?.name ?? null"
+            [errorMessage]="coverError()"
+            (fileSelected)="handleCoverSelection($event)"
+            (removeRequested)="removeCover()"
+            (validationError)="handleCoverValidationError($event)"
+          />
+
+          <article class="property-preview-card" aria-labelledby="property-preview-title">
+            <div class="property-preview-heading">
+              <div>
+                <p class="preview-kicker">Vista previa</p>
+                <h2 id="property-preview-title">Tarjeta en catálogo ORMAN</h2>
+              </div>
+              <span class="preview-badge">En vivo</span>
+            </div>
+
+            <div class="property-preview-cover">
+              @if (coverDisplayUrl(); as source) {
+                <img [src]="source" [alt]="'Portada de ' + propertyPreview().nombre" />
+              } @else {
+                <div
+                  class="property-preview-placeholder"
+                  role="img"
+                  [attr.aria-label]="'Propiedad sin portada: ' + propertyPreview().nombre"
+                >
+                  <mat-icon aria-hidden="true">domain</mat-icon>
+                  <span>Sin portada</span>
+                </div>
+              }
+            </div>
+
+            <div class="property-preview-copy">
+              <h3>{{ propertyPreview().nombre }}</h3>
+              <p>
+                {{ propertyTypeLabel(propertyPreview().tipo) }} ·
+                {{ propertyPreview().ciudad }}
+              </p>
+              <strong>{{ formatPreviewInvestment(propertyPreview().inversionInicial) }}</strong>
+            </div>
+
+            @if (coverChangesPending()) {
+              <p class="property-preview-pending" role="status">
+                El cambio de portada se aplicará al guardar.
+              </p>
+            }
+          </article>
+        </aside>
+      </div>
+    </form>
+  }
+</section>

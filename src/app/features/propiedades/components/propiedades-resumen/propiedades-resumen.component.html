@@ -1,0 +1,91 @@
+<section class="property-summary" aria-labelledby="propiedades-summary-title">
+  <h2 id="propiedades-summary-title" class="sr-only">Resumen de propiedades</h2>
+
+  @if (loading()) {
+    <div
+      class="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 xl:grid-cols-4"
+      role="status"
+      aria-label="Cargando resumen de propiedades"
+      aria-busy="true"
+    >
+      @for (card of [0, 1, 2, 3]; track card) {
+        <article class="summary-card summary-card-skeleton" aria-hidden="true">
+          <span class="summary-skeleton-icon"></span>
+          <span class="summary-skeleton-line summary-skeleton-line-short"></span>
+          <span class="summary-skeleton-line summary-skeleton-line-value"></span>
+          <span class="summary-skeleton-line"></span>
+        </article>
+      }
+    </div>
+  } @else if (error(); as message) {
+    <p
+      class="rounded-xl border border-danger-border bg-danger-bg p-4 text-sm text-danger-text"
+      role="alert"
+    >
+      {{ message }}
+    </p>
+  } @else if (resumen(); as summary) {
+    <div class="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 xl:grid-cols-4">
+      <article class="summary-card">
+        <div class="summary-card-heading">
+          <span class="summary-card-icon" aria-hidden="true">
+            <mat-icon>account_balance_wallet</mat-icon>
+          </span>
+          <h3>Total inversión</h3>
+        </div>
+        <p class="summary-card-value">{{ formatInvestment(summary.inversionTotal) }}</p>
+        <p class="summary-card-note">Inversión inicial registrada</p>
+      </article>
+
+      <article class="summary-card">
+        <div class="summary-card-heading">
+          <span class="summary-card-icon" aria-hidden="true">
+            <mat-icon>apartment</mat-icon>
+          </span>
+          <h3>Propiedades activas</h3>
+        </div>
+        <p class="summary-card-value">{{ propertyCountLabel(summary.propiedadesActivas) }}</p>
+        <p class="summary-card-note">
+          {{ buildingCountLabel(summary.edificiosActivos) }} ·
+          {{ houseCountLabel(summary.casasActivas) }}
+        </p>
+      </article>
+
+      <article class="summary-card">
+        <div class="summary-card-heading">
+          <span class="summary-card-icon" aria-hidden="true">
+            <mat-icon>meeting_room</mat-icon>
+          </span>
+          <h3>Unidades totales</h3>
+        </div>
+        <p class="summary-card-value">{{ unitCountLabel(summary.unidadesTotales) }}</p>
+        <p class="summary-card-note">
+          {{ enabledUnitCountLabel(summary.unidadesHabilitadas) }} ·
+          {{ disabledUnitCountLabel(summary.unidadesNoHabilitadas) }}
+        </p>
+      </article>
+
+      <article class="summary-card">
+        <div class="summary-card-heading">
+          <span class="summary-card-icon" aria-hidden="true">
+            <mat-icon>donut_large</mat-icon>
+          </span>
+          <h3>Ocupación global</h3>
+        </div>
+        <p class="summary-card-value">{{ formatOccupancy(summary.ocupacionGlobal) }}</p>
+        <p class="summary-card-note">{{ occupancyLabel(summary) }}</p>
+        <div
+          class="summary-progress"
+          role="progressbar"
+          aria-label="Ocupación global"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="summary.ocupacionGlobal"
+          [attr.aria-valuetext]="formatOccupancy(summary.ocupacionGlobal)"
+        >
+          <span class="summary-progress-value" [style.width.%]="summary.ocupacionGlobal"></span>
+        </div>
+      </article>
+    </div>
+  }
+</section>

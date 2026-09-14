@@ -45,6 +45,34 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'propiedades/listar',
+        loadComponent: () =>
+          import('./features/propiedades/pages/propiedades-list/propiedades-list.component').then(
+            (component) => component.PropiedadesListComponent,
+          ),
+      },
+      {
+        path: 'propiedades/nueva',
+        loadComponent: () =>
+          import('./features/propiedades/pages/propiedad-form/propiedad-form.component').then(
+            (component) => component.PropiedadFormComponent,
+          ),
+      },
+      {
+        path: 'propiedades/:codprop/editar',
+        loadComponent: () =>
+          import('./features/propiedades/pages/propiedad-form/propiedad-form.component').then(
+            (component) => component.PropiedadFormComponent,
+          ),
+      },
+      {
+        path: 'propiedades/:codprop/detalle',
+        loadComponent: () =>
+          import('./features/propiedades/pages/propiedad-detail/propiedad-detail.component').then(
+            (component) => component.PropiedadDetailComponent,
+          ),
+      },
+      {
         path: 'roles/listar',
         loadComponent: () =>
           import('./features/roles/pages/roles-list/roles-list.component').then(

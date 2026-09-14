@@ -1,0 +1,11 @@
+<div
+  #mapHost
+  class="property-location-map-shell"
+  role="region"
+  [attr.aria-label]="
+    readOnly
+      ? 'Mapa de ubicación de la propiedad, solo lectura'
+      : 'Mapa interactivo para seleccionar la ubicación de la propiedad'
+  "
+  [attr.aria-readonly]="readOnly ? 'true' : null"
+></div>

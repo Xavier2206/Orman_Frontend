@@ -1,0 +1,220 @@
+<section
+  class="property-detail-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="property-detail-title"
+>
+  <a class="property-detail-back-link" routerLink="/app/propiedades/listar">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Propiedades
+  </a>
+
+  <header class="property-detail-header">
+    <div class="property-detail-heading">
+      <p class="page-kicker">Gestión inmobiliaria</p>
+      <h1 id="property-detail-title">Detalle de propiedad</h1>
+      <p>Consulta la información registrada del inmueble.</p>
+    </div>
+
+    @if (property()) {
+      <div class="property-detail-actions" aria-label="Acciones de la propiedad">
+        <button
+          type="button"
+          class="property-detail-button property-detail-secondary"
+          [disabled]="downloadingPdf() || coverLoading()"
+          (click)="downloadPdf()"
+        >
+          <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+          {{ downloadingPdf() ? 'Generando...' : 'Descargar PDF' }}
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <section class="property-detail-state property-detail-loading" role="status" aria-busy="true">
+      <span class="detail-loading-line detail-loading-title"></span>
+      <span class="detail-loading-line"></span>
+      <span class="detail-loading-line detail-loading-short"></span>
+      <span>Cargando detalle de la propiedad...</span>
+    </section>
+  } @else if (error(); as message) {
+    <section class="property-detail-state property-detail-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <div>
+        <h2>
+          @switch (errorKind()) {
+            @case ('not-found') {
+              Propiedad no encontrada
+            }
+            @case ('forbidden') {
+              Acceso denegado
+            }
+            @default {
+              No se puede cargar el detalle
+            }
+          }
+        </h2>
+        <p>{{ message }}</p>
+      </div>
+      <a
+        class="property-detail-button property-detail-secondary"
+        routerLink="/app/propiedades/listar"
+      >
+        Volver al listado
+      </a>
+    </section>
+  } @else if (property(); as detail) {
+    <article class="property-detail-hero">
+      <div class="property-detail-cover">
+        @if (coverUrl(); as source) {
+          <img [src]="source" [alt]="'Portada de ' + detail.nombre" />
+        } @else if (coverLoading()) {
+          <div class="property-detail-placeholder" role="status" aria-label="Cargando portada">
+            <mat-icon aria-hidden="true">progress_activity</mat-icon>
+            <span>Cargando portada</span>
+          </div>
+        } @else {
+          <div
+            class="property-detail-placeholder"
+            role="img"
+            [attr.aria-label]="
+              detail.tienePortada
+                ? 'Portada no disponible de ' + detail.nombre
+                : 'Propiedad sin portada: ' + detail.nombre
+            "
+          >
+            <mat-icon aria-hidden="true">domain</mat-icon>
+            <span>{{ coverError() || 'Sin portada registrada' }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="property-detail-hero-copy">
+        <div class="property-detail-badges">
+          <span class="property-detail-type-badge">{{ typeLabel(detail.tipo) }}</span>
+          <span
+            class="property-detail-status-badge"
+            [class.property-detail-status-active]="detail.estado === 1"
+            [class.property-detail-status-inactive]="detail.estado === 0"
+          >
+            {{ statusLabel(detail.estado) }}
+          </span>
+        </div>
+        <h2>{{ detail.nombre }}</h2>
+        <p class="property-detail-location-line">
+          <mat-icon aria-hidden="true">location_on</mat-icon>
+          <span>{{ detail.direccion }}, {{ detail.ciudad }}</span>
+        </p>
+        <div class="property-detail-hero-facts">
+          <div>
+            <span>Inversión inicial</span>
+            <strong>{{ formatInvestment(detail.inversionInicial) }}</strong>
+          </div>
+          <div>
+            <span>Identificador</span>
+            <strong>#{{ detail.codprop }}</strong>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <div class="property-detail-content">
+      <div class="property-detail-main-column">
+        <section class="property-detail-section" aria-labelledby="property-general-title">
+          <div class="property-detail-section-heading">
+            <mat-icon aria-hidden="true">home_work</mat-icon>
+            <div>
+              <h2 id="property-general-title">Datos generales</h2>
+              <p>Información de identificación y ubicación registrada.</p>
+            </div>
+          </div>
+
+          <dl class="property-detail-grid">
+            <div class="property-detail-field">
+              <dt>Nombre del inmueble</dt>
+              <dd>{{ detail.nombre }}</dd>
+            </div>
+            <div class="property-detail-field">
+              <dt>Tipo de propiedad</dt>
+              <dd>{{ typeLabel(detail.tipo) }}</dd>
+            </div>
+            <div class="property-detail-field property-detail-field-wide">
+              <dt>Dirección</dt>
+              <dd>{{ detail.direccion }}</dd>
+            </div>
+            <div class="property-detail-field">
+              <dt>Ciudad</dt>
+              <dd>{{ detail.ciudad }}</dd>
+            </div>
+            <div class="property-detail-field">
+              <dt>Referencia</dt>
+              <dd>{{ referenceLabel(detail.referencia) }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="property-detail-section" aria-labelledby="property-location-title">
+          <div class="property-detail-section-heading">
+            <mat-icon aria-hidden="true">location_on</mat-icon>
+            <div>
+              <h2 id="property-location-title">Ubicación</h2>
+              <p>Coordenadas registradas para consulta cartográfica.</p>
+            </div>
+          </div>
+
+          @if (locationCoordinates(); as coordinates) {
+            <div class="property-detail-coordinates">
+              <div>
+                <span>Latitud</span>
+                <strong>{{ formatCoordinate(coordinates.latitud) }}</strong>
+              </div>
+              <div>
+                <span>Longitud</span>
+                <strong>{{ formatCoordinate(coordinates.longitud) }}</strong>
+              </div>
+            </div>
+            <div class="property-detail-map">
+              <app-propiedad-location-map [coordinates]="coordinates" [readOnly]="true" />
+            </div>
+          } @else {
+            <div class="property-detail-no-location" role="status">
+              <mat-icon aria-hidden="true">location_off</mat-icon>
+              <span>Esta propiedad no tiene coordenadas registradas.</span>
+            </div>
+          }
+        </section>
+      </div>
+
+      <aside class="property-detail-sidebar" aria-label="Resumen de la propiedad">
+        <section class="property-detail-section" aria-labelledby="property-financial-title">
+          <div class="property-detail-section-heading">
+            <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+            <div>
+              <h2 id="property-financial-title">Datos financieros</h2>
+              <p>Valor registrado para el inmueble.</p>
+            </div>
+          </div>
+          <div class="property-detail-highlight">
+            <span>Inversión inicial</span>
+            <strong>{{ formatInvestment(detail.inversionInicial) }}</strong>
+          </div>
+        </section>
+
+        @if (hasUnitsMetric()) {
+          <section class="property-detail-section" aria-labelledby="property-operational-title">
+            <div class="property-detail-section-heading">
+              <mat-icon aria-hidden="true">meeting_room</mat-icon>
+              <div>
+                <h2 id="property-operational-title">Resumen operativo</h2>
+                <p>Métrica disponible en el detalle de la propiedad.</p>
+              </div>
+            </div>
+            <div class="property-detail-highlight">
+              <span>Unidades registradas</span>
+              <strong>{{ unitCountLabel(detail.cantidadUnidades) }}</strong>
+            </div>
+          </section>
+        }
+      </aside>
+    </div>
+  }
+</section>

@@ -104,7 +104,6 @@ input:focus,
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }
-
 }
 
 .menu-icon {
@@ -261,7 +260,7 @@ input:focus,
 .summary-card {
   display: flex;
   min-height: 5.5rem;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.8rem;
   border: 1px solid var(--theme-border);
   border-radius: var(--radius-lg);
@@ -286,7 +285,10 @@ input:focus,
 }
 
 .summary-icon .mat-icon {
+  display: grid;
+  place-items: center;
   font-size: 1.35rem;
+  line-height: 1;
 }
 
 .summary-card.summary-active .summary-icon {

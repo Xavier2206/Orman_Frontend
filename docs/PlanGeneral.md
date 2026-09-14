@@ -12,23 +12,29 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
-- **Última fase histórica documentada:** Fase 10 — Acceso visual en dos pasos.
-- **Última fase completada:** Fase 11 de Etapa 2 — Asignar Menús a Rol.
+- **Última fase histórica documentada:** Fase 13 de Etapa 2 — Propiedades.
+- **Última fase completada:** Fase 13 de Etapa 2 — Propiedades.
 - **Estado de la Fase 05:** `COMPLETADA`.
-- **Pruebas:** 42 archivos y 293 pruebas aprobadas.
+- **Pruebas:** última ejecución completa: 50 archivos, 381 pruebas aprobadas de 384; 3 fallos preexistentes en `OrmanNotificationService`.
+- **Pruebas actuales de Propiedades:** 7 archivos focalizados; 70 pruebas aprobadas.
 - **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
+- **Corrección responsive de Propiedades:** el resumen global usa 2×2 en móvil y tablet, 4×1 en escritorio y una variante compacta bajo `md`; las tarjetas del listado usan portada compacta en desktop y tres columnas desde `2xl` (`1536px`); API, modelos, cálculos, filtros, listado funcional y paginación permanecen sin cambios.
+- **Corrección de cantidad de unidades en Propiedades:** `PropiedadCardComponent` muestra el campo `cantidadUnidades` entregado por `GET /api/v1/propiedades`, con singular/plural accesible y sin petición adicional ni cálculo en Angular; el resumen superior y la gestión de Unidades permanecen sin cambios.
+- **Redistribución de métricas de Propiedades:** desde `lg`, la card muestra identidad a la izquierda e inversión a la derecha en la primera fila, y `Unidades`/`Ocupación` equilibradas en la fila inferior con las mismas guías; el separador aislado de inversión se conserva solo en móvil/tablet, donde los bloques se apilan sin alterar datos, HTTP, navegación o gestión de Unidades.
+- **Centrado visual de Menús:** los iconos circulares del resumen usan centrado vertical y una caja tipográfica explícita, sin cambios en datos, lógica, API ni acciones.
+- **Propiedades:** la Fase 13 canónica consolida el listado, resumen, cards, Crear/Editar, portada, selector `CASA`/`EDIFICIO`, ubicación Leaflet/OpenStreetMap, datos financieros, layout responsive, correcciones de assets e iconos y limpieza de acciones. El documento único registra los contratos reales, validaciones, exclusiones y estado final; los ajustes pequeños del módulo no generan fases independientes.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
 ## Estados permitidos
 
-| Estado | Significado |
-| --- | --- |
-| `PENDIENTE` | Aún no iniciada. |
-| `EN ANÁLISIS` | Se están confirmando alcance, requisitos o decisiones. |
-| `EN DESARROLLO` | La fase está autorizada y en ejecución. |
-| `BLOQUEADA` | Existe un impedimento que evita continuar o cerrar. |
-| `COMPLETADA` | Cumplió objetivo, validaciones y documentación. |
-| `CANCELADA` | Se decidió no continuar con la fase. |
+| Estado          | Significado                                            |
+| --------------- | ------------------------------------------------------ |
+| `PENDIENTE`     | Aún no iniciada.                                       |
+| `EN ANÁLISIS`   | Se están confirmando alcance, requisitos o decisiones. |
+| `EN DESARROLLO` | La fase está autorizada y en ejecución.                |
+| `BLOQUEADA`     | Existe un impedimento que evita continuar o cerrar.    |
+| `COMPLETADA`    | Cumplió objetivo, validaciones y documentación.        |
+| `CANCELADA`     | Se decidió no continuar con la fase.                   |
 
 ## ETAPA 1 — Fundación visual y arquitectura pública
 
@@ -49,24 +55,24 @@ Existen documentos teóricos asociados a la etapa, pero no existe un único índ
 
 ### Fases de la Etapa 1
 
-| Fase | Estado | Dependencia | Documento |
-| --- | --- | --- | --- |
-| 01 — Creación del proyecto Angular | `COMPLETADA` | Ninguna; creación inicial del proyecto | [Documento](etapas/etapa-1/fases/01-creacion-proyecto-angular.md) |
-| 02 — Estructura base del frontend | `COMPLETADA` | Fase 01 | [Documento](etapas/etapa-1/fases/02-estructura-frontend.md) |
-| 03 — Instalación y configuración de Tailwind CSS | `COMPLETADA` | Fase 02 | [Documento](etapas/etapa-1/fases/03-configuracion-tailwind.md) |
-| 04 — Sistema de temas de ORMAN | `COMPLETADA` | Fase 03 | [Documento](etapas/etapa-1/fases/04-sistema-de-temas.md) |
-| 04.1 — Estructura de recursos visuales públicos | `COMPLETADA` | Base Angular y Fase 03 | [Documento](etapas/etapa-1/fases/04-1-recursos-visuales-publicos.md) |
-| 05 — Estructura base de la landing pública de ORMAN | `COMPLETADA` | Fase 04 y recursos públicos de Fase 04.1 | [Documento](etapas/etapa-1/fases/05-estructura-landing-publica.md) |
-| 05.1 — Integración del logotipo oficial de ORMAN | `COMPLETADA` | Fase 05 | [Documento](etapas/etapa-1/fases/05-1-integracion-logo-orman.md) |
-| 06.1 — Mejora del header y selector de temas | `EN ANÁLISIS` | Fase 05.1; aprobación visual pendiente según el documento de fase | [Documento](etapas/etapa-1/fases/06-1-mejora-header-selector-temas.md) |
-| 06.2 — Mejora del hero con logotipo animado | `COMPLETADA` | Landing y componentes visuales disponibles | [Documento](etapas/etapa-1/fases/06-2-mejora-hero-logo-animado.md) |
-| 10 — Acceso visual en dos pasos | `COMPLETADA` | Landing pública y componentes visuales disponibles | [Documento](etapas/etapa-1/fases/10-modal-inicio-sesion.md) |
+| Fase                                                | Estado        | Dependencia                                                       | Documento                                                              |
+| --------------------------------------------------- | ------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 01 — Creación del proyecto Angular                  | `COMPLETADA`  | Ninguna; creación inicial del proyecto                            | [Documento](etapas/etapa-1/fases/01-creacion-proyecto-angular.md)      |
+| 02 — Estructura base del frontend                   | `COMPLETADA`  | Fase 01                                                           | [Documento](etapas/etapa-1/fases/02-estructura-frontend.md)            |
+| 03 — Instalación y configuración de Tailwind CSS    | `COMPLETADA`  | Fase 02                                                           | [Documento](etapas/etapa-1/fases/03-configuracion-tailwind.md)         |
+| 04 — Sistema de temas de ORMAN                      | `COMPLETADA`  | Fase 03                                                           | [Documento](etapas/etapa-1/fases/04-sistema-de-temas.md)               |
+| 04.1 — Estructura de recursos visuales públicos     | `COMPLETADA`  | Base Angular y Fase 03                                            | [Documento](etapas/etapa-1/fases/04-1-recursos-visuales-publicos.md)   |
+| 05 — Estructura base de la landing pública de ORMAN | `COMPLETADA`  | Fase 04 y recursos públicos de Fase 04.1                          | [Documento](etapas/etapa-1/fases/05-estructura-landing-publica.md)     |
+| 05.1 — Integración del logotipo oficial de ORMAN    | `COMPLETADA`  | Fase 05                                                           | [Documento](etapas/etapa-1/fases/05-1-integracion-logo-orman.md)       |
+| 06.1 — Mejora del header y selector de temas        | `EN ANÁLISIS` | Fase 05.1; aprobación visual pendiente según el documento de fase | [Documento](etapas/etapa-1/fases/06-1-mejora-header-selector-temas.md) |
+| 06.2 — Mejora del hero con logotipo animado         | `COMPLETADA`  | Landing y componentes visuales disponibles                        | [Documento](etapas/etapa-1/fases/06-2-mejora-hero-logo-animado.md)     |
+| 10 — Acceso visual en dos pasos                     | `COMPLETADA`  | Landing pública y componentes visuales disponibles                | [Documento](etapas/etapa-1/fases/10-modal-inicio-sesion.md)            |
 
 Las mejoras posteriores de tokens, superficies, radios, sombras y Hero están registradas dentro del documento histórico de la Fase 04, tal como existe actualmente; no se renumeran ni se separan retroactivamente.
 
 ## ETAPA 2 — Integración funcional con Backend
 
-La Etapa 2 inicia la integración funcional del frontend Angular con el backend Spring Boot de ORMAN. Todavía no se ha implementado la primera fase.
+La Etapa 2 inicia la integración funcional del frontend Angular con el backend Spring Boot de ORMAN. La Fase 13 implementa y documenta el módulo de Propiedades con su listado, resumen global desde `GET /api/v1/propiedades/resumen`, Crear/Editar, portada y ubicación cartográfica, siempre sobre contratos Backend confirmados. El resumen se carga independientemente de búsqueda, filtros y paginación, y sus métricas se muestran sin recalcularse en Angular. Las funcionalidades excluidas del documento canónico siguen pendientes de autorización y contrato.
 
 ### Theory de la Etapa 2
 
@@ -74,20 +80,21 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 
 ### Fases previstas
 
-| Fase | Estado | Dependencia | Documento |
-| --- | --- | --- | --- |
-| 01 — Integración de autenticación Angular ↔ ORMAN Backend | `COMPLETADA` | Etapa 1 disponible; contrato backend de autenticación y configuración de cookies/CSRF validados | [Documento](etapas/etapa-2/fases/01-integracion-autenticacion-angular-backend.md) |
-| 02 — Área privada base, layout autenticado y protección de rutas | `COMPLETADA` | Fase 01 completada; contrato de refresh y logout validado | [Documento](etapas/etapa-2/fases/02-area-privada-layout-rutas-protegidas.md) |
-| 03 — Contexto post-login real en Angular | `COMPLETADA` | Fases 01 y 02; contrato `GET /api/v1/auth/context` confirmado | [Documento](etapas/etapa-2/fases/03-contexto-post-login-angular.md) |
-| 04 — Selector de rol y Sidebar dinámico | `COMPLETADA` | Fase 03; contexto autenticado con roles | [Documento](etapas/etapa-2/fases/04-selector-rol-sidebar-dinamico.md) |
-| 05 — Angular Material Icons en el área privada | `COMPLETADA` | Fase 04; layout privado y `Menu.icono` disponibles | [Documento](etapas/etapa-2/fases/05-angular-material-icons.md) |
-| 06 — Módulo Gestionar Personas | `EN DESARROLLO` | Fases privadas disponibles; contrato Backend de Personas entregado | [Documento](etapas/etapa-2/fases/06-modulo-gestionar-personas.md) |
-| 07 — Gestionar Roles: listado, resumen y filtros remotos | `COMPLETADA` | Contratos confirmados de `GET /api/v1/roles` y `GET /api/v1/roles/resumen` | [Documento](etapas/etapa-2/fases/07-estructura-inicial-modulo-roles.md) |
-| 08 — Acciones y modales de Gestionar Menús | `COMPLETADA` | Contratos confirmados de lectura, creación, edición y cambio de estado; asignaciones fuera de alcance | [Documento](etapas/etapa-2/fases/08-estructura-inicial-modulo-menus.md) |
-| 09 — Asignar Roles a Usuario | `COMPLETADA` | Contratos confirmados de Usuarios, Roles y asignaciones Usuario–Rol | [Documento](etapas/etapa-2/fases/09-asignar-roles-usuario.md) |
-| 10 — Estructura base de Asignar Menús y Asignar Procesos | `COMPLETADA` | Fase 09; patrón arquitectónico de `features/asignar-roles/` | [Documento](etapas/etapa-2/fases/10-estructura-asignar-menus-procesos.md) |
-| 11 — Asignar Menús a Rol | `COMPLETADA` | Fase 10; contratos confirmados de Roles, Menús y asignaciones Rol–Menú | [Documento](etapas/etapa-2/fases/11-asignar-menus.md) |
-| 12 — Asignar Procesos a Menú | `COMPLETADA` | Fase 11; contratos confirmados de Menú–Proceso | [Documento](etapas/etapa-2/fases/12-asignar-procesos.md) |
+| Fase                                                             | Estado          | Dependencia                                                                                           | Documento                                                                                 |
+| ---------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| 01 — Integración de autenticación Angular ↔ ORMAN Backend        | `COMPLETADA`    | Etapa 1 disponible; contrato backend de autenticación y configuración de cookies/CSRF validados       | [Documento](etapas/etapa-2/fases/01-integracion-autenticacion-angular-backend.md)         |
+| 02 — Área privada base, layout autenticado y protección de rutas | `COMPLETADA`    | Fase 01 completada; contrato de refresh y logout validado                                             | [Documento](etapas/etapa-2/fases/02-area-privada-layout-rutas-protegidas.md)              |
+| 03 — Contexto post-login real en Angular                         | `COMPLETADA`    | Fases 01 y 02; contrato `GET /api/v1/auth/context` confirmado                                         | [Documento](etapas/etapa-2/fases/03-contexto-post-login-angular.md)                       |
+| 04 — Selector de rol y Sidebar dinámico                          | `COMPLETADA`    | Fase 03; contexto autenticado con roles                                                               | [Documento](etapas/etapa-2/fases/04-selector-rol-sidebar-dinamico.md)                     |
+| 05 — Angular Material Icons en el área privada                   | `COMPLETADA`    | Fase 04; layout privado y `Menu.icono` disponibles                                                    | [Documento](etapas/etapa-2/fases/05-angular-material-icons.md)                            |
+| 06 — Módulo Gestionar Personas                                   | `EN DESARROLLO` | Fases privadas disponibles; contrato Backend de Personas entregado                                    | [Documento](etapas/etapa-2/fases/06-modulo-gestionar-personas.md)                         |
+| 07 — Gestionar Roles: listado, resumen y filtros remotos         | `COMPLETADA`    | Contratos confirmados de `GET /api/v1/roles` y `GET /api/v1/roles/resumen`                            | [Documento](etapas/etapa-2/fases/07-estructura-inicial-modulo-roles.md)                   |
+| 08 — Acciones y modales de Gestionar Menús                       | `COMPLETADA`    | Contratos confirmados de lectura, creación, edición y cambio de estado; asignaciones fuera de alcance | [Documento](etapas/etapa-2/fases/08-estructura-inicial-modulo-menus.md)                   |
+| 09 — Asignar Roles a Usuario                                     | `COMPLETADA`    | Contratos confirmados de Usuarios, Roles y asignaciones Usuario–Rol                                   | [Documento](etapas/etapa-2/fases/09-asignar-roles-usuario.md)                             |
+| 10 — Estructura base de Asignar Menús y Asignar Procesos         | `COMPLETADA`    | Fase 09; patrón arquitectónico de `features/asignar-roles/`                                           | [Documento](etapas/etapa-2/fases/10-estructura-asignar-menus-procesos.md)                 |
+| 11 — Asignar Menús a Rol                                         | `COMPLETADA`    | Fase 10; contratos confirmados de Roles, Menús y asignaciones Rol–Menú                                | [Documento](etapas/etapa-2/fases/11-asignar-menus.md)                                     |
+| 12 — Asignar Procesos a Menú                                     | `COMPLETADA`    | Fase 11; contratos confirmados de Menú–Proceso                                                        | [Documento](etapas/etapa-2/fases/12-asignar-procesos.md)                                  |
+| 13 — Propiedades | `COMPLETADA` | Layout privado disponible y contratos confirmados para listado, CRUD, portada y ubicación cartográfica | [Documento](etapas/etapa-2/fases/13-propiedades.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -123,6 +130,16 @@ La Fase 11 implementó `features/asignar-menus`: selección remota y paginada de
 
 La Fase 12 implementó `features/asignar-procesos`: selección remota y paginada de Menús activos, detalle del Menú, catálogo paginado de Procesos, Procesos asignados y disponibles con búsqueda y paginación local, asignación, retiro, estados visuales y ruta lazy `/app/asignar-procesos/listar`. Posteriormente se corrigió el tipado y consumo de `Proceso` y `MeProResponse` según el contrato Backend confirmado, se filtró localmente el catálogo por `estado === 1` sin agregar parámetros no soportados y se recargó `AuthContext` preservando el Rol seleccionado después de las mutaciones. No se modificaron Sidebar, permisos ni Backend.
 
+La Fase 13 canónica implementa creación y edición mediante una sola pantalla lazy: el alta usa
+`AuthService.codper()` y estado inicial activo; edición obtiene el detalle antes de mostrar el
+formulario y conserva los datos técnicos requeridos por el `PUT`. La pantalla valida campos,
+coordenadas pareadas, rangos e inversión no negativa, integra `ProblemDetail` y vuelve al listado
+tras un guardado correcto. También consolida la portada autenticada como Blob, el selector radio,
+el mapa Leaflet/OSM, la reversa Nominatim, el reacomodo financiero, la reparación de assets del
+marcador y el retiro de `Volver a propiedades`. Activar/desactivar, detalle, unidades, contratos,
+pagos y campos patrimoniales no confirmados permanecen fuera de alcance. El detalle completo queda
+en el [documento canónico de Propiedades](etapas/etapa-2/fases/13-propiedades.md).
+
 ### Fases futuras por definir
 
 No se registran nombres ni funcionalidades adicionales hasta que sean decididos y autorizados.
@@ -143,7 +160,7 @@ Una dependencia expresa orden técnico, pero cada fase requiere además autoriza
 
 - La aprobación visual pendiente indicada en el documento de la Fase 06.1 debe confirmarse o cerrarse documentalmente.
 - Las decisiones fuera del alcance de autenticación, como roles dinámicos y navegación privada, siguen pendientes de una fase posterior.
-- Las propiedades y futuras áreas funcionales no tienen todavía una fase frontend implementada en este repositorio.
+- Las operaciones posteriores de propiedades —detalle, estado, unidades, contratos y pagos— permanecen pendientes de fases autorizadas y contratos Backend confirmados.
 - Las fases posteriores de la Etapa 2 permanecen por definir.
 
 ## Dependencias generales
@@ -164,15 +181,19 @@ Una dependencia expresa orden técnico, pero cada fase requiere además autoriza
 La Fase 09 implementó la pantalla privada master-detail de Asignar Roles a Usuario en `/app/asignar-roles/listar`. Su iteración visual administrativa añadió directorio con búsqueda local, ficha de Usuario y cards de Roles, centralizó el catálogo activo en `RolApiService` y consulta Persona mediante el `codper` confirmado del Usuario seleccionado. Tanto la ficha como el directorio priorizan el login y muestran el nombre completo de la Persona como información complementaria; la ficha no duplica Login ni estados antes de las secciones de Roles y el placeholder del directorio comunica búsqueda por login o nombre, sin modificar su filtro local existente. La zona de Roles se presenta verticalmente con ambas secciones usando un grid responsive compacto de 1/2/3/4 columnas según el viewport, con paginación independiente de cuatro tarjetas por página cuando corresponde; Roles asignados arriba y Roles disponibles para asignar abajo. Las cards comparten una zona reservada para badges opcionales, de modo que la etiqueta `Protegido` no altera su altura ni desalinean las acciones. La fecha de asignación permanece pendiente de un contrato Backend que la exponga y no se muestra en las cards; Angular no inventa ese dato. El detalle está documentado en [su documento de fase](etapas/etapa-2/fases/09-asignar-roles-usuario.md).
 
 La Fase 10 preparó las estructuras base de `features/asignar-menus/` y `features/asignar-procesos/` con Pages standalone mínimas, templates semánticos, hojas CSS vacías y pruebas de creación. No se añadieron rutas, servicios, modelos, DTOs, mocks, permisos, APIs ni lógica de asignación; su implementación funcional queda pendiente de fases autorizadas.
+
 ### Corrección puntual de paginación en Fase 09
 
 El directorio de Usuarios solicita y muestra como máximo cinco elementos por página y solo presenta el paginador cuando existen más de cinco Usuarios. La navegación y la selección de Usuario se conservan sin modificar la lógica de Roles ni asignaciones. El detalle queda registrado en [el documento de la Fase 09](etapas/etapa-2/fases/09-asignar-roles-usuario.md).
+
 ### Corrección puntual de Fase 09: búsqueda de Roles disponibles
 
 La sección `Roles disponibles para asignar` incorpora un buscador local en su encabezado, con filtrado por nombre o código, estado sin resultados y adaptación flexible para desktop, tablet y móvil. La paginación de esa sección usa el resultado filtrado; Roles asignados, asignar/quitar, servicios, modelos y Backend permanecen sin cambios.
+
 ### Corrección puntual de Fase 09: búsqueda de Roles asignados
 
 La sección `Roles asignados` incorpora un buscador local en su encabezado, con filtrado por nombre o código, estado sin resultados y adaptación flexible para desktop, tablet y móvil. El filtrado se limita al Usuario seleccionado y no modifica las acciones de asignar o quitar, los servicios, modelos ni Backend.
+
 ### Correccion puntual de Fase 09: busqueda remota de Usuarios
 
 El directorio de Usuarios consulta `GET /api/v1/usuarios` con `q`, `page`, `size=5` y `sort=login,asc`. La busqueda se aplica en Backend con debounce y cancelacion mediante `switchMap`; la paginacion conserva el filtro y las nuevas respuestas incluyen el nombre completo disponible para el listado. No se modifican roles, asignaciones, servicios de Persona/Rol ni Backend.
