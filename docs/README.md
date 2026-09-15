@@ -29,6 +29,8 @@ El historico actual pertenece a `etapas/etapa-1/`. La `etapas/etapa-2/` contiene
 ## Etapa 2
 
 - [Fases de Etapa 2](etapas/etapa-2/fases/README.md)
+- [Fase 14 — Listado de Unidades](etapas/etapa-2/fases/14-listado-unidades.md)
+- [Fase 15 — Compactación y acciones de Unidades](etapas/etapa-2/fases/15-compactacion-acciones-unidades.md)
 - [Fase 01 — Integración de autenticación Angular ↔ ORMAN Backend](etapas/etapa-2/fases/01-integracion-autenticacion-angular-backend.md)
 - [Theory de Etapa 2](etapas/etapa-2/theory/README.md)
 
@@ -50,7 +52,7 @@ El historico actual pertenece a `etapas/etapa-1/`. La `etapas/etapa-2/` contiene
 - Estructura base de la landing pública implementada y verificada.
 - Logotipo oficial integrado desde `public/images/brand/orman-logo.svg`.
 - Fase 01 de Etapa 2 de autenticación Angular ↔ ORMAN Backend completada con 76 pruebas aprobadas.
-- Próxima fase pendiente de autorización expresa.
+- Fase 15 de Etapa 2 — Compactación y acciones de Unidades — completada; las fases posteriores requieren autorización expresa.
 
 ## Documentos de fases
 

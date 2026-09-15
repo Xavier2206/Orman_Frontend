@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+.visually-hidden-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.photo-editor-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--theme-overlay) 82%, transparent);
+  padding: 1rem;
+}
+
+.photo-editor-dialog {
+  width: min(100%, 32rem);
+  max-height: min(90vh, 40rem);
+  overflow: auto;
+  border: 1px solid var(--theme-modal-border);
+  border-radius: var(--radius-lg);
+  background: var(--theme-modal-bg);
+  box-shadow: var(--theme-modal-shadow);
+  padding: 1.25rem;
+}
+
+.photo-editor-heading,
+.photo-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.photo-editor-heading h2 {
+  margin: 0.3rem 0 0;
+  color: var(--theme-text);
+  font-size: 1.1rem;
+}
+
+.photo-editor-close {
+  display: inline-grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--theme-border);
+  border-radius: 50%;
+  background: var(--theme-card);
+  color: var(--theme-text);
+}
+
+.photo-editor-close:focus-visible,
+.photo-editor-close:hover:not(:disabled) {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.photo-editor-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.photo-editor-form label {
+  display: block;
+  color: var(--theme-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.photo-editor-form input {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.4rem;
+  border: 1px solid var(--theme-field-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-field);
+  padding: 0.5rem 0.75rem;
+  color: var(--theme-text);
+}
+
+.photo-editor-form input:focus-visible,
+.photo-editor-close:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.photo-editor-feedback {
+  margin: 1rem 0 0;
+  border: 1px solid var(--theme-danger-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-danger-bg);
+  padding: 0.7rem;
+  color: var(--theme-danger-text);
+  font-size: 0.8rem;
+}
+
+.photo-editor-actions {
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+.form-secondary-button,
+.form-primary-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.form-secondary-button {
+  border: 1px solid var(--theme-border);
+  background: var(--theme-card);
+  color: var(--theme-text);
+}
+
+.form-primary-button {
+  border: 1px solid var(--theme-accent);
+  background: var(--theme-accent);
+  color: var(--theme-accent-contrast);
+}
+
+@media (max-width: 30rem) {
+  .photo-editor-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+}

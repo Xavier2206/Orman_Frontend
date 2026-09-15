@@ -1,0 +1,225 @@
+<section
+  class="unit-detail-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="unit-detail-title"
+>
+  <a
+    class="unit-detail-back-link"
+    routerLink="/app/unidades/listar"
+    [queryParams]="returnQueryParams"
+  >
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Unidades
+  </a>
+
+  <header class="unit-detail-header">
+    <div class="unit-detail-heading">
+      <p class="page-kicker">Gestión inmobiliaria</p>
+      <h1 id="unit-detail-title">Detalle de unidad</h1>
+      <p>Consulta la información registrada de la unidad.</p>
+    </div>
+
+    @if (unit(); as detail) {
+      <div class="unit-detail-actions" aria-label="Acciones de la unidad">
+        <button
+          type="button"
+          class="unit-detail-button"
+          [disabled]="downloadingPdf() || photoImagesLoading()"
+          (click)="downloadPdf()"
+        >
+          <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+          {{ downloadingPdf() ? 'Generando...' : 'Descargar PDF' }}
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (loading()) {
+    <section class="unit-detail-state unit-detail-loading" role="status" aria-busy="true">
+      <span class="detail-loading-line detail-loading-title"></span>
+      <span class="detail-loading-line"></span>
+      <span class="detail-loading-line detail-loading-short"></span>
+      <span>Cargando detalle de la unidad...</span>
+    </section>
+  } @else if (error(); as message) {
+    <section class="unit-detail-state unit-detail-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <div>
+        <h2>
+          @switch (errorKind()) {
+            @case ('not-found') {
+              Unidad no encontrada
+            }
+            @case ('forbidden') {
+              Acceso denegado
+            }
+            @default {
+              No se puede cargar el detalle
+            }
+          }
+        </h2>
+        <p>{{ message }}</p>
+      </div>
+      <a
+        class="unit-detail-button"
+        routerLink="/app/unidades/listar"
+        [queryParams]="returnQueryParams"
+      >
+        Volver a unidades
+      </a>
+    </section>
+  } @else if (unit(); as detail) {
+    <article class="unit-detail-hero">
+      <div class="unit-detail-hero-copy">
+        <div class="unit-detail-badges">
+          <span class="unit-detail-type-badge">{{ detail.tipoUnidad }}</span>
+          <span
+            class="unit-detail-status-badge"
+            [class.unit-detail-status-operational]="detail.estadoOperativo === 1"
+            [class.unit-detail-status-non-operational]="detail.estadoOperativo === 0"
+          >
+            {{ statusLabel(detail.estadoOperativo) }}
+          </span>
+        </div>
+        <h2>{{ detail.nombre }}</h2>
+        @if (detail.ubicacionInterna; as location) {
+          <p class="unit-detail-location-line">
+            <mat-icon aria-hidden="true">location_on</mat-icon>
+            <span>{{ location }}</span>
+          </p>
+        }
+        <div class="unit-detail-hero-facts">
+          <div>
+            <span>Precio base</span>
+            <strong>{{ formatPrice(detail.precioBase) }}</strong>
+          </div>
+          <div>
+            <span>Identificador</span>
+            <strong>#{{ detail.coduni }}</strong>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <div class="unit-detail-content">
+      <div class="unit-detail-main-column">
+        <section class="unit-detail-section" aria-labelledby="unit-general-title">
+          <div class="unit-detail-section-heading">
+            <mat-icon aria-hidden="true">meeting_room</mat-icon>
+            <div>
+              <h2 id="unit-general-title">Información general</h2>
+              <p>Datos reales de identificación y estado operativo.</p>
+            </div>
+          </div>
+
+          <dl class="unit-detail-grid">
+            <div class="unit-detail-field">
+              <dt>Nombre de la unidad</dt>
+              <dd>{{ detail.nombre }}</dd>
+            </div>
+            <div class="unit-detail-field">
+              <dt>Tipo de unidad</dt>
+              <dd>{{ detail.tipoUnidad }}</dd>
+            </div>
+            <div class="unit-detail-field">
+              <dt>Estado operativo</dt>
+              <dd>{{ statusLabel(detail.estadoOperativo) }}</dd>
+            </div>
+            <div class="unit-detail-field unit-detail-field-wide">
+              <dt>Descripción</dt>
+              <dd>{{ optionalLabel(detail.descripcion) }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="unit-detail-section" aria-labelledby="unit-characteristics-title">
+          <div class="unit-detail-section-heading">
+            <mat-icon aria-hidden="true">straighten</mat-icon>
+            <div>
+              <h2 id="unit-characteristics-title">Características</h2>
+              <p>Medidas y distribución registradas para la unidad.</p>
+            </div>
+          </div>
+
+          <dl class="unit-detail-metrics">
+            <div>
+              <dt>Área</dt>
+              <dd>{{ formatArea(detail.area) }}</dd>
+            </div>
+            <div>
+              <dt>Dormitorios</dt>
+              <dd>{{ detail.dormitorios }}</dd>
+            </div>
+            <div>
+              <dt>Baños</dt>
+              <dd>{{ detail.banos }}</dd>
+            </div>
+            <div>
+              <dt>Piso</dt>
+              <dd>{{ detail.piso }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="unit-detail-section" aria-labelledby="unit-location-title">
+          <div class="unit-detail-section-heading">
+            <mat-icon aria-hidden="true">location_on</mat-icon>
+            <div>
+              <h2 id="unit-location-title">Ubicación interna</h2>
+              <p>Referencia dentro de la propiedad asociada.</p>
+            </div>
+          </div>
+
+          <div class="unit-detail-highlight">
+            <span>Ubicación interna</span>
+            <strong>{{ optionalLabel(detail.ubicacionInterna) }}</strong>
+          </div>
+        </section>
+
+        <app-unidad-fotos
+          [photos]="photoViews()"
+          [viewOnly]="true"
+          [loading]="photosLoading()"
+          [errorMessage]="photosError()"
+          [emptyMessage]="'Esta unidad todavía no tiene fotografías registradas.'"
+          [emptyDescription]="'Las fotografías de los ambientes aparecerán aquí cuando se registren.'"
+        ></app-unidad-fotos>
+      </div>
+
+      <aside class="unit-detail-sidebar" aria-label="Resumen de la unidad">
+        <section class="unit-detail-section" aria-labelledby="unit-property-title">
+          <div class="unit-detail-section-heading">
+            <mat-icon aria-hidden="true">domain</mat-icon>
+            <div>
+              <h2 id="unit-property-title">Propiedad asociada</h2>
+              <p>Contexto real de pertenencia de la unidad.</p>
+            </div>
+          </div>
+
+          <div class="unit-detail-highlight">
+            @if (propertyLabel(); as name) {
+              <span>Nombre de la propiedad</span>
+              <strong>{{ name }}</strong>
+            }
+            <span>Identificador de propiedad</span>
+            <strong>#{{ detail.codprop }}</strong>
+          </div>
+        </section>
+
+        <section class="unit-detail-section" aria-labelledby="unit-financial-title">
+          <div class="unit-detail-section-heading">
+            <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+            <div>
+              <h2 id="unit-financial-title">Información financiera</h2>
+              <p>Valor base registrado para la unidad.</p>
+            </div>
+          </div>
+
+          <div class="unit-detail-highlight">
+            <span>Precio base</span>
+            <strong>{{ formatPrice(detail.precioBase) }}</strong>
+          </div>
+        </section>
+      </aside>
+    </div>
+  }
+</section>

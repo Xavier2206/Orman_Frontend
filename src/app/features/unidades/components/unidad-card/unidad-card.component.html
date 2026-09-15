@@ -1,0 +1,184 @@
+<article
+  class="unit-card flex min-w-0 flex-col rounded-2xl border border-theme-border bg-card p-4 shadow-sm transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-accent hover:bg-card-hover hover:shadow-lg motion-reduce:transform-none motion-reduce:transition-none"
+  [attr.aria-label]="'Unidad ' + unidad().nombre"
+>
+  <div class="unit-card-top min-w-0">
+    <div class="unit-card-header min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="unit-badge unit-type-badge">{{ unidad().tipoUnidad }}</span>
+        <span
+          class="unit-badge unit-status-badge"
+          [class.unit-status-operational]="unidad().estadoOperativo === 1"
+          [class.unit-status-non-operational]="unidad().estadoOperativo === 0"
+        >
+          {{ statusLabel(unidad().estadoOperativo) }}
+        </span>
+      </div>
+
+      <h2 class="mt-3 break-words text-lg leading-tight font-bold text-content">
+        {{ unidad().nombre }}
+      </h2>
+
+      @if (unidad().ubicacionInterna; as ubicacionInterna) {
+        <p class="unit-location mt-1.5 flex min-w-0 items-start gap-2 text-sm text-muted">
+          <mat-icon aria-hidden="true">location_on</mat-icon>
+          <span class="min-w-0 break-words">{{ ubicacionInterna }}</span>
+        </p>
+      }
+    </div>
+
+    <div class="unit-price">
+      <p class="unit-price-label">Precio base</p>
+      <p class="mt-1 break-words text-lg font-bold text-content">
+        {{ formatPrice(unidad().precioBase) }}
+      </p>
+    </div>
+  </div>
+
+  <div class="unit-metrics mt-4 grid gap-x-4 gap-y-2 border-t border-theme-border pt-3">
+    <div class="unit-metric min-w-0">
+      <p class="unit-metric-label">Área</p>
+      <p class="unit-metric-value">
+        <mat-icon aria-hidden="true">square_foot</mat-icon>
+        {{ formatArea(unidad().area) }}
+      </p>
+    </div>
+
+    <div class="unit-metric min-w-0">
+      <p class="unit-metric-label">Dormitorios</p>
+      <p class="unit-metric-value">
+        <mat-icon aria-hidden="true">bed</mat-icon>
+        {{ unidad().dormitorios }}
+      </p>
+    </div>
+
+    <div class="unit-metric min-w-0">
+      <p class="unit-metric-label">Baños</p>
+      <p class="unit-metric-value">
+        <mat-icon aria-hidden="true">bathtub</mat-icon>
+        {{ unidad().banos }}
+      </p>
+    </div>
+
+    <div class="unit-metric min-w-0">
+      <p class="unit-metric-label">Piso</p>
+      <p class="unit-metric-value">
+        <mat-icon aria-hidden="true">layers</mat-icon>
+        {{ unidad().piso }}
+      </p>
+    </div>
+  </div>
+
+  <footer
+    class="unit-actions mt-4 hidden justify-end gap-1 border-t border-theme-border pt-3 sm:flex"
+  >
+    <button
+      type="button"
+      class="unit-action tooltip-trigger unit-action-edit"
+      [attr.aria-label]="'Editar ' + unidad().nombre"
+      (click)="requestEdit()"
+    >
+      <mat-icon aria-hidden="true">edit</mat-icon>
+      <span class="action-tooltip" role="tooltip">Editar</span>
+    </button>
+    <button
+      type="button"
+      class="unit-action tooltip-trigger unit-action-detail"
+      [attr.aria-label]="'Ver detalle de ' + unidad().nombre"
+      (click)="requestDetail()"
+    >
+      <mat-icon aria-hidden="true">description</mat-icon>
+      <span class="action-tooltip" role="tooltip">Ver detalle</span>
+    </button>
+    <button
+      type="button"
+      class="unit-action tooltip-trigger"
+      [class.unit-action-activate]="unidad().estadoOperativo === 0"
+      [class.unit-action-deactivate]="unidad().estadoOperativo === 1"
+      [disabled]="statusSubmitting()"
+      [attr.title]="
+        statusSubmitting()
+          ? 'Procesando...'
+          : (unidad().estadoOperativo === 1 ? 'Desactivar ' : 'Activar ') + unidad().nombre
+      "
+      [attr.aria-label]="
+        (unidad().estadoOperativo === 1 ? 'Desactivar ' : 'Activar ') + unidad().nombre
+      "
+      (click)="requestStatusChange()"
+    >
+      <mat-icon aria-hidden="true">
+        {{
+          statusSubmitting()
+            ? 'progress_activity'
+            : unidad().estadoOperativo === 1
+              ? 'delete_outline'
+              : 'restore'
+        }}
+      </mat-icon>
+      <span class="action-tooltip" role="tooltip">
+        {{
+          statusSubmitting()
+            ? 'Procesando...'
+            : unidad().estadoOperativo === 1
+              ? 'Desactivar unidad'
+              : 'Activar unidad'
+        }}
+      </span>
+    </button>
+  </footer>
+
+  <footer
+    class="unit-actions relative mt-4 flex justify-end border-t border-theme-border pt-3 sm:hidden"
+  >
+    <button
+      type="button"
+      class="unit-action tooltip-trigger"
+      [attr.aria-label]="'Acciones para ' + unidad().nombre"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-haspopup="menu"
+      (click)="toggleMobileMenu()"
+    >
+      <mat-icon aria-hidden="true">more_vert</mat-icon>
+      <span class="action-tooltip" role="tooltip">Acciones</span>
+    </button>
+
+    @if (mobileMenuOpen()) {
+      <div class="mobile-actions" role="menu">
+        <button type="button" class="menu-action" role="menuitem" (click)="requestEdit()">
+          <mat-icon aria-hidden="true">edit</mat-icon>
+          Editar
+        </button>
+        <button type="button" class="menu-action" role="menuitem" (click)="requestDetail()">
+          <mat-icon aria-hidden="true">description</mat-icon>
+          Ver detalle
+        </button>
+        <button
+          type="button"
+          class="menu-action"
+          [class.menu-action-success]="unidad().estadoOperativo === 0"
+          [class.menu-action-danger]="unidad().estadoOperativo === 1"
+          role="menuitem"
+          [disabled]="statusSubmitting()"
+          (click)="requestStatusChange()"
+        >
+          <mat-icon aria-hidden="true">
+            {{
+              statusSubmitting()
+                ? 'progress_activity'
+                : unidad().estadoOperativo === 1
+                  ? 'delete_outline'
+                  : 'restore'
+            }}
+          </mat-icon>
+          {{
+            statusSubmitting()
+              ? 'Procesando...'
+              : unidad().estadoOperativo === 1
+                ? 'Desactivar unidad'
+                : 'Activar unidad'
+          }}
+        </button>
+      </div>
+    }
+  </footer>
+</article>

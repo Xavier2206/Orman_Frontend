@@ -1,5 +1,56 @@
 # Changelog
 
+## 2026-09-14 - Fase 15: Compactación y acciones de Unidades
+
+### Cambiado
+
+- Se compactó `UnidadCardComponent` reduciendo padding, márgenes y separaciones, y se ajustó el
+  grid para limitar el ancho visual en escritorio sin modificar el ancho general del layout.
+- Se eliminó únicamente el render de `descripcion`; `UnidadResponse`, el servicio y los datos del
+  contrato permanecen intactos.
+- Se añadió un footer accesible con las acciones visuales `Editar` y `Ver detalle`, mediante outputs
+  preparados y sin `routerLink`, rutas falsas ni navegación rota.
+
+### Verificado
+
+- Pruebas focalizadas de Unidades: 3 archivos y 14 pruebas aprobadas.
+- Suite completa: 57 archivos; 415 pruebas aprobadas de 419. Permanecen 4 fallos fuera del alcance
+  en `PropiedadDetailPdfService`.
+- Typecheck, build de producción y `git diff --check` correctos. El build conserva warnings
+  históricos de presupuesto CSS y CommonJS.
+- Browser autenticado: card compacta, ausencia de descripción, acciones visibles y activas sin
+  navegación, además de ORMAN, DÍA y NOCHE. La API CUA disponible no permite fijar viewports exactos;
+  por eso la validación por tamaños queda pendiente.
+- No se modificaron Propiedades, Backend, modelos de contrato, selector, paginación ni
+  `package-lock.json`; no se ejecutaron operaciones Git.
+
+## 2026-09-14 - Fase 14: Listado de Unidades
+
+### Añadido y cambiado
+
+- Se añadió la ruta lazy privada `/app/unidades/listar`, con selector de Propiedad y listado de
+  unidades paginado.
+- El selector reutiliza `PropiedadApiService` y recorre todas las páginas de `GET /api/v1/propiedades`
+  con tamaño 100; las unidades usan `GET /api/v1/propiedades/{codprop}/unidades` con página, tamaño
+  20 y orden `nombre,asc`.
+- Se añadió `UnidadResponse` con los campos confirmados por Backend y una card responsive que no
+  muestra ocupación, disponibilidad, inquilinos, fotografías ni acciones no contratadas.
+- Se incorporaron estados de selección inicial, carga con skeleton, vacío, error `ProblemDetail`,
+  reintento y paginación, además de pruebas unitarias del servicio, card y page.
+
+### Verificado
+
+- Pruebas focalizadas de Unidades: 3 archivos y 13 pruebas aprobadas.
+- Suite completa: 57 archivos; 415 pruebas aprobadas de 418. Permanecen los 3 fallos preexistentes
+  de `OrmanNotificationService`.
+- Typecheck, build de producción, Prettier y `git diff --check` ejecutados; el build termina
+  correctamente y conserva únicamente advertencias históricas de presupuesto CSS y CommonJS.
+- Browser autenticado: ruta, navegación desde Sidebar, estado inicial, datos reales, paginación/estado
+  vacío y temas ORMAN, DÍA y NOCHE verificados en la sesión disponible. La comprobación en viewports
+  exactos queda pendiente porque la API CUA disponible no expone control de viewport.
+- No se modificó `package-lock.json`, Backend, Sidebar ni contratos; no se ejecutaron `git add`,
+  `git commit` ni `git push`.
+
 ## 2026-09-13 - Consolidación documental del módulo Propiedades
 
 ### Cambiado

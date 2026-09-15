@@ -72,6 +72,21 @@ input:focus,
     box-shadow 140ms ease,
     color 140ms ease;
 }
+.pagination-actions .page-button {
+  padding-inline: 0.85rem;
+}
+
+.pagination-actions .page-button .mat-icon {
+  display: inline-flex;
+  width: 1.1rem;
+  height: 1.1rem;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.1rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 .page-button:hover:not(:disabled) {
   border-color: var(--theme-field-border);
   background: var(--theme-card-hover);

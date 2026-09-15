@@ -73,6 +73,34 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'unidades/listar',
+        loadComponent: () =>
+          import('./features/unidades/pages/unidades-list/unidades-list.component').then(
+            (component) => component.UnidadesListComponent,
+          ),
+      },
+      {
+        path: 'unidades/nueva',
+        loadComponent: () =>
+          import('./features/unidades/pages/unidad-form/unidad-form.component').then(
+            (component) => component.UnidadFormComponent,
+          ),
+      },
+      {
+        path: 'unidades/:coduni/editar',
+        loadComponent: () =>
+          import('./features/unidades/pages/unidad-form/unidad-form.component').then(
+            (component) => component.UnidadFormComponent,
+          ),
+      },
+      {
+        path: 'unidades/:coduni/detalle',
+        loadComponent: () =>
+          import('./features/unidades/pages/unidad-detail/unidad-detail.component').then(
+            (component) => component.UnidadDetailComponent,
+          ),
+      },
+      {
         path: 'roles/listar',
         loadComponent: () =>
           import('./features/roles/pages/roles-list/roles-list.component').then(

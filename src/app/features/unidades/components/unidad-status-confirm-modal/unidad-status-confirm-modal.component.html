@@ -1,0 +1,50 @@
+<div class="overlay">
+  <section
+    appPersonaModalFocus
+    class="modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="unidad-status-title"
+    [attr.aria-describedby]="
+      feedback() ? 'unidad-status-description unidad-status-error' : 'unidad-status-description'
+    "
+    [class.operation-deactivate]="operation() === 'deactivate'"
+    [class.operation-activate]="operation() === 'activate'"
+    [attr.aria-busy]="submitting()"
+    (escapePressed)="close()"
+  >
+    <header class="modal-header">
+      <div class="operation-icon" aria-hidden="true">
+        <mat-icon>{{ operationIcon() }}</mat-icon>
+      </div>
+      <h2 id="unidad-status-title">{{ operationTitle() }}</h2>
+    </header>
+
+    <div class="modal-body">
+      <p class="unit-name">{{ unitName() }}</p>
+      <p id="unidad-status-description" class="confirmation-message">
+        {{ operationMessage() }}
+      </p>
+      @if (feedback(); as message) {
+        <p id="unidad-status-error" class="status-error" role="alert">{{ message }}</p>
+      }
+    </div>
+
+    <footer class="modal-footer">
+      <button class="secondary-button" type="button" [disabled]="submitting()" (click)="close()">
+        Cancelar
+      </button>
+      <button
+        class="confirm-button"
+        type="button"
+        [disabled]="submitting()"
+        (click)="confirmed.emit()"
+      >
+        <mat-icon aria-hidden="true">{{ operationIcon() }}</mat-icon>
+        <span aria-live="polite">
+          {{ submitting() ? submittingLabel() : actionLabel() }}
+        </span>
+      </button>
+    </footer>
+  </section>
+</div>

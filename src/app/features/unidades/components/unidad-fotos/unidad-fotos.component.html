@@ -1,0 +1,132 @@
+<section class="unidad-fotos" aria-labelledby="unidad-fotos-title">
+  <div class="unidad-fotos-heading">
+    <div class="unidad-fotos-heading-copy">
+      <div class="unidad-fotos-title-row">
+        <mat-icon aria-hidden="true">photo_library</mat-icon>
+        <div>
+          <h2 id="unidad-fotos-title">Fotografías de la unidad</h2>
+          <p>Añade imágenes de los diferentes ambientes de la unidad.</p>
+        </div>
+      </div>
+    </div>
+    @if (!viewOnly()) {
+      <button
+        type="button"
+        class="unidad-fotos-add-button"
+        [disabled]="disabled()"
+        (click)="request(() => addRequested.emit())"
+      >
+        <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
+        Añadir fotografía
+      </button>
+    }
+  </div>
+
+  @if (errorMessage(); as message) {
+    <p class="unidad-fotos-error" role="alert">{{ message }}</p>
+  }
+
+  @if (loading() && photos().length === 0) {
+    <div class="unidad-fotos-loading" role="status" aria-busy="true">
+      <span></span><span></span><span></span>
+    </div>
+  } @else if (photos().length === 0) {
+    <div class="unidad-fotos-empty">
+      <mat-icon aria-hidden="true">image</mat-icon>
+      <strong>{{ emptyMessage() }}</strong>
+      <p>{{ emptyDescription() }}</p>
+    </div>
+  } @else {
+    <div class="unidad-fotos-grid">
+      @for (photo of photos(); track photo.key) {
+        <article class="unidad-foto-card">
+          <div class="unidad-foto-image-frame">
+            @if (photo.imageStatus === 'ready' && photo.imageUrl && !hasFailedImage(photo)) {
+              <img [src]="photo.imageUrl" [alt]="imageAlt(photo)" (error)="imageFailed(photo)" />
+            } @else if (photo.imageStatus === 'loading') {
+              <div class="unidad-foto-placeholder" role="status">
+                <mat-icon aria-hidden="true">hourglass_top</mat-icon>
+                <span>Cargando imagen...</span>
+              </div>
+            } @else {
+              <div class="unidad-foto-placeholder unidad-foto-placeholder-error">
+                <mat-icon aria-hidden="true">broken_image</mat-icon>
+                <span>No fue posible mostrar la imagen.</span>
+              </div>
+            }
+            @if (photo.portada) {
+              <span class="unidad-foto-cover-badge">
+                <mat-icon aria-hidden="true">star</mat-icon>
+                Portada
+              </span>
+            }
+          </div>
+
+          <div class="unidad-foto-content">
+            <div class="unidad-foto-heading">
+              <div>
+                <h3>{{ photo.titulo || photo.ambiente || 'Fotografía sin título' }}</h3>
+                @if (photo.ambiente && photo.titulo) {
+                  <p>{{ photo.ambiente }}</p>
+                }
+              </div>
+              @if (!viewOnly()) {
+                <span class="unidad-foto-order">#{{ photo.orden + 1 }}</span>
+              }
+            </div>
+            @if (photo.pending && photo.fileName) {
+              <p class="unidad-foto-file-name">{{ photo.fileName }}</p>
+            }
+
+            @if (!viewOnly()) {
+              <div class="unidad-foto-actions" aria-label="Acciones de fotografía">
+                <button
+                  type="button"
+                  class="unidad-foto-action"
+                  [disabled]="disabled()"
+                  [attr.aria-label]="'Editar metadatos de ' + imageAlt(photo)"
+                  (click)="request(() => editRequested.emit(photo))"
+                >
+                  <mat-icon aria-hidden="true">edit</mat-icon>
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="unidad-foto-action"
+                  [disabled]="disabled()"
+                  [attr.aria-label]="'Reemplazar ' + imageAlt(photo)"
+                  (click)="request(() => replaceRequested.emit(photo))"
+                >
+                  <mat-icon aria-hidden="true">image_search</mat-icon>
+                  Reemplazar
+                </button>
+                @if (!photo.portada) {
+                  <button
+                    type="button"
+                    class="unidad-foto-action"
+                    [disabled]="disabled()"
+                    [attr.aria-label]="'Marcar como portada ' + imageAlt(photo)"
+                    (click)="request(() => coverRequested.emit(photo))"
+                  >
+                    <mat-icon aria-hidden="true">star</mat-icon>
+                    Portada
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="unidad-foto-action unidad-foto-action-danger"
+                  [disabled]="disabled()"
+                  [attr.aria-label]="'Eliminar ' + imageAlt(photo)"
+                  (click)="request(() => deleteRequested.emit(photo))"
+                >
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                  Eliminar
+                </button>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

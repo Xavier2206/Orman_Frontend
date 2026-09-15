@@ -1,0 +1,86 @@
+<app-unidad-fotos
+  [photos]="photoViews()"
+  [disabled]="disabled() || photoActionBusy()"
+  [loading]="photoLoading()"
+  [errorMessage]="photoActionError() || photoError()"
+  (addRequested)="addPhoto()"
+  (editRequested)="editPhoto($event)"
+  (replaceRequested)="replacePhoto($event)"
+  (coverRequested)="setCover($event)"
+  (deleteRequested)="deletePhoto($event)"
+></app-unidad-fotos>
+
+<input
+  id="unit-photo-add-input"
+  class="visually-hidden-file-input"
+  type="file"
+  accept="image/jpeg,image/png"
+  aria-label="Seleccionar fotografía de la unidad"
+  (change)="selectPhoto($event)"
+/>
+<input
+  id="unit-photo-replace-input"
+  class="visually-hidden-file-input"
+  type="file"
+  accept="image/jpeg,image/png"
+  aria-label="Seleccionar reemplazo de fotografía"
+  (change)="selectReplacement($event)"
+/>
+
+@if (photoEditorOpen()) {
+  <div class="photo-editor-backdrop" role="presentation" (click)="closePhotoEditor()">
+    <section
+      class="photo-editor-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="photo-editor-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="photo-editor-heading">
+        <div>
+          <p class="page-kicker">Fotografía</p>
+          <h2 id="photo-editor-title">Editar información</h2>
+        </div>
+        <button
+          type="button"
+          class="photo-editor-close"
+          [disabled]="photoEditorSaving()"
+          aria-label="Cerrar edición de fotografía"
+          (click)="closePhotoEditor()"
+        >
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </div>
+
+      @if (photoEditorFeedback(); as message) {
+        <p class="photo-editor-feedback" role="alert">{{ message }}</p>
+      }
+
+      <form class="photo-editor-form" [formGroup]="photoEditorForm" (ngSubmit)="savePhotoMetadata()">
+        <div class="form-field">
+          <label for="unit-photo-title">Título</label>
+          <input id="unit-photo-title" type="text" formControlName="titulo" maxlength="150" autocomplete="off" />
+          @if (photoFieldMessage('titulo'); as message) {
+            <p class="field-message" role="alert">{{ message }}</p>
+          }
+        </div>
+        <div class="form-field">
+          <label for="unit-photo-ambiente">Ambiente</label>
+          <input id="unit-photo-ambiente" type="text" formControlName="ambiente" maxlength="100" autocomplete="off" />
+          @if (photoFieldMessage('ambiente'); as message) {
+            <p class="field-message" role="alert">{{ message }}</p>
+          }
+        </div>
+        <div class="photo-editor-actions">
+          <button type="button" class="form-secondary-button" [disabled]="photoEditorSaving()" (click)="closePhotoEditor()">
+            Cancelar
+          </button>
+          <button type="submit" class="form-primary-button" [disabled]="photoEditorSaving()">
+            <mat-icon aria-hidden="true">{{ photoEditorSaving() ? 'progress_activity' : 'save' }}</mat-icon>
+            {{ photoEditorSaving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

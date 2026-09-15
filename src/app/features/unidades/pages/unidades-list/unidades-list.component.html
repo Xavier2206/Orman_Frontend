@@ -1,0 +1,251 @@
+<section class="unit-list-page mx-auto w-full min-w-0 max-w-375" aria-labelledby="unidades-title">
+  <header>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="page-kicker">Gestión inmobiliaria</p>
+        <h1 id="unidades-title" class="mt-2 text-3xl font-bold text-content">Unidades</h1>
+      </div>
+      <button type="button" class="add-unit-button" (click)="createUnit()">
+        <mat-icon aria-hidden="true">add_home</mat-icon>
+        Añadir unidad
+      </button>
+    </div>
+    <p class="mt-2 max-w-2xl text-sm text-muted">
+      Gestiona las unidades pertenecientes a tus propiedades.
+    </p>
+  </header>
+
+  <section
+    class="property-selector-panel mt-6 rounded-xl border border-theme-border bg-surface p-4 shadow-sm"
+    aria-labelledby="unit-property-label"
+  >
+    <div class="unit-filter-grid">
+      <div class="unit-filter-field">
+        <label id="unit-property-label" for="unit-property-select">Propiedad</label>
+
+        @if (propertyLoading()) {
+          <p
+            class="mt-[.35rem] min-h-11 rounded-lg border border-theme-border bg-card px-3 py-3 text-sm text-muted"
+            role="status"
+            aria-busy="true"
+          >
+            Cargando propiedades…
+          </p>
+        } @else if (propertyError(); as message) {
+          <div
+            class="property-selector-error mt-[.35rem] flex flex-col gap-3 rounded-lg border border-danger-border bg-danger-bg p-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p class="text-sm text-danger-text" role="alert">{{ message }}</p>
+            <button type="button" class="page-button shrink-0 px-3" (click)="retryProperties()">
+              <mat-icon aria-hidden="true">refresh</mat-icon>
+              Reintentar
+            </button>
+          </div>
+        } @else {
+          <select
+            id="unit-property-select"
+            class="unit-property-select mt-[.35rem]"
+            [value]="selectedPropertyId() ?? ''"
+            [disabled]="properties().length === 0"
+            aria-describedby="unit-property-help"
+            (change)="selectProperty($event)"
+          >
+            <option value="">Seleccionar propiedad</option>
+            @for (property of properties(); track property.codprop) {
+              <option [value]="property.codprop" [selected]="property.codprop === selectedPropertyId()">
+                {{ property.nombre }}
+              </option>
+            }
+          </select>
+          <p id="unit-property-help" class="mt-2 text-xs text-muted">
+            @if (properties().length === 0) {
+              No hay propiedades disponibles para consultar.
+            } @else if (selectedProperty(); as property) {
+              Consultando las unidades de {{ property.nombre }}.
+            } @else {
+              Elige una propiedad para consultar y gestionar sus unidades.
+            }
+          </p>
+        }
+      </div>
+
+      @if (!propertyLoading() && !propertyError()) {
+        <div class="unit-filter-field">
+          <label for="unit-status-select">Estado operativo</label>
+          <select
+            id="unit-status-select"
+            class="unit-property-select mt-[.35rem]"
+            [value]="selectedStatusFilter()"
+            [disabled]="selectedPropertyId() === null"
+            aria-describedby="unit-status-help"
+            (change)="selectStatus($event)"
+          >
+            @for (option of statusOptions; track option.value) {
+              <option [value]="option.value" [selected]="option.value === selectedStatusFilter()">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+          <p id="unit-status-help" class="mt-2 text-xs text-muted">
+            @if (selectedPropertyId() === null) {
+              Selecciona una propiedad para filtrar sus unidades.
+            } @else {
+              Mostrando {{ statusFilterLabel().toLowerCase() }}.
+            }
+          </p>
+        </div>
+      }
+
+      @if (hasActiveFilters()) {
+        <button
+          type="button"
+          class="page-button clear-filters-button self-center px-3"
+          (click)="clearFilters()"
+        >
+          <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (!propertyLoading() && !propertyError() && selectedPropertyId() === null) {
+    <div
+      class="empty-state mt-6 rounded-2xl border border-theme-border bg-surface p-10 text-center"
+      role="status"
+    >
+      <mat-icon class="empty-state-icon text-accent-text" aria-hidden="true">domain</mat-icon>
+      <h2 class="mt-4 text-lg font-bold text-content">Selecciona una propiedad</h2>
+      <p class="mx-auto mt-2 max-w-lg text-sm text-muted">
+        Elige una propiedad para consultar y gestionar sus unidades.
+      </p>
+    </div>
+  } @else if (selectedPropertyId() !== null && unitLoading()) {
+    <div
+      class="unit-grid mt-6 grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-3"
+      role="status"
+      aria-label="Cargando unidades"
+      aria-busy="true"
+    >
+      @for (card of loadingCards; track card) {
+        <article
+          class="unit-skeleton overflow-hidden rounded-2xl border border-theme-border bg-card p-5 shadow-sm"
+          aria-hidden="true"
+        >
+          <div class="flex gap-2">
+            <span class="unit-skeleton-line h-7 w-28 rounded-full"></span>
+            <span class="unit-skeleton-line h-7 w-24 rounded-full"></span>
+          </div>
+          <span class="unit-skeleton-line mt-5 block h-6 w-3/4 rounded-sm"></span>
+          <span class="unit-skeleton-line mt-3 block h-4 w-1/2 rounded-sm"></span>
+          <div class="mt-6 grid grid-cols-2 gap-3 border-t border-theme-border pt-5">
+            <span class="unit-skeleton-line h-10 rounded-sm"></span>
+            <span class="unit-skeleton-line h-10 rounded-sm"></span>
+            <span class="unit-skeleton-line h-10 rounded-sm"></span>
+            <span class="unit-skeleton-line h-10 rounded-sm"></span>
+          </div>
+          <span class="unit-skeleton-line mt-5 block h-8 w-1/2 rounded-sm"></span>
+        </article>
+      }
+    </div>
+  } @else if (selectedPropertyId() !== null && unitError(); as message) {
+    <div
+      class="error-state mt-6 rounded-2xl border border-danger-border bg-danger-bg p-8 text-center"
+      role="alert"
+    >
+      <mat-icon class="text-danger-text" aria-hidden="true">error_outline</mat-icon>
+      <h2 class="mt-3 text-lg font-bold text-danger-text">No pudimos cargar las unidades.</h2>
+      <p class="mx-auto mt-2 max-w-lg text-sm text-danger-text">{{ message }}</p>
+      <button type="button" class="page-button mt-5 px-4" (click)="retryUnits()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        Reintentar
+      </button>
+    </div>
+  } @else if (selectedPropertyId() !== null && unitPage(); as result) {
+    @if (result.totalElements === 0) {
+      <div
+        class="empty-state mt-6 rounded-2xl border border-theme-border bg-surface p-10 text-center"
+        role="status"
+      >
+        <mat-icon class="empty-state-icon text-accent-text" aria-hidden="true"
+          >meeting_room</mat-icon
+        >
+        <h2 class="mt-4 text-lg font-bold text-content">
+          {{ emptyUnitsTitle() }}
+        </h2>
+        <p class="mx-auto mt-2 max-w-lg text-sm text-muted">
+          {{ emptyUnitsDescription() }}
+        </p>
+        @if (selectedStatusFilter() !== 'all') {
+          <button type="button" class="page-button mt-5 px-4" (click)="clearStatusFilter()">
+            <mat-icon aria-hidden="true">list</mat-icon>
+            Mostrar todas
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="unit-grid mt-6 grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
+        @for (unit of result.content; track unit.coduni) {
+          <app-unidad-card
+            [unidad]="unit"
+            [statusSubmitting]="statusActionCoduni() === unit.coduni"
+            (editRequested)="editUnit(unit)"
+            (detailRequested)="detailUnit(unit)"
+            (statusChangeRequested)="openStatusModal(unit, $event)"
+          />
+        }
+      </div>
+
+      @if (result.totalPages > 0) {
+        <nav
+          class="pagination-bar mt-6 flex min-w-0 flex-col gap-3 rounded-xl border border-theme-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          aria-label="Paginación de unidades"
+        >
+          <div class="min-w-0">
+            <p class="text-sm text-muted" aria-live="polite">
+              Mostrando {{ result.content.length }} de {{ result.totalElements }} unidades
+            </p>
+            <p class="mt-1 text-xs text-muted">
+              Página {{ result.page + 1 }} de {{ result.totalPages }}
+            </p>
+          </div>
+          <div class="flex w-full gap-2 sm:w-auto">
+            <button
+              type="button"
+              class="page-button flex-1 px-3 sm:flex-none"
+              [disabled]="result.first"
+              aria-label="Página anterior"
+              (click)="changePage(result.page - 1)"
+            >
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              <span>Anterior</span>
+            </button>
+            <button
+              type="button"
+              class="page-button flex-1 px-3 sm:flex-none"
+              [disabled]="result.last"
+              aria-label="Página siguiente"
+              (click)="changePage(result.page + 1)"
+            >
+              <span>Siguiente</span>
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </div>
+        </nav>
+      }
+    }
+  }
+</section>
+
+@if (statusModalOperation(); as operation) {
+  @if (statusModalUnit(); as unit) {
+    <app-unidad-status-confirm-modal
+      [operation]="operation"
+      [unitName]="unit.nombre"
+      [submitting]="statusActionCoduni() === unit.coduni"
+      [feedback]="statusFeedback()"
+      (closed)="closeStatusModal()"
+      (confirmed)="submitStatus()"
+    />
+  }
+}

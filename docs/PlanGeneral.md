@@ -12,10 +12,10 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
-- **Última fase histórica documentada:** Fase 13 de Etapa 2 — Propiedades.
-- **Última fase completada:** Fase 13 de Etapa 2 — Propiedades.
+- **Última fase histórica documentada:** Fase 15 de Etapa 2 — Compactación y acciones de Unidades.
+- **Última fase completada:** Fase 15 de Etapa 2 — Compactación y acciones de Unidades.
 - **Estado de la Fase 05:** `COMPLETADA`.
-- **Pruebas:** última ejecución completa: 50 archivos, 381 pruebas aprobadas de 384; 3 fallos preexistentes en `OrmanNotificationService`.
+- **Pruebas:** última ejecución completa: 57 archivos, 415 pruebas aprobadas de 419; 4 fallos fuera del alcance en `PropiedadDetailPdfService`.
 - **Pruebas actuales de Propiedades:** 7 archivos focalizados; 70 pruebas aprobadas.
 - **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
 - **Corrección responsive de Propiedades:** el resumen global usa 2×2 en móvil y tablet, 4×1 en escritorio y una variante compacta bajo `md`; las tarjetas del listado usan portada compacta en desktop y tres columnas desde `2xl` (`1536px`); API, modelos, cálculos, filtros, listado funcional y paginación permanecen sin cambios.
@@ -23,6 +23,8 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Redistribución de métricas de Propiedades:** desde `lg`, la card muestra identidad a la izquierda e inversión a la derecha en la primera fila, y `Unidades`/`Ocupación` equilibradas en la fila inferior con las mismas guías; el separador aislado de inversión se conserva solo en móvil/tablet, donde los bloques se apilan sin alterar datos, HTTP, navegación o gestión de Unidades.
 - **Centrado visual de Menús:** los iconos circulares del resumen usan centrado vertical y una caja tipográfica explícita, sin cambios en datos, lógica, API ni acciones.
 - **Propiedades:** la Fase 13 canónica consolida el listado, resumen, cards, Crear/Editar, portada, selector `CASA`/`EDIFICIO`, ubicación Leaflet/OpenStreetMap, datos financieros, layout responsive, correcciones de assets e iconos y limpieza de acciones. El documento único registra los contratos reales, validaciones, exclusiones y estado final; los ajustes pequeños del módulo no generan fases independientes.
+- **Unidades:** la Fase 14 implementa exclusivamente el listado paginado por propiedad en `/app/unidades/listar`, reutilizando el servicio real de Propiedades para poblar el selector y el contrato confirmado `GET /api/v1/propiedades/{codprop}/unidades`. Creación, edición, detalle, fotografías, disponibilidad, ocupación, acciones y contratos adicionales permanecen pendientes.
+- **Mejora visual de Unidades:** la Fase 15 compacta las cards, retira únicamente la descripción de su render, conserva el modelo completo y añade acciones preparadas mediante outputs sin crear rutas inexistentes. Editar y Ver detalle quedan pendientes de sus respectivas implementaciones funcionales.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
 ## Estados permitidos
@@ -95,6 +97,8 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 11 — Asignar Menús a Rol                                         | `COMPLETADA`    | Fase 10; contratos confirmados de Roles, Menús y asignaciones Rol–Menú                                | [Documento](etapas/etapa-2/fases/11-asignar-menus.md)                                     |
 | 12 — Asignar Procesos a Menú                                     | `COMPLETADA`    | Fase 11; contratos confirmados de Menú–Proceso                                                        | [Documento](etapas/etapa-2/fases/12-asignar-procesos.md)                                  |
 | 13 — Propiedades | `COMPLETADA` | Layout privado disponible y contratos confirmados para listado, CRUD, portada y ubicación cartográfica | [Documento](etapas/etapa-2/fases/13-propiedades.md) |
+| 14 — Listado de Unidades | `COMPLETADA` | Contratos confirmados de propiedades paginadas y unidades paginadas por propiedad | [Documento](etapas/etapa-2/fases/14-listado-unidades.md) |
+| 15 — Compactación y acciones de Unidades | `COMPLETADA` | Fase 14; auditoría de rutas de edición y detalle aún inexistentes | [Documento](etapas/etapa-2/fases/15-compactacion-acciones-unidades.md) |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -136,9 +140,20 @@ formulario y conserva los datos técnicos requeridos por el `PUT`. La pantalla v
 coordenadas pareadas, rangos e inversión no negativa, integra `ProblemDetail` y vuelve al listado
 tras un guardado correcto. También consolida la portada autenticada como Blob, el selector radio,
 el mapa Leaflet/OSM, la reversa Nominatim, el reacomodo financiero, la reparación de assets del
-marcador y el retiro de `Volver a propiedades`. Activar/desactivar, detalle, unidades, contratos,
+marcador y el retiro de `Volver a propiedades`. Activar/desactivar, detalle, contratos,
 pagos y campos patrimoniales no confirmados permanecen fuera de alcance. El detalle completo queda
 en el [documento canónico de Propiedades](etapas/etapa-2/fases/13-propiedades.md).
+
+La Fase 14 implementa el listado de Unidades con un selector de Propiedad, carga completa y
+paginada del catálogo de propiedades, consulta paginada de unidades, cards con los campos reales
+del contrato, estados de carga/vacío/error y paginación. Usa `switchMap` para cancelar solicitudes
+obsoletas y mantiene el listado sin acciones ni datos de ocupación no confirmados. El detalle queda
+en el [documento de la Fase 14](etapas/etapa-2/fases/14-listado-unidades.md).
+
+La Fase 15 reduce la densidad vertical de `UnidadCardComponent`, elimina solo la descripción del
+listado y añade los botones accesibles `Editar` y `Ver detalle` como outputs preparados. La
+auditoría confirmó que las rutas funcionales todavía no existen, por lo que no se agregaron enlaces
+ni navegación falsa. El detalle queda en el [documento de la Fase 15](etapas/etapa-2/fases/15-compactacion-acciones-unidades.md).
 
 ### Fases futuras por definir
 
@@ -160,7 +175,7 @@ Una dependencia expresa orden técnico, pero cada fase requiere además autoriza
 
 - La aprobación visual pendiente indicada en el documento de la Fase 06.1 debe confirmarse o cerrarse documentalmente.
 - Las decisiones fuera del alcance de autenticación, como roles dinámicos y navegación privada, siguen pendientes de una fase posterior.
-- Las operaciones posteriores de propiedades —detalle, estado, unidades, contratos y pagos— permanecen pendientes de fases autorizadas y contratos Backend confirmados.
+- Las operaciones posteriores de propiedades —detalle, estado, contratos y pagos— y la gestión posterior de Unidades permanecen pendientes de fases autorizadas y contratos Backend confirmados.
 - Las fases posteriores de la Etapa 2 permanecen por definir.
 
 ## Dependencias generales

@@ -1,0 +1,449 @@
+<section
+  class="unit-form-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="unidad-form-title"
+>
+  <header class="form-page-header">
+    <div class="form-page-header-layout">
+      <div class="form-page-header-copy">
+        <div class="form-page-header-text">
+          <p class="page-kicker">Gestión Unidades</p>
+          <h1 id="unidad-form-title">{{ title() }}</h1>
+          <p>{{ description() }}</p>
+        </div>
+      </div>
+      <div class="form-header-actions">
+        <button
+          type="button"
+          class="form-secondary-button"
+          [disabled]="submitting()"
+          (click)="cancel()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          form="unidad-form"
+          class="form-primary-button"
+          [disabled]="submitting() || loading() || !!loadingError()"
+        >
+          <mat-icon aria-hidden="true">{{ submitting() ? 'progress_activity' : 'save' }}</mat-icon>
+          {{ submitting() ? 'Guardando...' : isEdit() ? 'Guardar cambios' : 'Guardar unidad' }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <section class="form-panel form-loading" role="status" aria-busy="true">
+      <span class="loading-line loading-line-title"></span>
+      <span class="loading-line"></span>
+      <span class="loading-line"></span>
+      <span class="loading-line loading-line-short"></span>
+    </section>
+  } @else if (loadingError(); as message) {
+    <section class="form-panel form-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <div>
+        <h2>No se puede editar la unidad</h2>
+        <p>{{ message }}</p>
+      </div>
+      <button type="button" class="form-secondary-button" (click)="cancel()">
+        Volver a unidades
+      </button>
+    </section>
+  } @else {
+    <form
+      id="unidad-form"
+      class="form-panel"
+      [formGroup]="form"
+      [attr.aria-busy]="submitting()"
+      (ngSubmit)="submit()"
+    >
+      @if (feedback(); as message) {
+        <p class="form-feedback" role="alert">{{ message }}</p>
+      }
+
+      <fieldset [disabled]="submitting()">
+        <div class="unit-form-layout">
+          <div class="unit-form-main">
+            <section class="form-section" aria-labelledby="unit-general-title">
+              <div class="section-heading">
+                <mat-icon aria-hidden="true">meeting_room</mat-icon>
+                <div>
+                  <h2 id="unit-general-title">Información general</h2>
+                  <p>Identifica la unidad y describe sus características principales.</p>
+                </div>
+              </div>
+
+              <div class="unit-general-layout">
+                <div class="unit-general-primary">
+                  <div class="form-field form-field-wide">
+                    <label for="unit-name"
+                      >Nombre de la unidad <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      id="unit-name"
+                      type="text"
+                      formControlName="nombre"
+                      maxlength="100"
+                      autocomplete="off"
+                      aria-required="true"
+                      [class.field-error]="!!fieldMessage('nombre')"
+                      [attr.aria-invalid]="fieldMessage('nombre') ? 'true' : null"
+                      [attr.aria-describedby]="fieldMessage('nombre') ? 'unit-name-error' : null"
+                    />
+                    @if (fieldMessage('nombre'); as message) {
+                      <p id="unit-name-error" class="field-message" role="alert">{{ message }}</p>
+                    }
+                  </div>
+
+                  <div class="form-field">
+                    <label for="unit-type">Tipo de unidad <span aria-hidden="true">*</span></label>
+                    <select
+                      id="unit-type"
+                      class="unit-type-select"
+                      [value]="selectedUnitTypeOption()"
+                      [class.field-error]="!!fieldMessage('tipoUnidad')"
+                      [attr.aria-invalid]="fieldMessage('tipoUnidad') ? 'true' : null"
+                      [attr.aria-describedby]="
+                        fieldMessage('tipoUnidad') ? 'unit-type-error' : null
+                      "
+                      aria-required="true"
+                      (change)="selectUnitType($event)"
+                    >
+                      <option value="">Seleccionar tipo de unidad</option>
+                      @for (option of unitTypeOptions; track option.value) {
+                        <option
+                          [value]="option.value"
+                          [selected]="option.value === selectedUnitTypeOption()"
+                        >
+                          {{ option.label.toUpperCase() }}
+                        </option>
+                      }
+                    </select>
+                    @if (showCustomUnitType()) {
+                      <input
+                        id="unit-type-custom"
+                        type="text"
+                        formControlName="tipoUnidad"
+                        maxlength="50"
+                        placeholder="Escribe el tipo de unidad"
+                        autocomplete="off"
+                        aria-required="true"
+                        [class.field-error]="!!fieldMessage('tipoUnidad')"
+                        [attr.aria-invalid]="fieldMessage('tipoUnidad') ? 'true' : null"
+                        [attr.aria-describedby]="
+                          fieldMessage('tipoUnidad') ? 'unit-type-error' : null
+                        "
+                      />
+                    }
+                    @if (fieldMessage('tipoUnidad'); as message) {
+                      <p id="unit-type-error" class="field-message" role="alert">{{ message }}</p>
+                    }
+                  </div>
+
+                  <div class="form-field form-field-wide">
+                    <label for="unit-description">Descripción</label>
+                    <textarea
+                      id="unit-description"
+                      formControlName="descripcion"
+                      maxlength="500"
+                      rows="4"
+                      placeholder="Describe la unidad si necesitas añadir contexto."
+                      [class.field-error]="!!fieldMessage('descripcion')"
+                      [attr.aria-invalid]="fieldMessage('descripcion') ? 'true' : null"
+                      [attr.aria-describedby]="
+                        fieldMessage('descripcion') ? 'unit-description-error' : null
+                      "
+                    ></textarea>
+                    @if (fieldMessage('descripcion'); as message) {
+                      <p id="unit-description-error" class="field-message" role="alert">
+                        {{ message }}
+                      </p>
+                    }
+                  </div>
+                </div>
+
+                <div class="unit-general-secondary">
+                  <div class="form-field">
+                    <label for="unit-internal-location">Ubicación interna</label>
+                    <input
+                      id="unit-internal-location"
+                      type="text"
+                      formControlName="ubicacionInterna"
+                      maxlength="150"
+                      placeholder="Ej. Primer piso - lado derecho"
+                      autocomplete="off"
+                      [class.field-error]="!!fieldMessage('ubicacionInterna')"
+                      [attr.aria-invalid]="fieldMessage('ubicacionInterna') ? 'true' : null"
+                    />
+                    @if (fieldMessage('ubicacionInterna'); as message) {
+                      <p class="field-message" role="alert">{{ message }}</p>
+                    }
+                  </div>
+
+                  <div class="form-field">
+                    <label for="unit-price">Precio base <span aria-hidden="true">*</span></label>
+                    <div class="currency-input" [class.field-error]="!!fieldMessage('precioBase')">
+                      <span aria-hidden="true">Bs</span>
+                      <input
+                        id="unit-price"
+                        type="number"
+                        formControlName="precioBase"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                        aria-required="true"
+                        [attr.aria-invalid]="fieldMessage('precioBase') ? 'true' : null"
+                      />
+                    </div>
+                    @if (fieldMessage('precioBase'); as message) {
+                      <p class="field-message" role="alert">{{ message }}</p>
+                    }
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="form-section" aria-labelledby="unit-characteristics-title">
+              <div class="section-heading">
+                <mat-icon aria-hidden="true">straighten</mat-icon>
+                <div>
+                  <h2 id="unit-characteristics-title">Características</h2>
+                  <p>Registra los valores físicos confirmados de la unidad.</p>
+                </div>
+              </div>
+
+              <div class="form-grid characteristics-grid">
+                <div class="form-field">
+                  <label class="form-field-label" for="unit-area">
+                    <mat-icon aria-hidden="true">square_foot</mat-icon>
+                    Área <span aria-hidden="true">*</span>
+                  </label>
+                  <div class="input-with-suffix" [class.field-error]="!!fieldMessage('area')">
+                    <input
+                      id="unit-area"
+                      type="number"
+                      formControlName="area"
+                      min="0"
+                      step="0.01"
+                      inputmode="decimal"
+                      aria-required="true"
+                      [attr.aria-invalid]="fieldMessage('area') ? 'true' : null"
+                    />
+                    <span aria-hidden="true">m²</span>
+                  </div>
+                  @if (fieldMessage('area'); as message) {
+                    <p class="field-message" role="alert">{{ message }}</p>
+                  }
+                </div>
+
+                <div class="form-field">
+                  <label class="form-field-label" for="unit-bedrooms">
+                    <mat-icon aria-hidden="true">bed</mat-icon>
+                    Dormitorios <span aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="unit-bedrooms"
+                    type="number"
+                    formControlName="dormitorios"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    aria-required="true"
+                    [class.field-error]="!!fieldMessage('dormitorios')"
+                    [attr.aria-invalid]="fieldMessage('dormitorios') ? 'true' : null"
+                  />
+                  @if (fieldMessage('dormitorios'); as message) {
+                    <p class="field-message" role="alert">{{ message }}</p>
+                  }
+                </div>
+
+                <div class="form-field">
+                  <label class="form-field-label" for="unit-bathrooms">
+                    <mat-icon aria-hidden="true">bathtub</mat-icon>
+                    Baños <span aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="unit-bathrooms"
+                    type="number"
+                    formControlName="banos"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    aria-required="true"
+                    [class.field-error]="!!fieldMessage('banos')"
+                    [attr.aria-invalid]="fieldMessage('banos') ? 'true' : null"
+                  />
+                  @if (fieldMessage('banos'); as message) {
+                    <p class="field-message" role="alert">{{ message }}</p>
+                  }
+                </div>
+
+                <div class="form-field">
+                  <label class="form-field-label" for="unit-floor">
+                    <mat-icon aria-hidden="true">stairs</mat-icon>
+                    Piso <span aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="unit-floor"
+                    type="number"
+                    formControlName="piso"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    aria-required="true"
+                    [class.field-error]="!!fieldMessage('piso')"
+                    [attr.aria-invalid]="fieldMessage('piso') ? 'true' : null"
+                  />
+                  @if (fieldMessage('piso'); as message) {
+                    <p class="field-message" role="alert">{{ message }}</p>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <app-unidad-fotos-manager
+              [coduni]="loadedUnit()?.coduni ?? null"
+              [editMode]="isEdit()"
+              [disabled]="submitting()"
+            ></app-unidad-fotos-manager>
+          </div>
+
+          <aside class="unit-form-sidebar" aria-label="Contexto y estado de la unidad">
+            <section class="context-card" aria-labelledby="unit-property-title">
+              <div class="section-heading compact-heading">
+                <mat-icon aria-hidden="true">domain</mat-icon>
+                <div>
+                  <h2 id="unit-property-title">
+                    {{ isEdit() ? 'Propiedad asociada' : 'Propiedad' }}
+                  </h2>
+                  <p>
+                    {{
+                      isEdit()
+                        ? 'La propiedad no puede cambiarse desde la edición.'
+                        : 'Selecciona la propiedad a la que pertenece.'
+                    }}
+                  </p>
+                </div>
+              </div>
+
+              @if (isEdit()) {
+                <div class="associated-property" aria-live="polite">
+                  @if (associatedProperty(); as property) {
+                    <strong>{{ property.nombre }}</strong>
+                    <span>Identificador #{{ property.codprop }}</span>
+                  } @else if (loadedUnit(); as unit) {
+                    <strong>Propiedad #{{ unit.codprop }}</strong>
+                    <span>Identificador asociado a la unidad</span>
+                  }
+                </div>
+              } @else if (propertyLoading()) {
+                <p class="context-status" role="status" aria-busy="true">Cargando propiedades…</p>
+              } @else if (propertyError(); as message) {
+                <p class="context-error" role="alert">{{ message }}</p>
+              } @else {
+                <label for="unit-property-select"
+                  >Propiedad <span aria-hidden="true">*</span></label
+                >
+                <select
+                  id="unit-property-select"
+                  class="unit-property-select"
+                  [value]="selectedPropertyId() ?? ''"
+                  aria-required="true"
+                  [attr.aria-invalid]="propertyMessage() ? 'true' : null"
+                  [attr.aria-describedby]="propertyMessage() ? 'unit-property-error' : null"
+                  (change)="selectProperty($event)"
+                >
+                  <option value="">Seleccionar propiedad</option>
+                  @for (property of properties(); track property.codprop) {
+                    <option [value]="property.codprop">{{ property.nombre }}</option>
+                  }
+                </select>
+                @if (selectedProperty(); as property) {
+                  <p class="selected-property" role="status">
+                    Propiedad seleccionada: <strong>{{ property.nombre }}</strong>
+                  </p>
+                }
+                @if (propertyMessage(); as message) {
+                  <p id="unit-property-error" class="field-message" role="alert">{{ message }}</p>
+                }
+              }
+            </section>
+
+            @if (!isEdit()) {
+              <section class="context-card" aria-labelledby="unit-status-title">
+                <div class="section-heading compact-heading">
+                  <mat-icon aria-hidden="true">toggle_on</mat-icon>
+                  <div>
+                    <h2 id="unit-status-title">Estado operativo</h2>
+                    <p id="unit-status-help">
+                      Define si la unidad está habilitada para operaciones dentro del sistema.
+                    </p>
+                  </div>
+                </div>
+
+                <span id="unit-status-label" class="form-label"
+                  >Estado <span aria-hidden="true">*</span></span
+                >
+                <div
+                  class="status-options"
+                  role="radiogroup"
+                  aria-labelledby="unit-status-label"
+                  aria-describedby="unit-status-help"
+                  aria-required="true"
+                  [class.field-error]="!!fieldMessage('estadoOperativo')"
+                >
+                  <label
+                    class="status-option"
+                    [class.status-option-selected]="form.controls.estadoOperativo.value === 1"
+                  >
+                    <input
+                      type="radio"
+                      formControlName="estadoOperativo"
+                      [value]="1"
+                      aria-label="Operativa"
+                    />
+                    <span>
+                      <strong>Operativa</strong>
+                      <small>Habilitada para operaciones.</small>
+                    </span>
+                  </label>
+                  <label
+                    class="status-option"
+                    [class.status-option-selected]="form.controls.estadoOperativo.value === 0"
+                  >
+                    <input
+                      type="radio"
+                      formControlName="estadoOperativo"
+                      [value]="0"
+                      aria-label="No operativa"
+                    />
+                    <span>
+                      <strong>No operativa</strong>
+                      <small>No habilitada para operaciones.</small>
+                    </span>
+                  </label>
+                </div>
+                @if (fieldMessage('estadoOperativo'); as message) {
+                  <p class="field-message" role="alert">{{ message }}</p>
+                }
+              </section>
+            }
+
+            @if (form.controls.nombre.value || form.controls.precioBase.value !== null) {
+              <section class="context-card unit-preview" aria-labelledby="unit-preview-title">
+                <p class="preview-kicker">Vista previa</p>
+                <h2 id="unit-preview-title">
+                  {{ form.controls.nombre.value || 'Nombre de la unidad' }}
+                </h2>
+                <p>{{ form.controls.tipoUnidad.value || 'Tipo pendiente' }}</p>
+                <strong>{{ formatPrice(form.controls.precioBase.value) }}</strong>
+              </section>
+            }
+          </aside>
+        </div>
+      </fieldset>
+    </form>
+  }
+</section>
