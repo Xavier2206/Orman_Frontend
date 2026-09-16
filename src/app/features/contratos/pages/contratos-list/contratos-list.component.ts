@@ -10,7 +10,6 @@ import {
   debounceTime,
   distinctUntilChanged,
   expand,
-  finalize,
   map,
   of,
   reduce,
@@ -24,12 +23,7 @@ import { PageResponse } from '../../../personas/models/persona.model';
 import { UnidadApiService } from '../../../unidades/data/unidad-api.service';
 import { UnidadResponse } from '../../../unidades/models/unidad.model';
 import { ContratoApiService } from '../../data/contrato-api.service';
-import {
-  Contrato,
-  ContratoEstado,
-  ContratoListFilters,
-  ContratoResumen,
-} from '../../models/contrato.model';
+import { Contrato, ContratoEstado, ContratoListFilters } from '../../models/contrato.model';
 
 interface FilterOption {
   readonly value: string;
@@ -81,9 +75,6 @@ export class ContratosListComponent {
   protected readonly page = signal<PageResponse<Contrato> | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
-  protected readonly summary = signal<ContratoResumen | null>(null);
-  protected readonly summaryLoading = signal(true);
-  protected readonly summaryError = signal<string | null>(null);
   protected readonly properties = signal<readonly Propiedad[]>([]);
   protected readonly propertyLoading = signal(true);
   protected readonly propertyError = signal<string | null>(null);
@@ -107,13 +98,6 @@ export class ContratosListComponent {
     { value: 'FINALIZADO', label: 'Finalizado' },
     { value: 'RESCINDIDO', label: 'Rescindido' },
   ];
-  protected readonly summaryCards = [
-    { label: 'Vigentes', key: 'vigentes', icon: 'check_circle' },
-    { label: 'Programados', key: 'programados', icon: 'event_upcoming' },
-    { label: 'Finalizados', key: 'finalizados', icon: 'task_alt' },
-    { label: 'Rescindidos', key: 'rescindidos', icon: 'event_busy' },
-  ] as const;
-
   constructor() {
     this.search$
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -169,7 +153,6 @@ export class ContratosListComponent {
       .subscribe((result) => this.handleUnitResult(result));
 
     this.load();
-    this.loadSummary();
     this.loadProperties();
   }
 
@@ -317,10 +300,6 @@ export class ContratosListComponent {
     this.load();
   }
 
-  protected retrySummary(): void {
-    this.loadSummary();
-  }
-
   protected changePage(page: number): void {
     const currentPage = this.page();
 
@@ -329,10 +308,6 @@ export class ContratosListComponent {
     }
 
     this.load({ page });
-  }
-
-  protected summaryValue(key: (typeof this.summaryCards)[number]['key']): number | string {
-    return this.summary()?.[key] ?? '—';
   }
 
   protected stateLabel(state: ContratoEstado): string {
@@ -344,84 +319,66 @@ export class ContratosListComponent {
   }
 
   protected tenantName(contrato: Contrato): string {
-    return contrato.inquilinoNombre ?? `Inquilino #${contrato.codperInquilino}`;
+    return contrato.inquilino?.nombreCompleto ?? `Inquilino #${contrato.codperInquilino}`;
   }
 
   protected tenantInitials(contrato: Contrato): string {
-    if (contrato.inquilinoNombre) {
-      const parts = contrato.inquilinoNombre.trim().split(/\s+/);
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
-      }
+    const fullName = contrato.inquilino?.nombreCompleto?.trim();
+
+    if (!fullName) {
+      return 'IN';
+    }
+
+    const parts = fullName.split(/\s+/);
+
+    if (parts.length === 1) {
       return parts[0].slice(0, 2).toUpperCase();
     }
-    return 'IN';
+
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
   protected tenantCi(contrato: Contrato): string | null {
-    return contrato.inquilinoCi ?? null;
+    return contrato.inquilino?.ci ?? null;
   }
 
   protected getPropiedadNombre(contrato: Contrato): string {
-    if (contrato.propiedadNombre) {
-      return contrato.propiedadNombre;
-    }
-
-    const currentPropId = this.filters().codprop;
-    if (currentPropId !== null) {
-      const found = this.properties().find((property) => property.codprop === currentPropId);
-      if (found) {
-        return found.nombre;
-      }
-    }
-
-    return 'Propiedad';
+    return contrato.propiedad?.nombre ?? 'Propiedad no disponible';
   }
 
   protected getUnidadNombre(contrato: Contrato): string {
-    if (contrato.unidadNombre) {
-      return contrato.unidadNombre;
-    }
-
-    const found = this.units().find((unit) => unit.coduni === contrato.coduni);
-    if (found) {
-      return found.nombre;
-    }
-
-    return `Unidad #${contrato.coduni}`;
+    return contrato.unidad?.nombre ?? `Unidad #${contrato.coduni}`;
   }
 
-  protected hasCuotasInfo(contrato: Contrato): boolean {
-    return (
-      contrato.cuotasPagadas !== undefined &&
-      contrato.cuotasPagadas !== null &&
-      ((contrato.cuotasTotales !== undefined && contrato.cuotasTotales !== null) ||
-        (contrato.totalCuotas !== undefined && contrato.totalCuotas !== null))
-    );
-  }
+  protected getUnitMeta(contrato: Contrato): string | null {
+    const unit = contrato.unidad;
 
-  protected getCuotasText(contrato: Contrato): string {
-    const pagadas = contrato.cuotasPagadas ?? 0;
-    const totales = contrato.cuotasTotales ?? contrato.totalCuotas ?? 0;
-    return `${pagadas} de ${totales} pagadas`;
-  }
-
-  protected getCuotasPercent(contrato: Contrato): number {
-    const pagadas = contrato.cuotasPagadas ?? 0;
-    const totales = contrato.cuotasTotales ?? contrato.totalCuotas ?? 1;
-    if (totales <= 0) {
-      return 0;
+    if (!unit) {
+      return null;
     }
-    return Math.min(100, Math.round((pagadas / totales) * 100));
+
+    const metadata: string[] = [];
+
+    if (unit.piso !== null) {
+      metadata.push(`Piso ${unit.piso}`);
+    }
+
+    if (unit.tipoUnidad.trim()) {
+      metadata.push(unit.tipoUnidad);
+    }
+
+    return metadata.length > 0 ? metadata.join(' · ') : null;
   }
 
-  protected getSaldoStatus(contrato: Contrato): { label: string; isPending: boolean } {
-    if (contrato.saldoPendiente !== undefined && contrato.saldoPendiente !== null) {
-      return contrato.saldoPendiente > 0
-        ? { label: 'Saldo pendiente', isPending: true }
-        : { label: 'Al día', isPending: false };
+  protected contractDurationMonths(contrato: Contrato): number | null {
+    const start = this.monthIndex(contrato.fechaInicio);
+    const end = this.monthIndex(contrato.fechaFin);
+
+    if (start === null || end === null || end <= start) {
+      return null;
     }
-    return { label: 'Al día', isPending: false };
+
+    return end - start;
   }
 
   protected formatDate(value: string | null): string {
@@ -491,27 +448,6 @@ export class ContratosListComponent {
 
   private loadUnitPage(codprop: number, page: number): Observable<PageResponse<UnidadResponse>> {
     return this.unidadApi.listByProperty(codprop, page, this.catalogPageSize, this.catalogSort);
-  }
-
-  private loadSummary(): void {
-    this.summaryLoading.set(true);
-    this.summaryError.set(null);
-
-    this.api
-      .getResumen()
-      .pipe(
-        finalize(() => this.summaryLoading.set(false)),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe({
-        next: (summary) => this.summary.set(summary),
-        error: (requestError: unknown) => {
-          this.summary.set(null);
-          this.summaryError.set(
-            this.errorMessage(requestError, 'No fue posible cargar el resumen de contratos.'),
-          );
-        },
-      });
   }
 
   private handleListResult(result: ListResult): void {
@@ -603,6 +539,18 @@ export class ContratosListComponent {
 
   private isContractState(value: string): value is ContratoEstado {
     return ['PROGRAMADO', 'VIGENTE', 'FINALIZADO', 'RESCINDIDO'].includes(value);
+  }
+
+  private monthIndex(value: string): number | null {
+    const [yearText, monthText] = value.slice(0, 7).split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+
+    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+      return null;
+    }
+
+    return year * 12 + month;
   }
 
   private errorMessage(

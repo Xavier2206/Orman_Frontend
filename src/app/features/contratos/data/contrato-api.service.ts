@@ -1,15 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { forkJoin, map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { apiPath } from '../../../core/api/api.constants';
 import { PageResponse } from '../../personas/models/persona.model';
-import {
-  Contrato,
-  ContratoEstado,
-  ContratoListFilters,
-  ContratoResumen,
-} from '../models/contrato.model';
+import { Contrato, ContratoListFilters } from '../models/contrato.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContratoApiService {
@@ -40,30 +35,5 @@ export class ContratoApiService {
     }
 
     return this.http.get<PageResponse<Contrato>>(this.contratosPath, { params });
-  }
-
-  getResumen(): Observable<ContratoResumen> {
-    const states: readonly ContratoEstado[] = ['VIGENTE', 'PROGRAMADO', 'FINALIZADO', 'RESCINDIDO'];
-
-    return forkJoin(
-      states.map((estado) =>
-        this.list({
-          q: '',
-          codprop: null,
-          coduni: null,
-          estado,
-          page: 0,
-          size: 1,
-          sort: 'fechaInicio,desc',
-        }).pipe(map((page) => page.totalElements)),
-      ),
-    ).pipe(
-      map(([vigentes, programados, finalizados, rescindidos]) => ({
-        vigentes,
-        programados,
-        finalizados,
-        rescindidos,
-      })),
-    );
   }
 }

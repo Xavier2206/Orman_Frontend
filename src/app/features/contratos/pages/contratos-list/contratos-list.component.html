@@ -20,38 +20,6 @@
     </button>
   </div>
 
-  <section class="mt-6" aria-label="Resumen de contratos">
-    @if (summaryLoading()) {
-      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        @for (item of summaryCards; track item.key) {
-          <div class="contract-summary-card contract-summary-skeleton">
-            <span></span>
-            <div><i></i><b></b></div>
-          </div>
-        }
-      </div>
-    } @else if (summary(); as data) {
-      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        @for (card of summaryCards; track card.key) {
-          <article [class]="'contract-summary-card min-w-0 contract-summary-' + card.key">
-            <span class="contract-summary-icon">
-              <mat-icon aria-hidden="true">{{ card.icon }}</mat-icon>
-            </span>
-            <div>
-              <p>{{ card.label }}</p>
-              <strong>{{ data[card.key] }}</strong>
-            </div>
-          </article>
-        }
-      </div>
-    } @else if (summaryError(); as summaryMessage) {
-      <p class="contract-summary-error" role="status">
-        {{ summaryMessage }}
-        <button type="button" class="inline-link ml-1" (click)="retrySummary()">Reintentar</button>
-      </p>
-    }
-  </section>
-
   <section
     class="mt-7 grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-theme-border bg-surface p-4 shadow-sm md:grid-cols-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(200px,1.2fr)_minmax(200px,1.2fr)_auto] lg:items-end"
     aria-label="Filtros de contratos"
@@ -286,54 +254,72 @@
               </div>
             </div>
 
-            <dl class="contract-details mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-              <div class="sm:col-span-2">
-                <dt>Propiedad / Unidad</dt>
-                <dd class="mt-0.5 font-medium text-content">
-                  <p class="font-semibold text-content">{{ getPropiedadNombre(contrato) }}</p>
-                  <p class="text-sm text-muted">{{ getUnidadNombre(contrato) }}</p>
-                </dd>
+            <div class="contract-property-summary mt-5">
+              <span class="contract-property-icon" aria-hidden="true">
+                <mat-icon>apartment</mat-icon>
+              </span>
+              <div class="min-w-0">
+                <p class="contract-property-name">{{ getPropiedadNombre(contrato) }}</p>
+                <p class="contract-property-unit">
+                  {{ getUnidadNombre(contrato) }}
+                  @if (getUnitMeta(contrato); as unitMeta) {
+                    <span> · {{ unitMeta }}</span>
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div class="contract-meta-grid mt-4 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+              <div class="contract-meta-block">
+                <p class="contract-meta-label">Periodo</p>
+                <p class="contract-period">
+                  <span>{{ formatDate(contrato.fechaInicio) }}</span>
+                  <span class="contract-period-arrow" aria-hidden="true">→</span>
+                  <span>{{ formatDate(contrato.fechaFin) }}</span>
+                </p>
+                @if (contractDurationMonths(contrato); as months) {
+                  <p class="contract-meta-note">
+                    {{ months }} {{ months === 1 ? 'mes' : 'meses' }}
+                    @if (months === 12) {
+                      <span>(Anual)</span>
+                    }
+                  </p>
+                }
               </div>
 
-              <div>
-                <dt>Periodo</dt>
-                <dd class="mt-0.5">
-                  <span class="block text-xs text-muted">Inicio: {{ formatDate(contrato.fechaInicio) }}</span>
-                  <span class="block text-xs text-muted">Fin: {{ formatDate(contrato.fechaFin) }}</span>
-                </dd>
+              <div class="contract-meta-block">
+                <p class="contract-meta-label">Alquiler mensual</p>
+                <p class="contract-rent">
+                  {{ formatMoney(contrato.montoMensual, contrato.moneda) }}
+                </p>
+                <p class="contract-meta-note">Mensual</p>
               </div>
+            </div>
 
-              <div>
-                <dt>Alquiler</dt>
-                <dd class="mt-0.5">{{ formatMoney(contrato.montoMensual, contrato.moneda) }} / mes</dd>
-              </div>
-            </dl>
-
-            @if (hasCuotasInfo(contrato)) {
+            @if (contrato.cuotas; as cuotas) {
               <div class="mt-4 border-t border-theme-border pt-3">
-                <div class="flex items-center justify-between text-xs text-muted mb-1.5">
-                  <span class="font-semibold uppercase tracking-wider text-[0.7rem]">Cuotas</span>
-                  <span>{{ getCuotasText(contrato) }}</span>
+                <div class="mb-1.5 flex items-center justify-between text-xs text-muted">
+                  <span class="font-semibold tracking-wider uppercase">Cuotas</span>
+                  <span>{{ cuotas.cuotasPagadas }} de {{ cuotas.totalCuotas }} cuotas pagadas</span>
                 </div>
-                <div class="cuotas-progress-bg">
-                  <div
-                    class="cuotas-progress-fill"
-                    [style.width.%]="getCuotasPercent(contrato)"
-                  ></div>
+                <progress
+                  class="cuotas-progress"
+                  [max]="cuotas.totalCuotas"
+                  [value]="cuotas.cuotasPagadas"
+                  aria-label="Progreso de cuotas"
+                ></progress>
+                <div class="mt-2 flex items-center justify-between text-xs text-muted">
+                  <span>Pendientes</span>
+                  <span class="font-semibold text-content">{{ cuotas.cuotasPendientes }}</span>
+                </div>
+                <div class="mt-1 flex items-center justify-between gap-3 text-xs text-muted">
+                  <span>Saldo pendiente</span>
+                  <span class="font-semibold text-content">
+                    {{ formatMoney(cuotas.saldoPendiente, contrato.moneda) }}
+                  </span>
                 </div>
               </div>
             }
-
-            <div class="mt-4 flex items-center justify-between border-t border-theme-border pt-3">
-              <span class="text-xs font-bold uppercase tracking-wider text-muted">Saldo</span>
-              <span
-                class="saldo-badge"
-                [class.saldo-pendiente]="getSaldoStatus(contrato).isPending"
-                [class.saldo-al-dia]="!getSaldoStatus(contrato).isPending"
-              >
-                {{ getSaldoStatus(contrato).label }}
-              </span>
-            </div>
 
             <div
               class="contract-actions mt-4 flex flex-wrap justify-end gap-1 border-t border-theme-border pt-3"

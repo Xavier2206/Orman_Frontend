@@ -1,5 +1,31 @@
 export type ContratoEstado = 'PROGRAMADO' | 'VIGENTE' | 'FINALIZADO' | 'RESCINDIDO';
 
+export interface ContratoInquilino {
+  readonly codper: number;
+  readonly nombreCompleto: string;
+  readonly ci: string;
+}
+
+export interface ContratoUnidad {
+  readonly coduni: number;
+  readonly nombre: string;
+  readonly tipoUnidad: string;
+  readonly descripcion: string | null;
+  readonly piso: number | null;
+}
+
+export interface ContratoPropiedad {
+  readonly codprop: number;
+  readonly nombre: string;
+}
+
+export interface ContratoCuotasResumen {
+  readonly totalCuotas: number;
+  readonly cuotasPagadas: number;
+  readonly cuotasPendientes: number;
+  readonly saldoPendiente: number;
+}
+
 export interface Contrato {
   readonly codcon: number;
   readonly coduni: number;
@@ -13,16 +39,10 @@ export interface Contrato {
   readonly fechaRegistro: string;
   readonly fechaRescision: string | null;
   readonly motivoRescision: string | null;
-  readonly inquilinoNombre?: string | null;
-  readonly inquilinoCi?: string | null;
-  readonly inquilinoAp?: string | null;
-  readonly inquilinoAm?: string | null;
-  readonly propiedadNombre?: string | null;
-  readonly unidadNombre?: string | null;
-  readonly cuotasPagadas?: number | null;
-  readonly cuotasTotales?: number | null;
-  readonly totalCuotas?: number | null;
-  readonly saldoPendiente?: number | null;
+  readonly inquilino: ContratoInquilino | null;
+  readonly unidad: ContratoUnidad | null;
+  readonly propiedad: ContratoPropiedad | null;
+  readonly cuotas: ContratoCuotasResumen | null;
 }
 
 export interface ContratoListFilters {
@@ -33,11 +53,4 @@ export interface ContratoListFilters {
   readonly page: number;
   readonly size: number;
   readonly sort: string;
-}
-
-export interface ContratoResumen {
-  readonly vigentes: number;
-  readonly programados: number;
-  readonly finalizados: number;
-  readonly rescindidos: number;
 }

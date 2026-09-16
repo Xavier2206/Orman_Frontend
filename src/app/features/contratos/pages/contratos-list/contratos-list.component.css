@@ -51,6 +51,10 @@ input {
   padding: 0.5rem 0.75rem;
 }
 
+.contract-list-page .group input {
+  padding-left: 2.75rem;
+}
+
 input[type='search']::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
@@ -155,6 +159,16 @@ input:focus,
   opacity: 0.78;
 }
 
+.filter-select option {
+  background: var(--theme-card);
+  color: var(--theme-text);
+}
+
+.filter-select option:checked {
+  background: var(--theme-surface);
+  color: var(--theme-accent-text);
+}
+
 .filter-options {
   position: absolute;
   z-index: 30;
@@ -213,110 +227,6 @@ input:focus,
   color: var(--theme-danger-text);
 }
 
-.contract-summary-card {
-  display: flex;
-  min-height: 5.5rem;
-  align-items: center;
-  gap: 0.8rem;
-  border: 1px solid var(--theme-border);
-  border-radius: var(--radius-lg);
-  background: var(--theme-card);
-  padding: 0.85rem 1rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.contract-summary-card > div {
-  min-width: 0;
-}
-
-.contract-summary-icon {
-  display: grid;
-  width: 2.55rem;
-  height: 2.55rem;
-  flex: none;
-  place-items: center;
-  border-radius: 9999px;
-  background: var(--theme-surface);
-  color: var(--theme-accent-text);
-}
-
-.contract-summary-icon .mat-icon {
-  font-size: 1.35rem;
-}
-
-.contract-summary-card p {
-  margin: 0;
-  color: var(--theme-text-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.contract-summary-card strong {
-  display: block;
-  margin-top: 0.2rem;
-  color: var(--theme-text);
-  font-size: 1.65rem;
-  line-height: 1.1;
-}
-
-.contract-summary-vigentes .contract-summary-icon {
-  background: var(--theme-success-bg);
-  color: var(--theme-success-text);
-}
-
-.contract-summary-programados .contract-summary-icon {
-  background: var(--theme-info-bg);
-  color: var(--theme-info-text);
-}
-
-.contract-summary-rescindidos .contract-summary-icon {
-  background: var(--theme-warning-bg);
-  color: var(--theme-warning-text);
-}
-
-.contract-summary-skeleton {
-  pointer-events: none;
-}
-
-.contract-summary-skeleton > span {
-  width: 2.55rem;
-  height: 2.55rem;
-  border-radius: 9999px;
-  background: var(--theme-surface);
-}
-
-.contract-summary-skeleton div {
-  display: grid;
-  width: 60%;
-  gap: 0.5rem;
-}
-
-.contract-summary-skeleton i,
-.contract-summary-skeleton b {
-  display: block;
-  border-radius: 0.25rem;
-  background: var(--theme-surface);
-}
-
-.contract-summary-skeleton i {
-  width: 70%;
-  height: 0.65rem;
-}
-
-.contract-summary-skeleton b {
-  width: 45%;
-  height: 1.4rem;
-}
-
-.contract-summary-skeleton > span,
-.contract-summary-skeleton i,
-.contract-summary-skeleton b {
-  animation: contract-summary-pulse 1.4s ease-in-out infinite;
-}
-
-.contract-summary-error,
 .contract-error {
   border: 1px solid var(--theme-danger-border);
   border-radius: var(--radius-lg);
@@ -383,12 +293,59 @@ input:focus,
   color: var(--theme-warning-text);
 }
 
-.contract-details {
-  border-top: 1px solid var(--theme-border);
-  padding-top: 1rem;
+.contract-property-summary {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background: var(--theme-surface);
+  padding: 0.85rem;
+  box-shadow: var(--shadow-sm);
 }
 
-.contract-details dt {
+.contract-property-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--theme-card);
+  color: var(--theme-accent-text);
+}
+
+.contract-property-icon .mat-icon {
+  font-size: 1.35rem;
+}
+
+.contract-property-name {
+  overflow-wrap: anywhere;
+  color: var(--theme-text);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.contract-property-unit {
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  color: var(--theme-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.contract-meta-grid {
+  border-top: 1px solid var(--theme-border);
+  padding-top: 0.9rem;
+}
+
+.contract-meta-block {
+  min-width: 0;
+}
+
+.contract-meta-label {
   color: var(--theme-text-muted);
   font-size: 0.7rem;
   font-weight: 700;
@@ -396,50 +353,65 @@ input:focus,
   text-transform: uppercase;
 }
 
-.contract-details dd {
-  margin-top: 0.2rem;
+.contract-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
   overflow-wrap: anywhere;
   color: var(--theme-text);
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
-.cuotas-progress-bg {
-  height: 0.45rem;
+.contract-period-arrow {
+  color: var(--theme-accent-text);
+  font-size: 1rem;
+}
+
+.contract-rent {
+  margin-top: 0.35rem;
+  overflow-wrap: anywhere;
+  color: var(--theme-text);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.contract-meta-note {
+  margin-top: 0.25rem;
+  color: var(--theme-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.cuotas-progress {
+  display: block;
+  height: 0.7rem;
   width: 100%;
+  appearance: none;
+  border: 1px solid var(--theme-border);
   border-radius: 9999px;
-  background: var(--theme-surface);
+  background: var(--theme-field);
   overflow: hidden;
 }
 
-.cuotas-progress-fill {
-  height: 100%;
-  border-radius: 9999px;
+.cuotas-progress::-webkit-progress-bar {
+  border-radius: inherit;
+  background: var(--theme-field);
+}
+
+.cuotas-progress::-webkit-progress-value {
   background: var(--theme-accent);
-  transition: width 200ms ease;
+  border-radius: inherit;
+  transition: width 180ms ease;
 }
 
-.saldo-badge {
-  display: inline-flex;
-  min-height: 1.4rem;
-  align-items: center;
-  border-radius: 9999px;
-  padding: 0.15rem 0.55rem;
-  font-size: 0.725rem;
-  font-weight: 700;
-  border: 1px solid var(--theme-border);
-}
-
-.saldo-al-dia {
-  border-color: var(--theme-success-border);
-  background: var(--theme-success-bg);
-  color: var(--theme-success-text);
-}
-
-.saldo-pendiente {
-  border-color: var(--theme-warning-border);
-  background: var(--theme-warning-bg);
-  color: var(--theme-warning-text);
+.cuotas-progress::-moz-progress-bar {
+  background: var(--theme-accent);
+  border-radius: inherit;
+  transition: width 180ms ease;
 }
 
 .contract-actions {
@@ -519,6 +491,7 @@ input:focus,
   background: var(--theme-surface);
   color: var(--theme-text);
   font-size: 0.75rem;
+  box-shadow: var(--shadow-sm);
   opacity: 0;
   padding: 0.35rem 0.5rem;
   pointer-events: none;
@@ -547,12 +520,6 @@ input:focus,
   font-size: 2.5rem;
 }
 
-@keyframes contract-summary-pulse {
-  50% {
-    opacity: 0.5;
-  }
-}
-
 @keyframes contract-spin {
   to {
     transform: rotate(360deg);
@@ -573,10 +540,10 @@ input:focus,
     transform: none;
   }
 
-  .contract-summary-skeleton > span,
-  .contract-summary-skeleton i,
-  .contract-summary-skeleton b,
+  .cuotas-progress::-webkit-progress-value,
+  .cuotas-progress::-moz-progress-bar,
   .contract-spinner {
+    transition: none;
     animation: none;
   }
 }

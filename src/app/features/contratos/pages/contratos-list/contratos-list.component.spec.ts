@@ -74,13 +74,45 @@ describe('ContratosListComponent', () => {
       fechaRegistro: '2025-12-15T10:00:00',
       fechaRescision: null,
       motivoRescision: null,
-      inquilinoNombre: 'Juan Pérez',
-      inquilinoCi: '1234567',
-      cuotasPagadas: 8,
-      cuotasTotales: 12,
-      saldoPendiente: 0,
+      inquilino: {
+        codper: 31,
+        nombreCompleto: 'Juan Pérez',
+        ci: '1234567',
+      },
+      propiedad: {
+        codprop: 10,
+        nombre: 'Edificio Central',
+      },
+      unidad: {
+        coduni: 25,
+        nombre: 'Departamento 1A',
+        tipoUnidad: 'DEPARTAMENTO',
+        descripcion: null,
+        piso: 1,
+      },
+      cuotas: {
+        totalCuotas: 12,
+        cuotasPagadas: 8,
+        cuotasPendientes: 4,
+        saldoPendiente: 6000,
+      },
     },
   ];
+
+  const secondContract: Contrato = {
+    ...contracts[0],
+    codcon: 2,
+    coduni: 26,
+    propiedad: {
+      codprop: 20,
+      nombre: 'Casa Norte',
+    },
+    unidad: {
+      ...contracts[0].unidad!,
+      coduni: 26,
+      nombre: 'Departamento 2A',
+    },
+  };
 
   const page: PageResponse<Contrato> = {
     content: contracts,
@@ -139,10 +171,6 @@ describe('ContratosListComponent', () => {
       .flush(response);
 
     http
-      .match((request) => request.url === '/api/v1/contratos')
-      .forEach((request) => request.flush({ totalElements: 1 }));
-
-    http
       .expectOne((request) => request.url === '/api/v1/propiedades')
       .flush(propertyPage(properties));
 
@@ -181,24 +209,29 @@ describe('ContratosListComponent', () => {
     );
   }
 
-  it('listado carga contratos: renders summary, filters and contract cards', () => {
+  it('listado carga contratos: renders enriched card data and filters', () => {
     flushInitialData();
 
     expect(fixture.nativeElement.textContent).toContain('Contratos');
     expect(fixture.nativeElement.textContent).toContain('Juan Pérez');
     expect(fixture.nativeElement.textContent).toContain('CI 1234567');
+    expect(fixture.nativeElement.textContent).toContain('Edificio Central');
+    expect(fixture.nativeElement.textContent).toContain('Departamento 1A');
+    expect(fixture.nativeElement.textContent).toContain('Piso 1 · DEPARTAMENTO');
     expect(fixture.nativeElement.textContent).toContain('Vigente');
-    expect(fixture.nativeElement.textContent).toContain('8 de 12 pagadas');
-    expect(fixture.nativeElement.textContent).toContain('Al día');
+    expect(fixture.nativeElement.textContent).toContain('8 de 12 cuotas pagadas');
+    expect(fixture.nativeElement.textContent).toContain('Pendientes');
+    expect(fixture.nativeElement.textContent).toContain('4');
+    expect(fixture.nativeElement.textContent).toContain('Saldo pendiente');
+    expect(fixture.nativeElement.textContent).toContain('Bs 6.000,00');
+    expect(fixture.nativeElement.textContent).toContain('12 meses');
   });
 
   it('búsqueda q funciona: debounces and sends q to contracts api', () => {
     vi.useFakeTimers();
     flushInitialData();
 
-    const searchInput = fixture.nativeElement.querySelector(
-      '#contract-search',
-    ) as HTMLInputElement;
+    const searchInput = fixture.nativeElement.querySelector('#contract-search') as HTMLInputElement;
 
     searchInput.value = 'Juan';
     searchInput.dispatchEvent(new Event('input'));
@@ -285,7 +318,7 @@ describe('ContratosListComponent', () => {
       (request) => request.url === '/api/v1/contratos' && request.params.get('codprop') === '20',
     );
     expect(newPropertyRequest.request.params.has('coduni')).toBe(false);
-    newPropertyRequest.flush(page);
+    newPropertyRequest.flush({ ...page, content: [secondContract] });
 
     expectUnitRequest(20).flush(unitPage([secondUnit]));
     fixture.detectChanges();
@@ -299,9 +332,7 @@ describe('ContratosListComponent', () => {
     vi.useFakeTimers();
     flushInitialData();
 
-    const searchInput = fixture.nativeElement.querySelector(
-      '#contract-search',
-    ) as HTMLInputElement;
+    const searchInput = fixture.nativeElement.querySelector('#contract-search') as HTMLInputElement;
     searchInput.value = 'Juan';
     searchInput.dispatchEvent(new Event('input'));
     vi.advanceTimersByTime(350);

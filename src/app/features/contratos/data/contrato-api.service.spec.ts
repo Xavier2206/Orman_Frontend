@@ -68,26 +68,4 @@ describe('ContratoApiService', () => {
     expect(request.request.params.has('estado')).toBe(false);
     request.flush({});
   });
-
-  it('calculates the global summary from one size-one request per supported state', () => {
-    service.getResumen().subscribe((summary) => {
-      expect(summary).toEqual({
-        vigentes: 3,
-        programados: 2,
-        finalizados: 4,
-        rescindidos: 1,
-      });
-    });
-
-    const requests = http.match((request) => request.url === '/api/v1/contratos');
-
-    expect(requests).toHaveLength(4);
-    expect(requests.map((request) => request.request.params.get('estado'))).toEqual([
-      'VIGENTE',
-      'PROGRAMADO',
-      'FINALIZADO',
-      'RESCINDIDO',
-    ]);
-    requests.forEach((request, index) => request.flush({ totalElements: [3, 2, 4, 1][index] }));
-  });
 });
