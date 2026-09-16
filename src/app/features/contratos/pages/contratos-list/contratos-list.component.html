@@ -20,6 +20,13 @@
     </button>
   </div>
 
+  <app-contratos-resumen
+    class="mt-6 block"
+    [resumen]="resumen()"
+    [loading]="resumenLoading()"
+    [error]="resumenError()"
+  />
+
   <section
     class="mt-7 grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-theme-border bg-surface p-4 shadow-sm md:grid-cols-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(200px,1.2fr)_minmax(200px,1.2fr)_auto] lg:items-end"
     aria-label="Filtros de contratos"

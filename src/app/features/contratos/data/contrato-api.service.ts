@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { apiPath } from '../../../core/api/api.constants';
 import { PageResponse } from '../../personas/models/persona.model';
-import { Contrato, ContratoListFilters } from '../models/contrato.model';
+import { Contrato, ContratoListFilters, ContratoResumen } from '../models/contrato.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContratoApiService {
@@ -35,5 +35,9 @@ export class ContratoApiService {
     }
 
     return this.http.get<PageResponse<Contrato>>(this.contratosPath, { params });
+  }
+
+  resumen(): Observable<ContratoResumen> {
+    return this.http.get<ContratoResumen>(`${this.contratosPath}/resumen`);
   }
 }

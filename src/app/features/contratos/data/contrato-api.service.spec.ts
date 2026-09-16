@@ -68,4 +68,20 @@ describe('ContratoApiService', () => {
     expect(request.request.params.has('estado')).toBe(false);
     request.flush({});
   });
+
+  it('gets the server-provided contract summary', () => {
+    service.resumen().subscribe((resumen) =>
+      expect(resumen).toEqual({
+        vigentes: 4,
+        programados: 2,
+        finalizados: 7,
+        rescindidos: 1,
+      }),
+    );
+
+    const request = http.expectOne('/api/v1/contratos/resumen');
+
+    expect(request.request.method).toBe('GET');
+    request.flush({ vigentes: 4, programados: 2, finalizados: 7, rescindidos: 1 });
+  });
 });

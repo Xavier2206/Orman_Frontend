@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageResponse } from '../../../personas/models/persona.model';
 import { Propiedad } from '../../../propiedades/models/propiedad.model';
 import { UnidadResponse } from '../../../unidades/models/unidad.model';
-import { Contrato } from '../../models/contrato.model';
+import { Contrato, ContratoResumen } from '../../models/contrato.model';
 import { ContratosListComponent } from './contratos-list.component';
 
 describe('ContratosListComponent', () => {
@@ -124,6 +124,13 @@ describe('ContratosListComponent', () => {
     last: true,
   };
 
+  const resumen: ContratoResumen = {
+    vigentes: 4,
+    programados: 2,
+    finalizados: 7,
+    rescindidos: 1,
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ContratosListComponent],
@@ -170,6 +177,8 @@ describe('ContratosListComponent', () => {
       .expectOne((request) => request.url === '/api/v1/contratos' && !request.params.has('estado'))
       .flush(response);
 
+    http.expectOne('/api/v1/contratos/resumen').flush(resumen);
+
     http
       .expectOne((request) => request.url === '/api/v1/propiedades')
       .flush(propertyPage(properties));
@@ -213,6 +222,15 @@ describe('ContratosListComponent', () => {
     flushInitialData();
 
     expect(fixture.nativeElement.textContent).toContain('Contratos');
+    expect(fixture.nativeElement.textContent).toContain('VIGENTES');
+    expect(fixture.nativeElement.textContent).toContain('PROGRAMADOS');
+    expect(fixture.nativeElement.textContent).toContain('FINALIZADOS');
+    expect(fixture.nativeElement.textContent).toContain('RESCINDIDOS');
+    expect(fixture.nativeElement.textContent).toContain('Actualmente en curso');
+    expect(fixture.nativeElement.textContent).toContain('Inicios confirmados');
+    expect(fixture.nativeElement.textContent).toContain('Cumplidos sin deuda');
+    expect(fixture.nativeElement.textContent).toContain('Conclusión anticipada');
+    expect(fixture.nativeElement.querySelectorAll('.contract-summary-card')).toHaveLength(4);
     expect(fixture.nativeElement.textContent).toContain('Juan Pérez');
     expect(fixture.nativeElement.textContent).toContain('CI 1234567');
     expect(fixture.nativeElement.textContent).toContain('Edificio Central');
@@ -429,7 +447,10 @@ describe('ContratosListComponent', () => {
   it('responsive básico: grid uses 1 column on mobile and 2 columns on desktop', () => {
     flushInitialData();
 
+    const summaryGrid = fixture.nativeElement.querySelector('.contract-summary-grid');
     const grid = fixture.nativeElement.querySelector('.contract-grid');
+
+    expect(summaryGrid.classList.contains('contract-summary-grid')).toBe(true);
     expect(grid).not.toBeNull();
     expect(grid.classList.contains('grid-cols-1')).toBe(true);
     expect(grid.classList.contains('md:grid-cols-2')).toBe(true);

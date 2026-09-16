@@ -10,6 +10,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   expand,
+  finalize,
   map,
   of,
   reduce,
@@ -22,8 +23,14 @@ import { Propiedad } from '../../../propiedades/models/propiedad.model';
 import { PageResponse } from '../../../personas/models/persona.model';
 import { UnidadApiService } from '../../../unidades/data/unidad-api.service';
 import { UnidadResponse } from '../../../unidades/models/unidad.model';
+import { ContratosResumenComponent } from '../../components/contratos-resumen/contratos-resumen.component';
 import { ContratoApiService } from '../../data/contrato-api.service';
-import { Contrato, ContratoEstado, ContratoListFilters } from '../../models/contrato.model';
+import {
+  Contrato,
+  ContratoEstado,
+  ContratoListFilters,
+  ContratoResumen,
+} from '../../models/contrato.model';
 
 interface FilterOption {
   readonly value: string;
@@ -53,7 +60,7 @@ type ListResult =
 
 @Component({
   selector: 'app-contratos-list',
-  imports: [MatIconModule],
+  imports: [MatIconModule, ContratosResumenComponent],
   templateUrl: './contratos-list.component.html',
   styleUrl: './contratos-list.component.css',
 })
@@ -75,6 +82,14 @@ export class ContratosListComponent {
   protected readonly page = signal<PageResponse<Contrato> | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly resumen = signal<ContratoResumen>({
+    vigentes: 0,
+    programados: 0,
+    finalizados: 0,
+    rescindidos: 0,
+  });
+  protected readonly resumenLoading = signal(true);
+  protected readonly resumenError = signal<string | null>(null);
   protected readonly properties = signal<readonly Propiedad[]>([]);
   protected readonly propertyLoading = signal(true);
   protected readonly propertyError = signal<string | null>(null);
@@ -153,6 +168,7 @@ export class ContratosListComponent {
       .subscribe((result) => this.handleUnitResult(result));
 
     this.load();
+    this.loadResumen();
     this.loadProperties();
   }
 
@@ -411,6 +427,26 @@ export class ContratosListComponent {
     this.propertyLoading.set(true);
     this.propertyError.set(null);
     this.propertyRequests$.next();
+  }
+
+  private loadResumen(): void {
+    this.resumenLoading.set(true);
+    this.resumenError.set(null);
+
+    this.api
+      .resumen()
+      .pipe(
+        finalize(() => this.resumenLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (resumen) => this.resumen.set(resumen),
+        error: (requestError: unknown) => {
+          this.resumenError.set(
+            this.errorMessage(requestError, 'No fue posible cargar el resumen de contratos.'),
+          );
+        },
+      });
   }
 
   private loadAllProperties(): Observable<readonly Propiedad[]> {

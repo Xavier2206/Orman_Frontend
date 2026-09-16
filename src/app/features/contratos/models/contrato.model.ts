@@ -1,5 +1,12 @@
 export type ContratoEstado = 'PROGRAMADO' | 'VIGENTE' | 'FINALIZADO' | 'RESCINDIDO';
 
+export interface ContratoResumen {
+  readonly vigentes: number;
+  readonly programados: number;
+  readonly finalizados: number;
+  readonly rescindidos: number;
+}
+
 export interface ContratoInquilino {
   readonly codper: number;
   readonly nombreCompleto: string;

@@ -1,0 +1,73 @@
+<section aria-labelledby="contratos-resumen-title">
+  <h2 id="contratos-resumen-title" class="sr-only">Resumen de contratos</h2>
+
+  @if (loading()) {
+    <div
+      class="contract-summary-grid"
+      role="status"
+      aria-label="Cargando resumen de contratos"
+      aria-busy="true"
+    >
+      @for (card of [0, 1, 2, 3]; track card) {
+        <article class="contract-summary-card contract-summary-skeleton" aria-hidden="true">
+          <span class="contract-summary-skeleton-icon"></span>
+          <div class="contract-summary-skeleton-content">
+            <span class="contract-summary-skeleton-line contract-summary-skeleton-label"></span>
+            <span class="contract-summary-skeleton-line contract-summary-skeleton-value"></span>
+            <span class="contract-summary-skeleton-line"></span>
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    @if (error(); as message) {
+      <p class="contract-summary-error" role="alert">{{ message }}</p>
+    }
+
+    <div class="contract-summary-grid">
+      <article class="contract-summary-card contract-summary-vigentes">
+        <span class="contract-summary-icon" aria-hidden="true">
+          <mat-icon>check_circle</mat-icon>
+        </span>
+        <div class="contract-summary-content">
+          <p class="contract-summary-label">VIGENTES</p>
+          <strong class="contract-summary-value">{{ displayedResumen().vigentes }}</strong>
+          <p class="contract-summary-note">Actualmente en curso</p>
+        </div>
+      </article>
+
+      <article class="contract-summary-card contract-summary-programados">
+        <span class="contract-summary-icon" aria-hidden="true">
+          <mat-icon>event</mat-icon>
+        </span>
+        <div class="contract-summary-content">
+          <p class="contract-summary-label">PROGRAMADOS</p>
+          <strong class="contract-summary-value">{{ displayedResumen().programados }}</strong>
+          <p class="contract-summary-note">Inicios confirmados</p>
+        </div>
+      </article>
+
+      <article class="contract-summary-card contract-summary-finalizados">
+        <span class="contract-summary-icon" aria-hidden="true">
+          <mat-icon>check_circle</mat-icon>
+        </span>
+        <div class="contract-summary-content">
+          <p class="contract-summary-label">FINALIZADOS</p>
+          <strong class="contract-summary-value">{{ displayedResumen().finalizados }}</strong>
+          <p class="contract-summary-note">Cumplidos sin deuda</p>
+        </div>
+      </article>
+
+      <article class="contract-summary-card contract-summary-rescindidos">
+        <span class="contract-summary-icon" aria-hidden="true">
+          <mat-icon>event_busy</mat-icon>
+        </span>
+        <div class="contract-summary-content">
+          <p class="contract-summary-label">RESCINDIDOS</p>
+          <strong class="contract-summary-value">{{ displayedResumen().rescindidos }}</strong>
+          <p class="contract-summary-note">Conclusión anticipada</p>
+        </div>
+      </article>
+    </div>
+  }
+</section>
