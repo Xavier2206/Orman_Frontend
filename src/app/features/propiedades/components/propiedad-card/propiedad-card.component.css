@@ -3,6 +3,27 @@
   min-width: 0;
 }
 
+.property-card {
+  border-radius: var(--radius-lg);
+  border-color: var(--theme-border);
+  background: var(--theme-card);
+  box-shadow: var(--shadow-sm);
+  transition:
+    background-color 170ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease,
+    transform 170ms ease;
+}
+
+@media (hover: hover) {
+  .property-card:hover {
+    border-color: var(--theme-modal-border);
+    background: var(--theme-card-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+}
+
 .property-card-cover {
   aspect-ratio: 16 / 9;
 }
@@ -90,7 +111,7 @@
   height: 4.25rem;
   place-items: center;
   border: 1px solid var(--theme-border);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--theme-card) 82%, var(--theme-accent) 18%);
   color: var(--theme-accent-text);
   box-shadow: var(--shadow-sm);
@@ -254,6 +275,7 @@
   padding: 0.35rem 0.5rem;
   color: var(--theme-text);
   font-size: 0.75rem;
+  box-shadow: var(--shadow-sm);
   opacity: 0;
   pointer-events: none;
   transition: opacity 130ms ease;
@@ -308,6 +330,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .property-card,
   .property-action-button,
   .property-action-tooltip,
   .property-occupancy-progress-value {

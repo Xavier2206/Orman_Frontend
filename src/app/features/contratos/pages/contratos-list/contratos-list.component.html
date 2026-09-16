@@ -1,0 +1,429 @@
+<section
+  class="contract-list-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="contracts-title"
+>
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 id="contracts-title" class="text-3xl font-bold text-content">Contratos</h1>
+      <p class="mt-2 max-w-2xl text-sm text-muted">
+        Administra los contratos de alquiler de tus propiedades.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-accent px-4 font-semibold text-accent-contrast shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-accent-hover hover:shadow-md active:scale-[.98] motion-reduce:transform-none motion-reduce:transition-none"
+      disabled
+      title="Alta de contrato pendiente"
+    >
+      <mat-icon aria-hidden="true">add</mat-icon>
+      Nuevo contrato
+    </button>
+  </div>
+
+  <section class="mt-6" aria-label="Resumen de contratos">
+    @if (summaryLoading()) {
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        @for (item of summaryCards; track item.key) {
+          <div class="contract-summary-card contract-summary-skeleton">
+            <span></span>
+            <div><i></i><b></b></div>
+          </div>
+        }
+      </div>
+    } @else if (summary(); as data) {
+      <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        @for (card of summaryCards; track card.key) {
+          <article [class]="'contract-summary-card min-w-0 contract-summary-' + card.key">
+            <span class="contract-summary-icon">
+              <mat-icon aria-hidden="true">{{ card.icon }}</mat-icon>
+            </span>
+            <div>
+              <p>{{ card.label }}</p>
+              <strong>{{ data[card.key] }}</strong>
+            </div>
+          </article>
+        }
+      </div>
+    } @else if (summaryError(); as summaryMessage) {
+      <p class="contract-summary-error" role="status">
+        {{ summaryMessage }}
+        <button type="button" class="inline-link ml-1" (click)="retrySummary()">Reintentar</button>
+      </p>
+    }
+  </section>
+
+  <section
+    class="mt-7 grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-theme-border bg-surface p-4 shadow-sm md:grid-cols-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(180px,1fr)_minmax(200px,1.2fr)_minmax(200px,1.2fr)_auto] lg:items-end"
+    aria-label="Filtros de contratos"
+  >
+    <div class="min-w-0">
+      <label for="contract-search">Buscar inquilino</label>
+      <div class="group relative mt-[.35rem]">
+        <mat-icon
+          class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted transition-colors duration-150 group-focus-within:text-accent-text motion-reduce:transition-none"
+          aria-hidden="true"
+          >search</mat-icon
+        >
+        <input
+          id="contract-search"
+          class="mt-0 pl-11"
+          type="search"
+          placeholder="Buscar inquilino..."
+          [value]="filters().q"
+          (input)="search($event)"
+        />
+      </div>
+    </div>
+
+    <div class="relative min-w-0">
+      <label id="contract-status-label" for="contract-status-trigger">Estado</label>
+      <button
+        id="contract-status-trigger"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        role="combobox"
+        aria-labelledby="contract-status-label"
+        aria-controls="contract-status-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'status'"
+        (click)="toggleFilter()"
+        (keydown)="handleFilterTriggerKeydown($event)"
+      >
+        <span>{{ selectedFilterLabel() }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'status' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'status') {
+        <div
+          id="contract-status-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="contract-status-label"
+        >
+          @for (option of stateOptions; track option.value; let index = $index) {
+            <button
+              type="button"
+              class="filter-option"
+              [class.filter-option-selected]="option.value === selectedFilterValue()"
+              [attr.aria-selected]="option.value === selectedFilterValue()"
+              [attr.data-filter]="'status'"
+              [attr.data-index]="index"
+              role="option"
+              (click)="selectFilter(option.value)"
+              (keydown)="handleFilterOptionKeydown($event, index)"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="relative min-w-0">
+      <label for="contract-property-select">Propiedad</label>
+      <select
+        id="contract-property-select"
+        class="filter-select mt-[.35rem]"
+        [disabled]="propertyLoading() || propertyError() !== null || properties().length === 0"
+        [value]="filters().codprop ?? ''"
+        (change)="setProperty($event)"
+      >
+        <option value="">
+          {{ propertyLoading() ? 'Cargando propiedades...' : 'Seleccione una propiedad' }}
+        </option>
+        @for (property of properties(); track property.codprop) {
+          <option [value]="property.codprop">
+            {{ property.nombre }} (#{{ property.codprop }})
+          </option>
+        }
+      </select>
+      @if (propertyError(); as message) {
+        <div class="filter-inline-error mt-2" role="alert">
+          <span>{{ message }}</span>
+          <button type="button" class="inline-link" (click)="retryProperties()">Reintentar</button>
+        </div>
+      }
+    </div>
+
+    <div class="relative min-w-0">
+      <label for="contract-unit-select">Unidad</label>
+      <select
+        id="contract-unit-select"
+        class="filter-select mt-[.35rem]"
+        [disabled]="
+          filters().codprop === null ||
+          unitLoading() ||
+          unitError() !== null ||
+          units().length === 0
+        "
+        [value]="filters().coduni ?? ''"
+        (change)="setUnit($event)"
+      >
+        <option value="">
+          {{
+            unitLoading()
+              ? 'Cargando unidades...'
+              : filters().codprop === null
+                ? 'Seleccione una propiedad primero'
+                : 'Seleccione una unidad'
+          }}
+        </option>
+        @for (unit of units(); track unit.coduni) {
+          <option [value]="unit.coduni">{{ unit.nombre }} (#{{ unit.coduni }})</option>
+        }
+      </select>
+      @if (unitError(); as message) {
+        <div class="filter-inline-error mt-2" role="alert">
+          <span>{{ message }}</span>
+          <button type="button" class="inline-link" (click)="retryUnits()">Reintentar</button>
+        </div>
+      } @else if (filters().codprop !== null && !unitLoading() && units().length === 0) {
+        <p class="filter-inline-message mt-2" role="status">
+          No existen unidades disponibles para esta propiedad.
+        </p>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="page-button w-full px-[.8rem] py-[.35rem] md:col-span-2 lg:col-span-1 lg:w-auto"
+      [disabled]="!hasFilters()"
+      (click)="clearFilters()"
+    >
+      <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+      Limpiar filtros
+    </button>
+  </section>
+
+  @if (loading()) {
+    <div
+      class="mt-6 grid min-h-72 place-items-center"
+      role="status"
+      aria-label="Cargando contratos"
+      aria-busy="true"
+    >
+      <span class="contract-spinner" aria-hidden="true"></span>
+    </div>
+  } @else if (error(); as message) {
+    <div
+      class="mt-6 flex items-center justify-between rounded-lg border border-danger-border bg-danger-bg p-4 text-danger-text"
+      role="alert"
+    >
+      <span>{{ message }}</span>
+      <button type="button" class="inline-link font-medium underline ml-2" (click)="retry()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (page(); as result) {
+    @if (result.totalElements === 0) {
+      <div
+        class="mt-6 rounded-xl border border-theme-border bg-surface p-10 text-center"
+        role="status"
+      >
+        <mat-icon class="empty-state-icon text-3xl text-accent-text" aria-hidden="true"
+          >description</mat-icon
+        >
+        <h2 class="mt-3 text-lg font-bold text-content">
+          {{
+            hasFilters()
+              ? 'No encontramos contratos con estos filtros'
+              : 'No hay contratos registrados'
+          }}
+        </h2>
+        <p class="mx-auto mt-2 max-w-lg text-sm text-muted">
+          {{
+            hasFilters()
+              ? 'Prueba modificando los filtros o limpiando la búsqueda.'
+              : 'Los contratos que registres aparecerán aquí.'
+          }}
+        </p>
+        @if (hasFilters()) {
+          <button
+            type="button"
+            class="page-button mt-5 px-[.8rem] py-[.35rem]"
+            (click)="clearFilters()"
+          >
+            <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+            Limpiar filtros
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="contract-grid mt-6 grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2">
+        @for (contrato of result.content; track contrato.codcon) {
+          <article
+            class="contract-card relative min-w-0 rounded-xl border border-theme-border bg-card p-5 shadow-sm"
+          >
+            <div class="flex gap-4">
+              <div
+                class="contract-avatar grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border border-theme-border bg-surface text-lg font-bold text-accent-text"
+              >
+                {{ tenantInitials(contrato) }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <h2 class="truncate text-[1.05rem] leading-[1.3] font-bold text-content">
+                      {{ tenantName(contrato) }}
+                    </h2>
+                    @if (tenantCi(contrato); as ci) {
+                      <p class="mt-[.35rem] flex items-center gap-[.35rem] text-sm text-muted">
+                        <mat-icon class="text-base" aria-hidden="true">badge</mat-icon>
+                        CI {{ ci }}
+                      </p>
+                    } @else {
+                      <p class="mt-[.35rem] flex items-center gap-[.35rem] text-sm text-muted">
+                        <mat-icon class="text-base" aria-hidden="true">person</mat-icon>
+                        Inquilino #{{ contrato.codperInquilino }}
+                      </p>
+                    }
+                  </div>
+                  <span class="contract-status" [class]="stateClass(contrato.estado)">
+                    {{ stateLabel(contrato.estado) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <dl class="contract-details mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <dt>Propiedad / Unidad</dt>
+                <dd class="mt-0.5 font-medium text-content">
+                  <p class="font-semibold text-content">{{ getPropiedadNombre(contrato) }}</p>
+                  <p class="text-sm text-muted">{{ getUnidadNombre(contrato) }}</p>
+                </dd>
+              </div>
+
+              <div>
+                <dt>Periodo</dt>
+                <dd class="mt-0.5">
+                  <span class="block text-xs text-muted">Inicio: {{ formatDate(contrato.fechaInicio) }}</span>
+                  <span class="block text-xs text-muted">Fin: {{ formatDate(contrato.fechaFin) }}</span>
+                </dd>
+              </div>
+
+              <div>
+                <dt>Alquiler</dt>
+                <dd class="mt-0.5">{{ formatMoney(contrato.montoMensual, contrato.moneda) }} / mes</dd>
+              </div>
+            </dl>
+
+            @if (hasCuotasInfo(contrato)) {
+              <div class="mt-4 border-t border-theme-border pt-3">
+                <div class="flex items-center justify-between text-xs text-muted mb-1.5">
+                  <span class="font-semibold uppercase tracking-wider text-[0.7rem]">Cuotas</span>
+                  <span>{{ getCuotasText(contrato) }}</span>
+                </div>
+                <div class="cuotas-progress-bg">
+                  <div
+                    class="cuotas-progress-fill"
+                    [style.width.%]="getCuotasPercent(contrato)"
+                  ></div>
+                </div>
+              </div>
+            }
+
+            <div class="mt-4 flex items-center justify-between border-t border-theme-border pt-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-muted">Saldo</span>
+              <span
+                class="saldo-badge"
+                [class.saldo-pendiente]="getSaldoStatus(contrato).isPending"
+                [class.saldo-al-dia]="!getSaldoStatus(contrato).isPending"
+              >
+                {{ getSaldoStatus(contrato).label }}
+              </span>
+            </div>
+
+            <div
+              class="contract-actions mt-4 flex flex-wrap justify-end gap-1 border-t border-theme-border pt-3"
+            >
+              <button
+                type="button"
+                class="action tooltip-trigger action-view"
+                [attr.aria-label]="'Ver contrato #' + contrato.codcon"
+                title="Ver contrato"
+              >
+                <mat-icon aria-hidden="true">visibility</mat-icon>
+                <span class="action-tooltip" role="tooltip">Ver contrato</span>
+              </button>
+
+              @if (contrato.estado === 'VIGENTE') {
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-payment"
+                  [attr.aria-label]="'Registrar pago del contrato #' + contrato.codcon"
+                  title="Registrar pago"
+                >
+                  <mat-icon aria-hidden="true">payments</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Registrar pago</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-finish"
+                  [attr.aria-label]="'Finalizar contrato #' + contrato.codcon"
+                  title="Finalizar"
+                >
+                  <mat-icon aria-hidden="true">check_circle</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Finalizar</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="action tooltip-trigger action-rescind"
+                  [attr.aria-label]="'Rescindir contrato #' + contrato.codcon"
+                  title="Rescindir"
+                >
+                  <mat-icon aria-hidden="true">event_busy</mat-icon>
+                  <span class="action-tooltip" role="tooltip">Rescindir</span>
+                </button>
+              }
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (result.totalPages > 0) {
+        <nav
+          aria-label="Paginación de contratos"
+          class="pagination-bar mt-7 flex min-w-0 flex-col gap-3 rounded-xl border border-theme-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div
+            class="pagination-summary flex w-full min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:w-auto sm:justify-normal"
+          >
+            <p class="text-sm text-muted">{{ result.totalElements }} contratos</p>
+            <p
+              class="inline-flex min-h-9 items-center rounded-md border border-theme-border bg-surface px-2.5 py-1 text-sm font-bold text-content"
+              aria-live="polite"
+            >
+              Página {{ result.page + 1 }} de {{ result.totalPages }}
+            </p>
+          </div>
+          <div class="pagination-actions flex w-full gap-2 sm:w-auto">
+            <button
+              type="button"
+              class="page-button flex-1 sm:flex-none"
+              [disabled]="result.first"
+              aria-label="Página anterior"
+              (click)="changePage(result.page - 1)"
+            >
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              <span>Anterior</span>
+            </button>
+            <button
+              type="button"
+              class="page-button flex-1 sm:flex-none"
+              [disabled]="result.last"
+              aria-label="Página siguiente"
+              (click)="changePage(result.page + 1)"
+            >
+              <span>Siguiente</span>
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </div>
+        </nav>
+      }
+    }
+  }
+</section>

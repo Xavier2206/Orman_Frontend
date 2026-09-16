@@ -64,7 +64,8 @@
   font-weight: 700;
   transition:
     background-color 140ms ease,
-    box-shadow 140ms ease;
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 .add-property-button:hover {
@@ -75,6 +76,10 @@
 .add-property-button:focus-visible {
   outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
+}
+
+.add-property-button:active {
+  transform: scale(0.98);
 }
 
 label,
@@ -115,7 +120,8 @@ input:hover,
 input:focus,
 .filter-trigger:focus-visible {
   border-color: var(--theme-focus);
-  outline: none;
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 1px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -155,6 +161,9 @@ input:focus,
   padding: 0.5rem;
   color: var(--theme-text);
   font-size: 0.875rem;
+  transition:
+    background-color 130ms ease,
+    color 130ms ease;
 }
 
 .filter-option:hover,
@@ -222,6 +231,21 @@ input:focus,
   opacity: 0.72;
 }
 
+.empty-state,
+.pagination-bar {
+  border-radius: var(--radius-lg);
+  border-color: var(--theme-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-state {
+  background: var(--theme-surface);
+}
+
+.pagination-bar {
+  background: var(--theme-surface);
+}
+
 .empty-state-icon {
   font-size: 2.5rem;
 }
@@ -249,12 +273,14 @@ input:focus,
 @media (prefers-reduced-motion: reduce) {
   input,
   .filter-trigger,
-  .page-button {
+  .filter-option,
+  .page-button,
+  .add-property-button {
     transition: none;
   }
 
-  .add-property-button {
-    transition: none;
+  .add-property-button:active {
+    transform: none;
   }
 
   .property-skeleton-cover,

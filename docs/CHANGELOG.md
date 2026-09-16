@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-09-15 - Fase 16: filtros dependientes de Contratos
+
+### Cambiado
+
+- Se añadió el filtro de Propiedad usando el catálogo paginado real de
+  `GET /api/v1/propiedades`.
+- Unidad inicia deshabilitada y se carga únicamente al seleccionar Propiedad
+  mediante `GET /api/v1/propiedades/{codprop}/unidades`.
+- Al cambiar Propiedad se limpia Unidad y se descartan resultados de unidades
+  anteriores; los filtros combinados envían `codprop`, `coduni` y `estado` a
+  `GET /api/v1/contratos`.
+- Se añadieron estados de carga, vacío, error y reintento para ambos
+  catálogos, manteniendo los filtros accesibles y el diseño existente.
+
+### Verificado
+
+- TypeScript correcto.
+- Pruebas focalizadas de Contratos: 2 archivos, 10 aprobadas.
+- No se modificó Backend, detalle, pagos, cuotas, recibos ni notificaciones.
+
+## 2026-09-15 - Fase 16: Listado de Contratos
+
+### Añadido
+
+- Se añadió la ruta privada `/app/contratos/listar` y el listado paginado de
+  contratos sobre `GET /api/v1/contratos`.
+- Se añadieron el modelo tipado del response Backend, el servicio API, cards
+  administrativas inline y responsive, y cuatro tarjetas de resumen por estado.
+- Se incorporaron filtros compatibles únicamente con el contrato real:
+  estado y código de unidad, con debounce y cancelación mediante `switchMap`.
+- Las acciones se muestran solo como iconos accesibles: ver siempre, y pago,
+  finalizar y rescindir únicamente para contratos `VIGENTE`.
+- Se añadieron skeleton, vacío, error/reintento, paginación y pruebas
+  focalizadas del servicio y page.
+
+### Limitaciones documentadas
+
+- El Backend no acepta búsqueda libre y `ContratoResponse` no incluye nombres,
+  CI, propiedad descriptiva ni cuotas/saldos; la UI no inventa esos datos ni
+  realiza solicitudes N+1.
+- No se implementaron alta, detalle, pagos, archivos, recibos ni acciones
+  funcionales de finalización/rescisión.
+
+### Verificado
+
+- TypeScript correcto.
+- Build de producción correcto, con warnings históricos de presupuesto CSS y
+  CommonJS.
+- Pruebas focalizadas: 2 archivos y 7 aprobadas.
+- Suite completa: 67 archivos, 490 aprobadas y 3 fallos preexistentes en
+  `OrmanNotificationService`.
+- No se modificó `package-lock.json`, Backend ni `src/app/features/pagos/`.
+
 ## 2026-09-14 - Fase 15: Compactación y acciones de Unidades
 
 ### Cambiado

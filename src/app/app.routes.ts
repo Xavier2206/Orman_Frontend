@@ -101,6 +101,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'contratos/listar',
+        loadComponent: () =>
+          import('./features/contratos/pages/contratos-list/contratos-list.component').then(
+            (component) => component.ContratosListComponent,
+          ),
+      },
+      {
         path: 'roles/listar',
         loadComponent: () =>
           import('./features/roles/pages/roles-list/roles-list.component').then(
