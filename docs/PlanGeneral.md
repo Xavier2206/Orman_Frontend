@@ -4,18 +4,18 @@ Documento maestro de planificación del frontend Angular. Indica qué Etapa est�
 
 ## Objetivo general
 
-ORMAN Frontend busca construir incrementalmente una aplicación Angular mantenible para una plataforma familiar de gestión de propiedades. El desarrollo comenzó con la fundación técnica, la identidad visual y la experiencia pública; continuará con la integración segura con el backend y, posteriormente, con áreas privadas y módulos funcionales cuando sean definidos y autorizados.
+ORMAN Frontend construye incrementalmente una aplicación Angular mantenible para una plataforma de gestión de propiedades. El proyecto incluye la experiencia pública, la integración con Spring Boot, el área privada y módulos funcionales incorporados mediante fases autorizadas.
 
-Las funcionalidades se consideran disponibles únicamente cuando están demostradas por el código y la documentación de su fase. La integración real con Spring Boot, la autenticación funcional y las áreas privadas todavía no forman parte de lo implementado en este repositorio.
+Las funcionalidades se consideran disponibles únicamente cuando están demostradas por el código y la documentación de su fase; las fases futuras requieren definición y autorización explícita.
 
 ## Estado actual
 
 - **Etapa anterior:** Etapa 1 — Fundación visual y arquitectura pública. El histórico está documentado y la experiencia pública visual está implementada.
 - **Etapa actual:** Etapa 2 — Integración funcional con Backend.
-- **Última fase histórica documentada:** Fase 16 de Etapa 2 — Listado de Contratos.
-- **Última fase completada:** Fase 16 de Etapa 2 — Listado de Contratos.
+- **Última fase histórica documentada:** Fase 22 de Etapa 2 — Rediseño de cabecera y tarjetas del Detalle de Contrato.
+- **Última fase completada:** Fase 22 de Etapa 2 — Rediseño de cabecera y tarjetas del Detalle de Contrato.
 - **Estado de la Fase 05:** `COMPLETADA`.
-- **Pruebas:** última ejecución completa: 57 archivos, 415 pruebas aprobadas de 419; 4 fallos fuera del alcance en `PropiedadDetailPdfService`.
+- **Pruebas:** última ejecución completa: 75 archivos; 524 aprobadas.
 - **Pruebas actuales de Propiedades:** 7 archivos focalizados; 70 pruebas aprobadas.
 - **Corrección responsive posterior:** Desktop conserva Sidebar expandido/compacto. En tablet y móvil, la navegación es un drawer off-canvas: cerrado no reserva rail ni ancho y abierto se sitúa tras la altura real del Topbar con backdrop, cierre interno y Escape. Los estados sin roles o sin menús aprovechan el Main sin una columna vacía; AuthContext, roles, menús, procesos y seguridad permanecen sin cambios funcionales.
 - **Corrección responsive de Propiedades:** el resumen global usa 2×2 en móvil y tablet, 4×1 en escritorio y una variante compacta bajo `md`; las tarjetas del listado usan portada compacta en desktop y tres columnas desde `2xl` (`1536px`); API, modelos, cálculos, filtros, listado funcional y paginación permanecen sin cambios.
@@ -25,7 +25,7 @@ Las funcionalidades se consideran disponibles únicamente cuando están demostra
 - **Propiedades:** la Fase 13 canónica consolida el listado, resumen, cards, Crear/Editar, portada, selector `CASA`/`EDIFICIO`, ubicación Leaflet/OpenStreetMap, datos financieros, layout responsive, correcciones de assets e iconos y limpieza de acciones. El documento único registra los contratos reales, validaciones, exclusiones y estado final; los ajustes pequeños del módulo no generan fases independientes.
 - **Unidades:** la Fase 14 implementa exclusivamente el listado paginado por propiedad en `/app/unidades/listar`, reutilizando el servicio real de Propiedades para poblar el selector y el contrato confirmado `GET /api/v1/propiedades/{codprop}/unidades`. Creación, edición, detalle, fotografías, disponibilidad, ocupación, acciones y contratos adicionales permanecen pendientes.
 - **Mejora visual de Unidades:** la Fase 15 compacta las cards, retira únicamente la descripción de su render, conserva el modelo completo y añade acciones preparadas mediante outputs sin crear rutas inexistentes. Editar y Ver detalle quedan pendientes de sus respectivas implementaciones funcionales.
-- **Contratos:** la Fase 16 implementa exclusivamente `/app/contratos/listar` con `GET /api/v1/contratos`, filtros `codprop`/`coduni`/`estado`, relación dependiente Propiedad → Unidad, resumen eficiente por estado, cards responsive y acciones mediante iconos. El Backend no entrega búsqueda libre, nombres/CI, propiedad descriptiva ni cuotas en el response; esas capacidades quedan pendientes de contrato.
+- **Contratos:** la Fase 16 mantiene `/app/contratos/listar`, con filtros por propiedad/unidad/estado, resumen remoto y tarjetas. La Fase 17 incorpora `/app/contratos/nuevo`, catálogo dependiente de Propiedad → Unidad, selección de inquilinos activos y creación mediante `POST /api/v1/unidades/{coduni}/contratos`; la vista previa de cuotas es informativa y no genera registros desde el frontend. La Fase 18 agrega el detalle y documentos PDF con servicios tipados; la subida ocurre únicamente después de recibir `codcon`, el listado no carga archivos automáticamente y el Backend conserva la optimización del documento. La Fase 19 completa el expediente contractual con resumen financiero, cuotas y pagos bajo demanda, sin cambiar los endpoints ni registrar pagos desde Angular. La Fase 20 reorganiza únicamente la presentación visual del expediente y mantiene la funcionalidad de la Fase 19. La Fase 21 mueve el gestor de documentos a la pestaña de ancho completo sin modificar su integración. La Fase 22 mejora exclusivamente la cabecera y las cuatro tarjetas informativas del detalle.
 - **Observación:** la Fase 06.1 conserva en su documento el estado “Pendiente de aprobación visual”; por eso aparece como `EN ANÁLISIS` en la tabla, aunque el README histórico agrupa las mejoras 06.1–06.2 como completadas. Esta diferencia queda visible y no se resuelve inventando una aprobación.
 
 ## Estados permitidos
@@ -101,6 +101,12 @@ La Etapa 2 inicia la integración funcional del frontend Angular con el backend 
 | 14 — Listado de Unidades                                         | `COMPLETADA`    | Contratos confirmados de propiedades paginadas y unidades paginadas por propiedad                      | [Documento](etapas/etapa-2/fases/14-listado-unidades.md)                          |
 | 15 — Compactación y acciones de Unidades                         | `COMPLETADA`    | Fase 14; auditoría de rutas de edición y detalle aún inexistentes                                      | [Documento](etapas/etapa-2/fases/15-compactacion-acciones-unidades.md)            |
 | 16 — Listado de Contratos                                        | `COMPLETADA`    | Fase 15; contrato Backend confirmado para `GET /api/v1/contratos`                                      | [Documento](etapas/etapa-2/fases/16-listado-contratos.md)                         |
+| 17 — Crear Contrato                                               | `COMPLETADA`    | Fase 16; contratos confirmados de Unidades, Personas y creación de Contratos                           | [Documento](etapas/etapa-2/fases/17-crear-contrato.md)                            |
+| 18 — Documentos PDF de Contratos                                  | `COMPLETADA`    | Fase 17; contratos confirmados de detalle y archivos PDF                                              | [Documento](etapas/etapa-2/fases/18-documentos-pdf-contratos.md)                 |
+| 19 — Detalle de Contrato                                          | `COMPLETADA`    | Fase 18; contratos confirmados de cuotas y pagos bajo demanda                                         | [Documento](etapas/etapa-2/fases/19-detalle-contrato.md)                          |
+| 20 — Rediseño del Detalle de Contrato                             | `COMPLETADA`    | Fase 19; vista de expediente contractual ya funcional                                                  | [Documento](etapas/etapa-2/fases/20-rediseño-detalle-contrato.md)                 |
+| 21 — Documentos en la pestaña del Detalle de Contrato              | `COMPLETADA`    | Fase 20; pestañas y gestor PDF existentes                                                             | [Documento](etapas/etapa-2/fases/21-documentos-en-pestana-detalle.md)             |
+| 22 — Rediseño de cabecera y tarjetas del Detalle de Contrato       | `COMPLETADA`    | Fase 21; detalle contractual y tokens ORMAN existentes                                                 | [Documento](etapas/etapa-2/fases/22-rediseño-cabecera-tarjetas-detalle.md)         |
 
 La Fase 01 integró proxy Angular, `HttpClient`, login, OTP, estado de autenticación, access token en memoria, interceptor Bearer, XSRF, refresh, logout, manejo de errores y pruebas. El resultado y la validación manual pendiente quedan registrados en su documento. La Fase 02 completó el contenedor privado, restauración inicial de sesión y protección de rutas, sin adelantar roles, menús ni módulos funcionales. La Fase 05 incorporó `MatIcon` y Material Symbols Rounded únicamente en el área privada; `Menu.icono` se representa directamente y los valores legacy incompatibles siguen pendientes de actualización en Backend/BD.
 
@@ -156,6 +162,25 @@ La Fase 15 reduce la densidad vertical de `UnidadCardComponent`, elimina solo la
 listado y añade los botones accesibles `Editar` y `Ver detalle` como outputs preparados. La
 auditoría confirmó que las rutas funcionales todavía no existen, por lo que no se agregaron enlaces
 ni navegación falsa. El detalle queda en el [documento de la Fase 15](etapas/etapa-2/fases/15-compactacion-acciones-unidades.md).
+
+La Fase 17 añade la pantalla guiada `/app/contratos/nuevo`: carga propiedades y unidades operativas
+de forma dependiente, consulta personas activas de tipo inquilino, calcula periodos mensuales y
+cuotas informativas, valida importes en el frontend y crea mediante el contrato Backend confirmado.
+Los bloques de selección y vista previa mantienen responsabilidades separadas y la pantalla usa los
+tokens y componentes visuales existentes. El detalle está en [el documento de la Fase 17](etapas/etapa-2/fases/17-crear-contrato.md).
+
+La Fase 18 integra la gestión de documentos PDF en el alta y detalle de Contratos. Usa los endpoints
+Backend confirmados para crear, listar metadatos, descargar y eliminar archivos, sin cargar PDFs en el
+listado general ni modificar la creación del contrato. El detalle está en [el documento de la Fase 18](etapas/etapa-2/fases/18-documentos-pdf-contratos.md).
+
+La Fase 19 completa el expediente de Contrato con información contractual, resumen financiero, pestañas,
+cuotas y consulta bajo demanda de pagos. Reutiliza la gestión PDF de la Fase 18, no implementa registro
+de pagos ni historial y mantiene la seguridad y los endpoints Backend confirmados. El detalle está en
+[el documento de la Fase 19](etapas/etapa-2/fases/19-detalle-contrato.md).
+
+La Fase 20 reorganiza la vista de expediente en una cabecera y tarjetas dashboard, conserva las
+consultas de cuotas, pagos y documentos de la Fase 19, y no añade endpoints ni operaciones de negocio.
+El detalle está en [el documento de la Fase 20](etapas/etapa-2/fases/20-rediseño-detalle-contrato.md).
 
 ### Fases futuras por definir
 

@@ -1,0 +1,109 @@
+<section class="contract-form-section" aria-labelledby="contract-tenant-title">
+  <div class="contract-section-heading">
+    <span class="contract-step-number" aria-hidden="true">2</span>
+    <div>
+      <h2 id="contract-tenant-title">Inquilino</h2>
+      <p>Busca una persona activa de tipo inquilino por nombre o apellido.</p>
+    </div>
+  </div>
+
+  @if (selectedTenant(); as tenant) {
+    <div class="contract-selected-tenant">
+      <span class="contract-tenant-avatar" aria-hidden="true">
+        {{ fullName(tenant).slice(0, 1).toUpperCase() }}
+      </span>
+      <div class="min-w-0 flex-1">
+        <p class="contract-selection-title">{{ fullName(tenant) }}</p>
+        <p class="contract-selection-note">CI {{ tenant.ci }}</p>
+        <div class="contract-tenant-badges" role="group" aria-label="Estado y tipo de persona">
+          <span class="contract-tenant-badge contract-tenant-badge-active">
+            <mat-icon aria-hidden="true">check_circle</mat-icon>
+            Activo
+          </span>
+          <span class="contract-tenant-badge">
+            <mat-icon aria-hidden="true">person</mat-icon>
+            Inquilino
+          </span>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="contract-icon-button"
+        aria-label="Quitar inquilino seleccionado"
+        title="Quitar selección"
+        (click)="clearTenant()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </div>
+  } @else {
+    <div class="tenant-picker relative">
+      <label class="contract-field-label" for="contract-tenant-search">Buscar inquilino</label>
+      <div class="relative mt-2">
+        <mat-icon class="contract-search-icon" aria-hidden="true">search</mat-icon>
+        <input
+          id="contract-tenant-search"
+          class="contract-field contract-search-field"
+          type="search"
+          autocomplete="off"
+          placeholder="Nombre o apellido..."
+          [value]="tenantQuery()"
+          [attr.aria-expanded]="pickerOpen()"
+          aria-controls="contract-tenant-options"
+          aria-haspopup="listbox"
+          [class.contract-field-invalid]="validationRequested()"
+          [attr.aria-invalid]="validationRequested()"
+          (focus)="openPicker()"
+          (input)="searchTenants($event)"
+        />
+      </div>
+      @if (validationRequested()) {
+        <p class="contract-field-error">Selecciona un inquilino activo.</p>
+      }
+
+      @if (pickerOpen()) {
+        <div class="tenant-suggestions">
+          @if (tenantLoading() && tenantResults().length === 0) {
+            <p class="tenant-search-message" role="status">Buscando inquilinos...</p>
+          } @else if (tenantError(); as message) {
+            <div class="tenant-search-message" role="alert">
+              <span>{{ message }}</span>
+              <button type="button" class="contract-inline-link" (click)="retryTenants()">
+                Reintentar
+              </button>
+            </div>
+          } @else if (tenantResults().length === 0) {
+            <p class="tenant-search-message" role="status">
+              No encontramos inquilinos activos con ese nombre.
+            </p>
+          } @else {
+            <div id="contract-tenant-options" role="listbox" aria-label="Inquilinos activos">
+              @for (tenantOption of tenantResults(); track tenantOption.codper) {
+                <button
+                  type="button"
+                  class="tenant-option"
+                  role="option"
+                  aria-selected="false"
+                  (click)="selectTenant(tenantOption)"
+                >
+                  <span class="tenant-option-name">{{ fullName(tenantOption) }}</span>
+                  <span class="tenant-option-ci">CI {{ tenantOption.ci }}</span>
+                </button>
+              }
+            </div>
+            @if (hasMoreTenants()) {
+              <button
+                type="button"
+                class="tenant-load-more"
+                [disabled]="tenantLoading()"
+                (click)="loadMoreTenants()"
+              >
+                {{ tenantLoading() ? 'Cargando...' : 'Mostrar más resultados' }}
+              </button>
+            }
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

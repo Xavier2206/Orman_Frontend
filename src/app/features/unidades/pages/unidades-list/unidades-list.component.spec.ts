@@ -61,6 +61,7 @@ describe('UnidadesListComponent', () => {
     ubicacionInterna: 'Torre A',
     precioBase: 2500,
     estadoOperativo: 1,
+    disponibleParaContrato: true,
   };
 
   const secondUnit: UnidadResponse = {

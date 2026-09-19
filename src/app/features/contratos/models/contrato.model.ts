@@ -7,6 +7,14 @@ export interface ContratoResumen {
   readonly rescindidos: number;
 }
 
+export interface ContratoCreateRequest {
+  readonly codperInquilino: number;
+  readonly fechaInicio: string;
+  readonly fechaFin: string;
+  readonly montoMensual: number;
+  readonly garantia: number;
+}
+
 export interface ContratoInquilino {
   readonly codper: number;
   readonly nombreCompleto: string;
@@ -33,6 +41,40 @@ export interface ContratoCuotasResumen {
   readonly saldoPendiente: number;
 }
 
+export type CuotaEstado = 'PENDIENTE' | 'PARCIAL' | 'PAGADA' | 'ANULADA';
+
+export interface CuotaResponse {
+  readonly codcuo: number;
+  readonly codcon: number;
+  readonly periodo: string;
+  readonly fechaVencimiento: string;
+  readonly monto: number;
+  readonly montoConfirmado: number;
+  readonly saldo: number;
+  readonly montoPendienteRevision: number;
+  readonly estado: CuotaEstado;
+}
+
+export type PagoEstado = 'PENDIENTE_REVISION' | 'CONFIRMADO' | 'RECHAZADO' | 'ANULADO';
+
+export interface PagoResponse {
+  readonly codpag: number;
+  readonly codcuo: number;
+  readonly codcta: number | null;
+  readonly monto: number;
+  readonly metodo: string;
+  readonly referenciaExterna: string | null;
+  readonly fechaPago: string;
+  readonly fechaRegistro: string;
+  readonly estado: PagoEstado;
+  readonly origenRegistro: string;
+  readonly registradoPor: string;
+  readonly revisadoPor: string | null;
+  readonly fechaRevision: string | null;
+  readonly motivoRechazo: string | null;
+  readonly motivoAnulacion: string | null;
+}
+
 export interface Contrato {
   readonly codcon: number;
   readonly coduni: number;
@@ -50,6 +92,19 @@ export interface Contrato {
   readonly unidad: ContratoUnidad | null;
   readonly propiedad: ContratoPropiedad | null;
   readonly cuotas: ContratoCuotasResumen | null;
+}
+
+export interface ContratoArchivoResponse {
+  readonly codarc: number;
+  readonly codcon: number;
+  readonly nombreArchivo: string;
+  readonly tipoContenido: string;
+  readonly tamanoOriginal: number;
+  readonly tamanoFinal: number;
+  readonly fechaSubida: string;
+  readonly subidoPor: string;
+  readonly orden: number;
+  readonly almacenadoInternamente: boolean;
 }
 
 export interface ContratoListFilters {

@@ -1,0 +1,270 @@
+<section
+  class="contract-detail-page mx-auto w-full min-w-0"
+  aria-labelledby="contract-detail-title"
+>
+  <a class="contract-detail-back-link" routerLink="/app/contratos/listar">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Contratos
+  </a>
+
+  <header class="contract-detail-header">
+    <div>
+      <p class="contract-detail-kicker">Gestión de contratos</p>
+      <h1 id="contract-detail-title">Detalle de contrato</h1>
+      <p>Consulta el contrato y administra su información.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <section class="contract-detail-state" role="status" aria-busy="true">
+      <span class="detail-loading-line detail-loading-title"></span>
+      <span class="detail-loading-line"></span>
+      <span>Cargando contrato...</span>
+    </section>
+  } @else if (error(); as message) {
+    <section class="contract-detail-state contract-detail-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <div>
+        <h2>
+          @switch (errorKind()) {
+            @case ('not-found') {
+              Contrato no encontrado
+            }
+            @case ('forbidden') {
+              Acceso denegado
+            }
+            @default {
+              No se puede cargar el contrato
+            }
+          }
+        </h2>
+        <p>{{ message }}</p>
+      </div>
+      <a class="contract-detail-button" routerLink="/app/contratos/listar">Volver a contratos</a>
+    </section>
+  } @else if (contract(); as detail) {
+    <section class="contract-detail-hero" aria-labelledby="contract-hero-title">
+      <div class="contract-detail-hero-content">
+        <div class="contract-detail-hero-heading">
+          <span class="contract-detail-hero-icon" aria-hidden="true">
+            <mat-icon>description</mat-icon>
+          </span>
+          <div class="contract-detail-hero-copy">
+            <p class="contract-detail-hero-code">Expediente contractual</p>
+            <h2 id="contract-hero-title">Contrato #CON-{{ detail.codcon }}</h2>
+            <p class="contract-detail-location-line">
+              <mat-icon aria-hidden="true">apartment</mat-icon>
+              {{ optionalLabel(detail.propiedad?.nombre) }} ·
+              {{ optionalLabel(detail.unidad?.nombre) }} ·
+              Piso {{ optionalLabel(detail.unidad?.piso) }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <span class="contract-status" [class]="statusClass(detail.estado)">
+        {{ statusLabel(detail.estado) }}
+      </span>
+    </section>
+
+      <main class="contract-detail-main">
+        <section class="contract-overview-grid" aria-label="Resumen contractual">
+          <article class="contract-overview-card">
+            <header class="overview-card-heading">
+              <span class="overview-card-icon"><mat-icon aria-hidden="true">person</mat-icon></span>
+              <h2>Inquilino principal</h2>
+            </header>
+            <strong class="overview-card-primary-value">{{ fullName(detail) }}</strong>
+            <span class="overview-card-secondary-value">
+              CI {{ optionalLabel(detail.inquilino?.ci) }}
+            </span>
+            <small class="overview-card-verified">
+              <mat-icon aria-hidden="true">verified</mat-icon>
+              Estado verificado
+            </small>
+          </article>
+
+          <article class="contract-overview-card">
+            <header class="overview-card-heading">
+              <span class="overview-card-icon"><mat-icon aria-hidden="true">apartment</mat-icon></span>
+              <h2>Ubicación</h2>
+            </header>
+            <div class="overview-card-detail-list">
+              <div>
+                <span>Propiedad</span>
+                <strong>{{ optionalLabel(detail.propiedad?.nombre) }}</strong>
+              </div>
+              <div>
+                <span>Unidad</span>
+                <strong>{{ optionalLabel(detail.unidad?.nombre) }}</strong>
+              </div>
+              <div class="overview-card-inline-row">
+                <div>
+                  <span>Piso</span>
+                  <strong>{{ optionalLabel(detail.unidad?.piso) }}</strong>
+                </div>
+                <div>
+                  <span>Tipo de unidad</span>
+                  <strong>{{ optionalLabel(detail.unidad?.tipoUnidad) }}</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="contract-overview-card contract-period-card">
+            <header class="overview-card-heading">
+              <span class="overview-card-icon"><mat-icon aria-hidden="true">event</mat-icon></span>
+              <h2>Periodo contractual</h2>
+            </header>
+            <div class="overview-card-detail-list contract-period-details">
+              <div>
+                <span>Fecha inicio</span>
+                <strong>{{ periodSummary().startLabel }}</strong>
+              </div>
+              <div>
+                <span>Fecha fin</span>
+                <strong>{{ periodSummary().endLabel }}</strong>
+              </div>
+            </div>
+            @if (periodSummary().durationMonths > 0) {
+              <div class="period-duration-row">
+                <span>Duración</span>
+                <strong>{{ periodSummary().durationMonths }} meses</strong>
+              </div>
+              <div class="period-progress-heading">
+                <span>Transcurrido</span>
+                <strong>
+                  {{ periodSummary().elapsedMonths }} de {{ periodSummary().durationMonths }} meses
+                </strong>
+              </div>
+              <div
+                class="period-progress"
+                role="progressbar"
+                aria-label="Avance del periodo contractual"
+                [attr.aria-valuemin]="0"
+                [attr.aria-valuemax]="periodSummary().durationMonths"
+                [attr.aria-valuenow]="periodSummary().elapsedMonths"
+              >
+                <span [style.width.%]="periodSummary().progress"></span>
+              </div>
+            } @else {
+              <span class="overview-card-empty">Duración no disponible</span>
+            }
+          </article>
+
+          <article class="contract-overview-card contract-economy-card">
+            <header class="overview-card-heading">
+              <span class="overview-card-icon"><mat-icon aria-hidden="true">payments</mat-icon></span>
+              <h2>Condiciones económicas</h2>
+            </header>
+            <div class="economy-row">
+              <span>Alquiler mensual</span>
+              <strong>{{ formatMoney(detail.montoMensual, detail.moneda) }}</strong>
+            </div>
+            <div class="economy-row">
+              <span>Garantía</span>
+              <strong>{{ formatMoney(detail.garantia, detail.moneda) }}</strong>
+            </div>
+            <div class="economy-total">
+              <span>Valor total contrato</span>
+              <strong>{{ moneyLabel(totalContractValue(), detail.moneda) }}</strong>
+            </div>
+          </article>
+        </section>
+
+        <nav class="contract-detail-tabs" aria-label="Secciones del contrato" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            class="contract-detail-tab"
+            [class.contract-detail-tab-active]="activeTab() === 'cuotas'"
+            [attr.aria-selected]="activeTab() === 'cuotas'"
+            (click)="selectTab('cuotas')"
+          >
+            <mat-icon aria-hidden="true">receipt_long</mat-icon>
+            Cuotas y pagos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="contract-detail-tab"
+            [class.contract-detail-tab-active]="activeTab() === 'documentos'"
+            [attr.aria-selected]="activeTab() === 'documentos'"
+            (click)="selectTab('documentos')"
+          >
+            <mat-icon aria-hidden="true">folder</mat-icon>
+            Documentos
+          </button>
+        </nav>
+
+        <section class="contract-financial-summary" aria-labelledby="contract-financial-title">
+          <div class="contract-panel-heading">
+            <div>
+              <h2 id="contract-financial-title">Resumen financiero</h2>
+              <p>Estado consolidado de las cuotas.</p>
+            </div>
+            <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+          </div>
+          <div class="financial-summary-grid">
+            <article class="financial-summary-total">
+              <span class="financial-summary-icon"><mat-icon aria-hidden="true">receipt_long</mat-icon></span>
+              <div class="financial-summary-content">
+                <strong>{{ countLabel(detail.cuotas?.totalCuotas) }}</strong>
+                <span>Total cuotas</span>
+              </div>
+            </article>
+            <article class="financial-summary-paid">
+              <span class="financial-summary-icon"><mat-icon aria-hidden="true">check_circle</mat-icon></span>
+              <div class="financial-summary-content">
+                <strong>{{ countLabel(detail.cuotas?.cuotasPagadas) }}</strong>
+                <span>Pagadas</span>
+              </div>
+            </article>
+            <article class="financial-summary-partial">
+              <span class="financial-summary-icon"><mat-icon aria-hidden="true">timelapse</mat-icon></span>
+              <div class="financial-summary-content">
+                <strong>{{ countLabel(partialInstallments()) }}</strong>
+                <span>Parciales</span>
+              </div>
+            </article>
+            <article class="financial-summary-pending">
+              <span class="financial-summary-icon"><mat-icon aria-hidden="true">schedule</mat-icon></span>
+              <div class="financial-summary-content">
+                <strong>{{ countLabel(detail.cuotas?.cuotasPendientes) }}</strong>
+                <span>Pendientes</span>
+              </div>
+            </article>
+            <article class="financial-summary-balance">
+              <span class="financial-summary-icon"><mat-icon aria-hidden="true">account_balance</mat-icon></span>
+              <div class="financial-summary-content">
+                <strong>{{ moneyLabel(detail.cuotas?.saldoPendiente, detail.moneda) }}</strong>
+                <span>Saldo pendiente</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        @if (activeTab() === 'cuotas') {
+          <app-contrato-cuotas-panel
+            [installments]="installments()"
+            [loading]="installmentsLoading()"
+            [error]="installmentsError()"
+            [currency]="detail.moneda"
+            (viewPayments)="openPayments($event)"
+          />
+        } @else {
+          <section class="contract-detail-documents-panel" aria-label="Documentos del contrato">
+            <app-contrato-archivo-manager
+              [contractId]="contractId()"
+              documentTitle="Documentos del contrato"
+            />
+          </section>
+        }
+      </main>
+
+      <app-contrato-pagos-modal
+        [installment]="selectedInstallment()"
+        [currency]="detail.moneda"
+        (closed)="closePayments()"
+      />
+  }
+</section>

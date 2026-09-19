@@ -12,8 +12,7 @@
     <button
       type="button"
       class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-accent px-4 font-semibold text-accent-contrast shadow-sm transition-[background-color,box-shadow,transform] duration-150 hover:bg-accent-hover hover:shadow-md active:scale-[.98] motion-reduce:transform-none motion-reduce:transition-none"
-      disabled
-      title="Alta de contrato pendiente"
+      routerLink="/app/contratos/nuevo"
     >
       <mat-icon aria-hidden="true">add</mat-icon>
       Nuevo contrato
@@ -336,6 +335,7 @@
                 class="action tooltip-trigger action-view"
                 [attr.aria-label]="'Ver contrato #' + contrato.codcon"
                 title="Ver contrato"
+                [routerLink]="['/app/contratos', contrato.codcon, 'detalle']"
               >
                 <mat-icon aria-hidden="true">visibility</mat-icon>
                 <span class="action-tooltip" role="tooltip">Ver contrato</span>

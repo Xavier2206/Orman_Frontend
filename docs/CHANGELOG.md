@@ -1,5 +1,126 @@
 # Changelog
 
+## 2026-09-19 - Fase 22: Rediseño de cabecera y tarjetas del Detalle de Contrato
+
+### Cambiado
+
+- Se transformó la cabecera en un expediente contractual de ancho completo con
+  código `CON-`, icono, ubicación y estado.
+- Se reorganizaron las tarjetas de Inquilino principal, Ubicación, Periodo y
+  Condiciones económicas con jerarquía visual ORMAN y responsive 4/2/1.
+- Se mantuvo la vista informativa sin agregar acciones de negocio.
+
+### Verificado
+
+- Typecheck correcto.
+- Prueba focalizada del detalle: 1 archivo; 7 pruebas aprobadas.
+- Suite completa: 75 archivos; 524 pruebas aprobadas.
+- Build de producción correcto; persisten avisos de presupuesto CSS y dependencias CommonJS.
+- No se modificó Backend, servicios, modelos ni `package-lock.json`.
+
+## 2026-09-19 - Fase 21: Documentos en la pestaña del Detalle de Contrato
+
+### Cambiado
+
+- Se retiró la tarjeta lateral de documentos del layout principal del detalle.
+- La pestaña `Documentos` ahora monta el gestor PDF existente a ancho completo,
+  con título, carga, listado, tamaño, fecha disponible y acciones actuales.
+- Los metadatos de archivos se solicitan al entrar a la pestaña, sin modificar
+  cuotas, pagos, contratos ni endpoints.
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas focalizadas: 2 archivos; 10 pruebas aprobadas.
+- Suite completa: 75 archivos; 517 pruebas aprobadas y 7 fallos fuera del
+  alcance: tres del servicio global de notificaciones y cuatro del generador
+  PDF de Propiedades.
+- Build de producción correcto; persisten avisos de presupuesto CSS y dependencias CommonJS.
+- No se modificó Backend ni `package-lock.json`.
+
+## 2026-09-18 - Fase 20: Rediseño del Detalle de Contrato
+
+### Cambiado
+
+- Se reemplazó la tarjeta general vertical por una cabecera contractual y
+  tarjetas superiores de Inquilino, Ubicación, Periodo y Economía.
+- Se añadió el progreso visual del periodo, el valor total informativo y el
+  resumen financiero con cuotas parciales.
+- Se ajustó la distribución desktop 70/30 y los breakpoints responsive para
+  tablet y móvil, manteniendo tokens de los temas ORMAN.
+- Se separó el panel visual de cuotas y sus estilos para mantener el detalle
+  modular, sin cambiar la consulta de cuotas ni las acciones existentes.
+- Se ampliaron las pruebas del detalle para estados de contrato y acciones de
+  cuotas.
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas focalizadas: 5 archivos; 12 pruebas aprobadas.
+- Suite completa: 75 archivos; 517 pruebas aprobadas y 7 fallos fuera del
+  alcance: tres del servicio global de notificaciones y cuatro del generador
+  PDF de Propiedades.
+- Build de producción correcto; persisten avisos de presupuesto CSS y dependencias CommonJS.
+- No se modificó Backend ni `package-lock.json`.
+
+## 2026-09-18 - Fase 19: Detalle de Contrato
+
+### Añadido
+
+- Se reorganizó el detalle contractual en dos columnas responsive con cabecera,
+  información contractual y resumen financiero.
+- Se añadieron pestañas para Cuotas y pagos y Documentos, manteniendo la
+  gestión PDF existente en el panel lateral.
+- Se integró `GET /api/v1/contratos/{codcon}/cuotas` mediante un servicio tipado
+  y una tabla de cuotas con estados y acciones visuales.
+- Se integró la consulta bajo demanda de pagos mediante
+  `GET /api/v1/cuotas/{codcuo}/pagos` y un modal accesible.
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas focalizadas: 4 archivos; 5 pruebas aprobadas.
+- Suite completa: 74 archivos; 514 pruebas aprobadas y 3 fallos preexistentes
+  en `OrmanNotificationService`, fuera del alcance.
+- `npm run build`: correcto; persisten avisos de presupuesto CSS y dependencias
+  CommonJS.
+- No se modificó Backend ni `package-lock.json`.
+
+## 2026-09-16 - Fase 18: Documentos PDF de Contratos
+
+### Añadido
+
+- Se integró la selección de archivos PDF en el alta y la subida posterior a `POST /api/v1/contratos/{codcon}/archivos`, usando el `codcon` devuelto por la creación.
+- Se añadió `ContratoArchivoService` para subir multipart, listar metadatos, descargar como Blob y eliminar documentos.
+- Se añadió el detalle de contrato en `/app/contratos/{codcon}/detalle`, con gestión de archivos protegida por los endpoints Backend confirmados.
+- Se incorporaron validaciones de archivo no vacío y extensión PDF, estados de carga, mensajes de error por estado HTTP y confirmación antes de eliminar.
+
+### Verificado
+
+- Typecheck correcto.
+- Suite focalizada de Contratos: 7 archivos; 31 pruebas aprobadas.
+- Suite completa: 71 archivos; 512 pruebas aprobadas.
+- `npm run build`: correcto; persisten advertencias de presupuesto CSS y dependencias CommonJS.
+- No se modificó Backend ni `package-lock.json`.
+
+## 2026-09-16 - Fase 17: Alta de Contratos
+
+### Añadido
+
+- Se añadió la pantalla guiada `/app/contratos/nuevo` y su ruta privada.
+- Se integró el catálogo de propiedades activas, la carga dependiente de unidades operativas y la búsqueda paginada de personas activas tipo inquilino.
+- Se incorporó selección de inicio mensual, duraciones disponibles, fin calculado, validación de montos y vista previa de las cuotas informativas.
+- Se conectó la creación al endpoint confirmado `POST /api/v1/unidades/{coduni}/contratos`, con mensajes para errores 400, 403, 404, 409 y 422.
+- Se enlazó el acceso `Nuevo contrato` desde el listado; el resto de filtros, tarjetas, acciones y paginación permanece sin cambios funcionales.
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas focalizadas: 3 archivos y 12 aprobadas. Suite completa: 69 archivos;
+  503 aprobadas y 3 fallos en `OrmanNotificationService`, fuera del alcance.
+- Build de producción correcto; persisten avisos de presupuesto CSS y dependencias CommonJS.
+- No se modificó Backend ni `package-lock.json`.
+
 ## 2026-09-15 - Fase 16: filtros dependientes de Contratos
 
 ### Cambiado
@@ -1652,3 +1773,18 @@ Este archivo registra únicamente cambios realizados en ORMAN Frontend.
 - 39 pruebas relacionadas aprobadas en 2 archivos.
 - `npm run build`: correcto, con advertencias de presupuesto CSS ya existentes.
 - `package-lock.json` sin cambios y `git diff --check` correcto.
+
+## 2026-09-16 - Ajuste visual de Añadir Contrato
+
+### Mejorado
+
+- La pantalla de alta aprovecha el ancho del área privada y organiza formulario y resumen en dos columnas desde escritorio, apilándolos en tablet y móvil.
+- La vista previa resume inquilino, unidad, periodo, alquiler y cuotas previstas; la selección del inquilino muestra los indicadores de activo e inquilino.
+- Se añadió una zona visual de documento PDF marcada como próxima integración, sin selector, carga ni petición.
+- Las acciones Cancelar y Crear contrato permanecen al final del formulario. No cambian creación, validaciones, fechas, payload, servicios ni Backend.
+
+### Verificado
+
+- Spec de alta aislado: 1 archivo; 5 pruebas aprobadas.
+- Suite completa `npm test`: 69 archivos; 503 aprobadas y 3 fallos en `OrmanNotificationService`, fuera del alcance.
+- `npm run build`: satisfactorio, con avisos de presupuesto CSS y dependencias CommonJS.

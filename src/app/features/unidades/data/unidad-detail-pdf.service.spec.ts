@@ -126,6 +126,7 @@ describe('UnidadDetailPdfService', () => {
     ubicacionInterna: 'Torre A',
     precioBase: 2500,
     estadoOperativo: 1,
+    disponibleParaContrato: true,
   };
 
   beforeEach(async () => {

@@ -4,7 +4,12 @@ import { Observable } from 'rxjs';
 
 import { apiPath } from '../../../core/api/api.constants';
 import { PageResponse } from '../../personas/models/persona.model';
-import { Contrato, ContratoListFilters, ContratoResumen } from '../models/contrato.model';
+import {
+  Contrato,
+  ContratoCreateRequest,
+  ContratoListFilters,
+  ContratoResumen,
+} from '../models/contrato.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContratoApiService {
@@ -39,5 +44,13 @@ export class ContratoApiService {
 
   resumen(): Observable<ContratoResumen> {
     return this.http.get<ContratoResumen>(`${this.contratosPath}/resumen`);
+  }
+
+  create(coduni: number, request: ContratoCreateRequest): Observable<Contrato> {
+    return this.http.post<Contrato>(apiPath(`/unidades/${coduni}/contratos`), request);
+  }
+
+  get(codcon: number): Observable<Contrato> {
+    return this.http.get<Contrato>(`${this.contratosPath}/${codcon}`);
   }
 }

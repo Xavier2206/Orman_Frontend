@@ -1,0 +1,224 @@
+<section
+  class="contract-create-page mx-auto w-full min-w-0 max-w-375"
+  aria-labelledby="create-contract-title"
+>
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <p class="contract-create-kicker">Gestión de contratos</p>
+      <h1 id="create-contract-title" class="mt-1 text-3xl font-bold text-content">
+        Añadir Contrato
+      </h1>
+      <p class="mt-2 max-w-2xl text-sm text-muted">
+        Completa cada sección para revisar y registrar el nuevo contrato.
+      </p>
+    </div>
+    <button type="button" class="contract-secondary-button" (click)="cancel()">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      Volver al listado
+    </button>
+  </header>
+
+  <form class="contract-create-form" [formGroup]="form" (ngSubmit)="createContract()" novalidate>
+    <div class="contract-create-layout">
+      <div class="contract-create-main">
+        <app-contrato-location-picker
+          [validationRequested]="submitAttempted()"
+          (selectionChange)="updateLocation($event)"
+        />
+
+        <app-contrato-tenant-picker
+          [validationRequested]="submitAttempted()"
+          (selectionChange)="updateTenant($event)"
+        />
+
+        <section class="contract-form-section" aria-labelledby="contract-period-title">
+          <div class="contract-section-heading">
+            <span class="contract-step-number" aria-hidden="true">3</span>
+            <div>
+              <h2 id="contract-period-title">Periodo del contrato</h2>
+              <p>El inicio y fin se establecen al primer día de cada mes.</p>
+            </div>
+          </div>
+
+          <div class="contract-period-fields">
+            <div>
+              <label class="contract-field-label" for="contract-start-month">Fecha de inicio</label>
+              <input
+                id="contract-start-month"
+                class="contract-field mt-2"
+                type="month"
+                formControlName="fechaInicioMes"
+                [class.contract-field-invalid]="fieldInvalid('fechaInicioMes')"
+                [attr.aria-invalid]="fieldInvalid('fechaInicioMes')"
+              />
+              @if (fieldInvalid('fechaInicioMes')) {
+                <p class="contract-field-error">Selecciona un mes de inicio válido.</p>
+              }
+            </div>
+
+            <div>
+              <label class="contract-field-label" for="contract-duration">Duración</label>
+              <select
+                id="contract-duration"
+                class="contract-field mt-2"
+                formControlName="duracionMeses"
+              >
+                @for (duration of durationOptions; track duration.value) {
+                  <option [ngValue]="duration.value">{{ duration.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="contract-field-label" for="contract-end-date"
+                >Fecha de fin calculada</label
+              >
+              <input
+                id="contract-end-date"
+                class="contract-field contract-field-readonly mt-2"
+                type="text"
+                [value]="periodPreview()?.fechaFinDisplay ?? ''"
+                readonly
+                aria-describedby="contract-end-date-help"
+              />
+              <p id="contract-end-date-help" class="contract-field-hint">
+                Se calcula automáticamente según la duración.
+              </p>
+            </div>
+          </div>
+
+          @if (periodPreview(); as period) {
+            <p class="contract-period-hint" role="status">
+              <mat-icon aria-hidden="true">event_repeat</mat-icon>
+              Se generarán {{ period.cuotas }} cuotas mensuales desde {{ period.inicioLabel }} hasta
+              {{ period.ultimaCuotaLabel }}.
+            </p>
+          }
+        </section>
+
+        <section class="contract-form-section" aria-labelledby="contract-financial-title">
+          <div class="contract-section-heading">
+            <span class="contract-step-number" aria-hidden="true">4</span>
+            <div>
+              <h2 id="contract-financial-title">Condiciones económicas</h2>
+              <p>Los importes se registrarán en bolivianos (BOB).</p>
+            </div>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="contract-field-label" for="contract-monthly-rent"
+                >Alquiler mensual</label
+              >
+              <div
+                class="contract-currency-field mt-2"
+                [class.contract-field-invalid]="fieldInvalid('montoMensual')"
+              >
+                <span aria-hidden="true">BOB</span>
+                <input
+                  id="contract-monthly-rent"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  inputmode="decimal"
+                  formControlName="montoMensual"
+                  placeholder="0,00"
+                  [attr.aria-invalid]="fieldInvalid('montoMensual')"
+                />
+              </div>
+              @if (fieldInvalid('montoMensual')) {
+                <p class="contract-field-error">El alquiler mensual debe ser mayor a cero.</p>
+              }
+            </div>
+
+            <div>
+              <label class="contract-field-label" for="contract-guarantee">Garantía</label>
+              <div
+                class="contract-currency-field mt-2"
+                [class.contract-field-invalid]="fieldInvalid('garantia')"
+              >
+                <span aria-hidden="true">BOB</span>
+                <input
+                  id="contract-guarantee"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputmode="decimal"
+                  formControlName="garantia"
+                  placeholder="0,00"
+                  [attr.aria-invalid]="fieldInvalid('garantia')"
+                />
+              </div>
+              @if (fieldInvalid('garantia')) {
+                <p class="contract-field-error">La garantía no puede ser negativa.</p>
+              }
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="contract-create-sidebar" aria-label="Resumen y documento del contrato">
+        <app-contrato-create-preview
+          [tenant]="selectedTenant()"
+          [property]="selectedProperty()"
+          [unit]="selectedUnit()"
+          [period]="periodPreview()"
+          [monthlyRent]="form.controls.montoMensual.value"
+          [document]="uploadedDocument()"
+        />
+
+        <app-contrato-archivo-manager
+          [contractId]="createdContract()?.codcon ?? null"
+          [autoUpload]="true"
+          [loadExistingFiles]="false"
+          (fileSelectionChange)="updateDocumentSelection($event)"
+          (fileSelectionInvalidChange)="updateDocumentSelectionValidity($event)"
+          (documentUploaded)="documentUploaded($event)"
+        />
+      </aside>
+    </div>
+
+    <div class="contract-create-footer">
+      @if (submitError(); as message) {
+        <p class="contract-submit-error" role="alert">{{ message }}</p>
+      }
+
+      @if (createdContract(); as contract) {
+        <p class="contract-created-message" role="status">
+          <mat-icon aria-hidden="true">check_circle</mat-icon>
+          Contrato #{{ contract.codcon }} creado correctamente.
+        </p>
+        <div class="contract-form-actions">
+          <button type="button" class="contract-secondary-button" (click)="cancel()">
+            Volver al listado
+          </button>
+          <button
+            type="button"
+            class="contract-primary-button"
+            (click)="viewCreatedContract(contract.codcon)"
+          >
+            <mat-icon aria-hidden="true">description</mat-icon>
+            Ver contrato
+          </button>
+        </div>
+      } @else {
+        <div class="contract-form-actions">
+          <button
+            type="button"
+            class="contract-secondary-button"
+            [disabled]="submitting()"
+            (click)="cancel()"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="contract-primary-button" [disabled]="submitting()">
+            <mat-icon aria-hidden="true">{{
+              submitting() ? 'progress_activity' : 'task_alt'
+            }}</mat-icon>
+            {{ submitting() ? 'Creando contrato...' : 'Crear contrato' }}
+          </button>
+        </div>
+      }
+    </div>
+  </form>
+</section>

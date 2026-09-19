@@ -1,0 +1,73 @@
+@if (installment(); as cuota) {
+  <div class="payments-modal-overlay">
+    <section
+      appPersonaModalFocus
+      class="payments-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="payments-modal-title"
+      aria-describedby="payments-modal-description"
+      (escapePressed)="close()"
+    >
+      <header class="payments-modal-header">
+        <div>
+          <p class="payments-modal-kicker">Cuota #{{ cuota.codcuo }}</p>
+          <h2 id="payments-modal-title">Pagos registrados</h2>
+          <p id="payments-modal-description">
+            Consulta los pagos asociados a {{ formatMoney(cuota.monto) }}.
+          </p>
+        </div>
+        <button type="button" class="payments-close-button" aria-label="Cerrar pagos" (click)="close()">
+          <mat-icon aria-hidden="true">close</mat-icon>
+        </button>
+      </header>
+
+      <div class="payments-modal-body">
+        @if (loading()) {
+          <div class="payments-state" role="status" aria-busy="true">
+            <span class="payments-spinner" aria-hidden="true"></span>
+            Cargando pagos...
+          </div>
+        } @else if (error(); as message) {
+          <div class="payments-state payments-error" role="alert">
+            <mat-icon aria-hidden="true">error</mat-icon>
+            <span>{{ message }}</span>
+          </div>
+        } @else if (payments().length === 0) {
+          <div class="payments-state" role="status">
+            <mat-icon aria-hidden="true">payments</mat-icon>
+            <span>Esta cuota todavía no tiene pagos registrados.</span>
+          </div>
+        } @else {
+          <ul class="payments-list" aria-label="Pagos de la cuota">
+            @for (payment of payments(); track payment.codpag) {
+              <li class="payment-item">
+                <div class="payment-item-main">
+                  <strong>{{ formatMoney(payment.monto) }}</strong>
+                  <span>{{ methodLabel(payment.metodo) }} · {{ formatDateTime(payment.fechaPago) }}</span>
+                </div>
+                <span class="payment-status">{{ statusLabel(payment.estado) }}</span>
+                <dl class="payment-details">
+                  <div>
+                    <dt>Referencia</dt>
+                    <dd>{{ payment.referenciaExterna || 'Sin referencia' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Origen</dt>
+                    <dd>{{ payment.origenRegistro }}</dd>
+                  </div>
+                </dl>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <footer class="payments-modal-footer">
+        <button type="button" class="payments-close-action" [disabled]="loading()" (click)="close()">
+          Cerrar
+        </button>
+      </footer>
+    </section>
+  </div>
+}

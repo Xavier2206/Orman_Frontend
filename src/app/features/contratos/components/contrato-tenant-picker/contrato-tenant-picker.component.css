@@ -1,0 +1,279 @@
+:host {
+  display: block;
+}
+
+.contract-form-section {
+  min-width: 0;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background: var(--theme-card);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.contract-section-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 1.15rem;
+}
+
+.contract-section-heading h2 {
+  color: var(--theme-text);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.contract-section-heading p {
+  margin-top: 0.25rem;
+  color: var(--theme-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.contract-step-number {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--theme-accent);
+  border-radius: 9999px;
+  background: var(--theme-surface);
+  color: var(--theme-accent-text);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.contract-field-label {
+  display: block;
+  color: var(--theme-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.contract-field {
+  display: block;
+  min-height: 2.75rem;
+  width: 100%;
+  border: 1px solid var(--theme-field-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-field);
+  padding: 0.55rem 0.75rem;
+  color: var(--theme-text);
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.contract-field:focus-visible,
+.contract-icon-button:focus-visible,
+.tenant-option:focus-visible,
+.tenant-load-more:focus-visible {
+  border-color: var(--theme-focus);
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-sm);
+}
+
+.contract-field-invalid {
+  border-color: var(--theme-danger-border);
+}
+
+.contract-field-error {
+  margin-top: 0.35rem;
+  color: var(--theme-danger-text);
+  font-size: 0.75rem;
+}
+
+.contract-inline-link {
+  flex: none;
+  color: var(--theme-accent-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.contract-selected-tenant {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-surface);
+  padding: 0.8rem;
+}
+
+.contract-tenant-avatar,
+.contract-icon-button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--theme-card);
+  color: var(--theme-accent-text);
+}
+
+.contract-selection-title {
+  overflow-wrap: anywhere;
+  color: var(--theme-text);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.contract-selection-note {
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+  color: var(--theme-text-muted);
+  font-size: 0.78rem;
+}
+
+.contract-tenant-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.contract-tenant-badge {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--theme-border);
+  border-radius: 9999px;
+  background: var(--theme-card);
+  padding: 0.2rem 0.5rem;
+  color: var(--theme-text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.contract-tenant-badge-active {
+  border-color: var(--theme-success-border);
+  background: var(--theme-success-bg);
+  color: var(--theme-success-text);
+}
+
+.contract-tenant-badge mat-icon {
+  font-size: 0.85rem;
+}
+
+.contract-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  z-index: 1;
+  color: var(--theme-text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.contract-search-field {
+  padding-left: 2.75rem;
+}
+
+.tenant-suggestions {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  z-index: 30;
+  width: 100%;
+  max-height: 17rem;
+  overflow-y: auto;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-card);
+  padding: 0.25rem;
+  box-shadow: var(--shadow-md);
+}
+
+.tenant-option {
+  display: flex;
+  width: 100%;
+  min-height: 3.25rem;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.15rem;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+}
+
+.tenant-option:hover {
+  background: var(--theme-card-hover);
+}
+
+.tenant-option-name {
+  color: var(--theme-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tenant-option-ci,
+.tenant-search-message {
+  color: var(--theme-text-muted);
+  font-size: 0.75rem;
+}
+
+.tenant-search-message {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.tenant-load-more {
+  width: 100%;
+  min-height: 2.5rem;
+  border-top: 1px solid var(--theme-border);
+  color: var(--theme-accent-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.tenant-load-more:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.contract-icon-button {
+  border-radius: var(--radius-md);
+  color: var(--theme-text-muted);
+}
+
+.contract-icon-button:hover {
+  background: var(--theme-card);
+  color: var(--theme-danger-text);
+}
+
+mat-icon.mat-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-family: 'Material Symbols Rounded' !important;
+  font-feature-settings: 'liga';
+  font-size: 1.25rem;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 640px) {
+  .contract-form-section {
+    padding: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contract-field {
+    transition: none;
+  }
+}

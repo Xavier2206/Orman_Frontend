@@ -1,0 +1,91 @@
+<section class="contract-installments-panel" aria-labelledby="contract-installments-title">
+  <header class="contract-panel-heading">
+    <div>
+      <h2 id="contract-installments-title">Cuotas y pagos</h2>
+      <p>{{ paymentCountLabel() }}</p>
+    </div>
+    <mat-icon aria-hidden="true">payments</mat-icon>
+  </header>
+
+  @if (error(); as installmentsMessage) {
+    <div class="contract-detail-inline-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      {{ installmentsMessage }}
+    </div>
+  } @else if (loading()) {
+    <div class="contract-detail-empty" role="status" aria-busy="true">
+      <span class="detail-loading-line detail-loading-title"></span>
+      <span>Cargando cuotas...</span>
+    </div>
+  } @else if (installments().length === 0) {
+    <div class="contract-detail-empty" role="status">
+      <mat-icon aria-hidden="true">receipt_long</mat-icon>
+      <strong>No existen cuotas registradas.</strong>
+      <span>El resumen financiero se mostrará cuando existan cuotas.</span>
+    </div>
+  } @else {
+    <div class="contract-table-scroll">
+      <table class="contract-installments-table">
+        <caption class="visually-hidden">Cuotas y pagos del contrato</caption>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Periodo</th>
+            <th scope="col">Vencimiento</th>
+            <th scope="col">Monto</th>
+            <th scope="col">Pagado</th>
+            <th scope="col">Saldo</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (installment of installments(); track installment.codcuo; let index = $index) {
+            <tr>
+              <td>{{ index + 1 }}</td>
+              <td>{{ formatDate(installment.periodo) }}</td>
+              <td>{{ formatDate(installment.fechaVencimiento) }}</td>
+              <td>{{ formatMoney(installment.monto) }}</td>
+              <td>{{ formatMoney(installment.montoConfirmado) }}</td>
+              <td>{{ formatMoney(installment.saldo) }}</td>
+              <td>
+                <span
+                  class="installment-status"
+                  [class]="'installment-status-' + statusClass(installment.estado)"
+                >
+                  {{ installmentStatusLabel(installment.estado) }}
+                </span>
+              </td>
+              <td>
+                @if (isPaidInstallment(installment)) {
+                  <button
+                    type="button"
+                    class="installment-action"
+                    [attr.aria-label]="'Ver pagos de la cuota ' + (index + 1)"
+                    (click)="viewPayments.emit(installment)"
+                  >
+                    <mat-icon aria-hidden="true">visibility</mat-icon>
+                    Ver pagos
+                  </button>
+                } @else if (isPendingInstallment(installment)) {
+                  <button
+                    type="button"
+                    class="installment-action installment-action-disabled"
+                    disabled
+                    [attr.aria-label]="'Registrar pago de la cuota ' + (index + 1)"
+                    title="Registro de pagos pendiente"
+                  >
+                    <mat-icon aria-hidden="true">add_card</mat-icon>
+                    Registrar pago
+                  </button>
+                } @else {
+                  <span class="installment-no-action">Sin acciones</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

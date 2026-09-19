@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PageResponse } from '../../../personas/models/persona.model';
@@ -52,6 +53,7 @@ describe('ContratosListComponent', () => {
     ubicacionInterna: null,
     precioBase: 2500,
     estadoOperativo: 1,
+    disponibleParaContrato: true,
   };
 
   const secondUnit: UnidadResponse = {
@@ -134,7 +136,7 @@ describe('ContratosListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ContratosListComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);

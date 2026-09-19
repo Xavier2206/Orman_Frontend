@@ -84,4 +84,48 @@ describe('ContratoApiService', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ vigentes: 4, programados: 2, finalizados: 7, rescindidos: 1 });
   });
+
+  it('creates a contract under the selected unit using the confirmed request body', () => {
+    const requestBody = {
+      codperInquilino: 31,
+      fechaInicio: '2026-10-01',
+      fechaFin: '2027-10-01',
+      montoMensual: 2500,
+      garantia: 0,
+    };
+
+    service.create(25, requestBody).subscribe();
+
+    const request = http.expectOne('/api/v1/unidades/25/contratos');
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(requestBody);
+    request.flush({
+      codcon: 42,
+      coduni: 25,
+      codperInquilino: 31,
+      fechaInicio: '2026-10-01',
+      fechaFin: '2027-10-01',
+      montoMensual: 2500,
+      moneda: 'BOB',
+      garantia: 0,
+      estado: 'PROGRAMADO',
+      fechaRegistro: '2026-09-16T12:00:00',
+      fechaRescision: null,
+      motivoRescision: null,
+      inquilino: null,
+      unidad: null,
+      propiedad: null,
+      cuotas: null,
+    });
+  });
+
+  it('gets one contract for the document-management detail screen', () => {
+    service.get(42).subscribe();
+
+    const request = http.expectOne('/api/v1/contratos/42');
+
+    expect(request.request.method).toBe('GET');
+    request.flush({});
+  });
 });

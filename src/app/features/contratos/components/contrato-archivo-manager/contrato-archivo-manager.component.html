@@ -1,0 +1,199 @@
+<section class="contract-document-section" aria-labelledby="contract-document-title">
+  <header class="document-heading">
+    <span class="document-icon" aria-hidden="true">
+      <mat-icon>picture_as_pdf</mat-icon>
+    </span>
+    <div>
+      <h2 id="contract-document-title">{{ documentTitle() }}</h2>
+      <p>Adjunta y administra archivos PDF de este contrato.</p>
+    </div>
+  </header>
+
+  @if (listError(); as message) {
+    <div class="document-state document-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <span>{{ message }}</span>
+      <button type="button" class="document-text-button" (click)="retryLoadFiles()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (loading()) {
+    <div class="document-state" role="status" aria-busy="true">
+      <span class="document-spinner" aria-hidden="true"></span>
+      <span>Cargando documentos...</span>
+    </div>
+  } @else if (contractId() !== null && files().length === 0) {
+    <p class="document-empty">Este contrato todavía no tiene documentos adjuntos.</p>
+  }
+
+  <div class="document-upload-area">
+    <input
+      #fileInput
+      class="visually-hidden"
+      type="file"
+      accept="application/pdf,.pdf"
+      aria-label="Seleccionar archivo PDF del contrato"
+      [disabled]="uploading()"
+      (change)="selectFile($event)"
+    />
+    <button
+      type="button"
+      class="document-select-button"
+      [disabled]="uploading()"
+      (click)="fileInput.click()"
+    >
+      <mat-icon aria-hidden="true">upload_file</mat-icon>
+      Seleccionar archivo PDF
+    </button>
+    <p class="document-upload-hint">
+      Solo PDF. El tamaño se valida antes de enviar y en el servidor.
+    </p>
+
+    @if (selectedFile(); as file) {
+      <div class="selected-document">
+        <mat-icon aria-hidden="true">description</mat-icon>
+        <span class="selected-document-info">
+          <strong>{{ file.name }}</strong>
+          <span>{{ formatFileSize(file.size) }}</span>
+        </span>
+        @if (!uploading()) {
+          <button
+            type="button"
+            class="document-icon-button"
+            aria-label="Quitar archivo seleccionado"
+            title="Quitar archivo"
+            (click)="clearSelection()"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        }
+      </div>
+
+      @if (contractId() === null) {
+        <p class="document-upload-hint" role="status">
+          Se adjuntará automáticamente cuando el contrato se haya creado.
+        </p>
+      } @else if (uploading()) {
+        <div class="document-state" role="status" aria-live="polite">
+          <span class="document-spinner" aria-hidden="true"></span>
+          <span>Subiendo documento...</span>
+        </div>
+      } @else if (!autoUpload()) {
+        <button
+          type="button"
+          class="document-upload-button"
+          [disabled]="loading() || listError() !== null"
+          (click)="uploadFromDetail()"
+        >
+          <mat-icon aria-hidden="true">cloud_upload</mat-icon>
+          Subir documento
+        </button>
+      } @else if (operationError()) {
+        <button
+          type="button"
+          class="document-upload-button"
+          (click)="uploadSelectedFile(contractId()!)"
+        >
+          <mat-icon aria-hidden="true">refresh</mat-icon>
+          Reintentar carga
+        </button>
+      }
+    }
+  </div>
+
+  @if (operationError(); as message) {
+    <p class="document-error document-operation-error" role="alert">{{ message }}</p>
+  }
+
+  @if (files().length > 0) {
+    <ul class="document-file-list" aria-label="Documentos adjuntos">
+      @for (file of files(); track file.codarc) {
+        <li class="document-file-item">
+          <span class="document-file-icon" aria-hidden="true">
+            <mat-icon>description</mat-icon>
+          </span>
+          <div class="document-file-info">
+            <strong>{{ file.nombreArchivo }}</strong>
+            <span>
+              Tipo {{ formatContentType(file.tipoContenido) }} ·
+              {{ formatFileSize(file.tamanoFinal) }} ·
+              Subido {{ formatUploadDate(file.fechaSubida) }}
+              @if (file.tamanoOriginal !== file.tamanoFinal) {
+                · original {{ formatFileSize(file.tamanoOriginal) }}
+              }
+            </span>
+          </div>
+          <div class="document-file-actions" aria-label="Acciones del documento">
+            <button
+              type="button"
+              class="document-icon-button"
+              [attr.aria-label]="'Descargar ' + file.nombreArchivo"
+              title="Descargar documento"
+              [disabled]="downloadingId() !== null"
+              (click)="downloadFile(file)"
+            >
+              <mat-icon aria-hidden="true">download</mat-icon>
+            </button>
+            <button
+              type="button"
+              class="document-icon-button document-delete-button"
+              [attr.aria-label]="'Eliminar ' + file.nombreArchivo"
+              title="Eliminar documento"
+              [disabled]="deleting()"
+              (click)="requestDelete(file)"
+            >
+              <mat-icon aria-hidden="true">delete_outline</mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+@if (pendingDeletion(); as file) {
+  <div class="document-modal-overlay">
+    <section
+      appPersonaModalFocus
+      class="document-confirm-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="delete-document-title"
+      aria-describedby="delete-document-description"
+      (escapePressed)="closeDeleteConfirmation()"
+    >
+      <header class="document-confirm-heading">
+        <span class="document-delete-icon" aria-hidden="true">
+          <mat-icon>delete_outline</mat-icon>
+        </span>
+        <h2 id="delete-document-title">Eliminar documento</h2>
+      </header>
+      <div class="document-confirm-body">
+        <p id="delete-document-description">¿Deseas eliminar este documento del contrato?</p>
+        <strong>{{ file.nombreArchivo }}</strong>
+        @if (operationError(); as message) {
+          <p class="document-error" role="alert">{{ message }}</p>
+        }
+      </div>
+      <footer class="document-confirm-actions">
+        <button
+          type="button"
+          class="document-cancel-button"
+          [disabled]="deleting()"
+          (click)="closeDeleteConfirmation()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="document-delete-confirm-button"
+          [disabled]="deleting()"
+          (click)="confirmDelete()"
+        >
+          <mat-icon aria-hidden="true">delete_outline</mat-icon>
+          {{ deleting() ? 'Eliminando...' : 'Eliminar' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}

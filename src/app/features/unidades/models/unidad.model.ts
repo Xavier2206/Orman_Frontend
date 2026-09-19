@@ -26,4 +26,5 @@ export interface UnidadResponse {
   readonly ubicacionInterna: string | null;
   readonly precioBase: number;
   readonly estadoOperativo: UnidadEstadoOperativo;
+  readonly disponibleParaContrato: boolean;
 }

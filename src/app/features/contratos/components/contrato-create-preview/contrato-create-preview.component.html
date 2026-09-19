@@ -1,0 +1,71 @@
+<section class="contract-preview-section" aria-labelledby="contract-preview-title">
+  <div class="contract-preview-heading">
+    <span class="contract-step-number" aria-hidden="true">5</span>
+    <div class="min-w-0">
+      <p class="contract-preview-kicker">Resumen</p>
+      <h2 id="contract-preview-title">Vista previa del contrato</h2>
+      <p>Los datos se actualizan mientras completas el formulario.</p>
+    </div>
+  </div>
+
+  <dl class="contract-preview-grid">
+    <div class="contract-preview-item">
+      <dt><mat-icon aria-hidden="true">person</mat-icon>Inquilino</dt>
+      <dd>{{ tenant() ? fullName(tenant()!) : 'Pendiente de selección' }}</dd>
+      @if (tenant(); as selectedTenant) {
+        <dd class="contract-preview-note">CI {{ selectedTenant.ci }}</dd>
+      }
+    </div>
+    <div class="contract-preview-item">
+      <dt><mat-icon aria-hidden="true">apartment</mat-icon>Unidad</dt>
+      <dd>{{ property()?.nombre ?? 'Propiedad pendiente' }}</dd>
+      <dd class="contract-preview-note">{{ unit()?.nombre ?? 'Unidad pendiente' }}</dd>
+      @if (unit(); as selectedUnit) {
+        <dd class="contract-preview-note">
+          @if (selectedUnit.piso > 0) {
+            Piso {{ selectedUnit.piso }} ·
+          }
+          {{ selectedUnit.tipoUnidad }}
+        </dd>
+      }
+    </div>
+    <div class="contract-preview-item">
+      <dt><mat-icon aria-hidden="true">event</mat-icon>Periodo</dt>
+      <dd>
+        @if (period(); as contractPeriod) {
+          {{ contractPeriod.inicioLabel }} - {{ contractPeriod.finLabel }}
+        } @else {
+          Pendiente de selección
+        }
+      </dd>
+      @if (period(); as contractPeriod) {
+        <dd class="contract-preview-note">
+          {{ contractPeriod.cuotas }} {{ contractPeriod.cuotas === 1 ? 'mes' : 'meses' }} de
+          duración
+        </dd>
+      }
+    </div>
+    <div class="contract-preview-item">
+      <dt><mat-icon aria-hidden="true">payments</mat-icon>Alquiler mensual</dt>
+      <dd class="contract-preview-rent">{{ formatMoney(monthlyRent()) }}</dd>
+      <dd class="contract-preview-note">BOB mensual</dd>
+    </div>
+    @if (document(); as attachedDocument) {
+      <div class="contract-preview-item contract-preview-document">
+        <dt><mat-icon aria-hidden="true">picture_as_pdf</mat-icon>Documento</dt>
+        <dd>{{ attachedDocument.nombreArchivo }}</dd>
+        <dd class="contract-preview-note">
+          Adjunto · {{ formatFileSize(attachedDocument.tamanoFinal) }}
+        </dd>
+      </div>
+    }
+  </dl>
+
+  @if (period(); as contractPeriod) {
+    <p class="contract-preview-installments">
+      <mat-icon aria-hidden="true">receipt_long</mat-icon>
+      {{ contractPeriod.cuotas }}
+      {{ contractPeriod.cuotas === 1 ? 'cuota mensual prevista' : 'cuotas mensuales previstas' }}
+    </p>
+  }
+</section>

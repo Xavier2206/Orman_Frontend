@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
 import {
   EMPTY,
   Observable,
@@ -60,7 +61,7 @@ type ListResult =
 
 @Component({
   selector: 'app-contratos-list',
-  imports: [MatIconModule, ContratosResumenComponent],
+  imports: [MatIconModule, RouterLink, ContratosResumenComponent],
   templateUrl: './contratos-list.component.html',
   styleUrl: './contratos-list.component.css',
 })

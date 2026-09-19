@@ -1,0 +1,105 @@
+<section class="contract-form-section" aria-labelledby="contract-unit-title">
+  <div class="contract-section-heading">
+    <span class="contract-step-number" aria-hidden="true">1</span>
+    <div>
+      <h2 id="contract-unit-title">Unidad</h2>
+      <p>Selecciona la propiedad y la unidad donde se registrará el contrato.</p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <div>
+      <label class="contract-field-label" for="contract-create-property">Propiedad</label>
+      <select
+        id="contract-create-property"
+        class="contract-field mt-2"
+        [value]="selectedProperty()?.codprop ?? ''"
+        [disabled]="propertyLoading() || properties().length === 0"
+        [class.contract-field-invalid]="validationRequested() && selectedProperty() === null"
+        [attr.aria-invalid]="validationRequested() && selectedProperty() === null"
+        (change)="selectProperty($event)"
+      >
+        <option value="">
+          {{ propertyLoading() ? 'Cargando propiedades...' : 'Selecciona una propiedad' }}
+        </option>
+        @for (property of properties(); track property.codprop) {
+          <option [value]="property.codprop">{{ property.nombre }}</option>
+        }
+      </select>
+      @if (propertyError(); as message) {
+        <div class="contract-inline-error" role="alert">
+          <span>{{ message }}</span>
+          <button type="button" class="contract-inline-link" (click)="retryProperties()">
+            Reintentar
+          </button>
+        </div>
+      } @else if (!propertyLoading() && properties().length === 0) {
+        <p class="contract-field-hint">No hay propiedades habilitadas disponibles.</p>
+      } @else if (validationRequested() && selectedProperty() === null) {
+        <p class="contract-field-error">Selecciona una propiedad.</p>
+      }
+    </div>
+
+    <div>
+      <label class="contract-field-label" for="contract-create-unit">Unidad</label>
+      <select
+        id="contract-create-unit"
+        class="contract-field mt-2"
+        [value]="selectedUnit()?.coduni ?? ''"
+        [disabled]="selectedProperty() === null || unitLoading() || units().length === 0"
+        [class.contract-field-invalid]="validationRequested() && selectedUnit() === null"
+        [attr.aria-invalid]="validationRequested() && selectedUnit() === null"
+        (change)="selectUnit($event)"
+      >
+        <option value="">
+          {{
+            unitLoading()
+              ? 'Cargando unidades...'
+              : selectedProperty() === null
+                ? 'Selecciona una propiedad primero'
+                : 'Selecciona una unidad'
+          }}
+        </option>
+        @for (unit of units(); track unit.coduni) {
+          <option [value]="unit.coduni">{{ unit.nombre }}</option>
+        }
+      </select>
+      @if (unitError(); as message) {
+        <div class="contract-inline-error" role="alert">
+          <span>{{ message }}</span>
+          <button type="button" class="contract-inline-link" (click)="retryUnits()">
+            Reintentar
+          </button>
+        </div>
+      } @else if (selectedProperty() && !unitLoading() && units().length === 0) {
+        <p class="contract-field-hint">Esta propiedad no tiene unidades disponibles para contrato.</p>
+      } @else if (validationRequested() && selectedUnit() === null) {
+        <p class="contract-field-error">Selecciona una unidad.</p>
+      }
+    </div>
+  </div>
+
+  @if (selectedProperty() || selectedUnit()) {
+    <div class="contract-selection-summary" aria-live="polite">
+      <span class="contract-selection-icon" aria-hidden="true">
+        <mat-icon>apartment</mat-icon>
+      </span>
+      <div class="min-w-0">
+        <p class="contract-selection-title">
+          {{ selectedProperty()?.nombre ?? 'Propiedad seleccionada' }}
+        </p>
+        @if (selectedUnit(); as unit) {
+          <p class="contract-selection-note">
+            {{ unit.nombre }}
+            @if (unit.piso > 0) {
+              · Piso {{ unit.piso }}
+            }
+            · {{ unit.tipoUnidad }}
+          </p>
+        } @else {
+          <p class="contract-selection-note">Ahora selecciona una unidad operativa.</p>
+        }
+      </div>
+    </div>
+  }
+</section>

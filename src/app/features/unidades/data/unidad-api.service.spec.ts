@@ -51,6 +51,7 @@ describe('UnidadApiService', () => {
           ubicacionInterna: 'Torre A',
           precioBase: 2500,
           estadoOperativo: 1,
+          disponibleParaContrato: true,
         },
       ],
       page: 0,
@@ -151,7 +152,12 @@ describe('UnidadApiService', () => {
   });
 
   it('activates a unit through the dedicated PATCH endpoint and returns UnidadResponse', () => {
-    const response: UnidadResponse = { ...request, coduni: 501, codprop: 161 };
+    const response: UnidadResponse = {
+      ...request,
+      coduni: 501,
+      codprop: 161,
+      disponibleParaContrato: true,
+    };
 
     service.activarUnidad(501).subscribe((unit) => {
       expect(unit).toEqual(response);
@@ -165,7 +171,13 @@ describe('UnidadApiService', () => {
   });
 
   it('deactivates a unit through the dedicated PATCH endpoint and returns UnidadResponse', () => {
-    const response: UnidadResponse = { ...request, coduni: 501, codprop: 161, estadoOperativo: 0 };
+    const response: UnidadResponse = {
+      ...request,
+      coduni: 501,
+      codprop: 161,
+      estadoOperativo: 0,
+      disponibleParaContrato: true,
+    };
 
     service.desactivarUnidad(501).subscribe((unit) => {
       expect(unit).toEqual(response);

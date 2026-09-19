@@ -101,6 +101,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'contratos/nuevo',
+        loadComponent: () =>
+          import('./features/contratos/pages/contrato-create/contrato-create.component').then(
+            (component) => component.ContratoCreateComponent,
+          ),
+      },
+      {
+        path: 'contratos/:codcon/detalle',
+        loadComponent: () =>
+          import('./features/contratos/pages/contrato-detail/contrato-detail.component').then(
+            (component) => component.ContratoDetailComponent,
+          ),
+      },
+      {
         path: 'contratos/listar',
         loadComponent: () =>
           import('./features/contratos/pages/contratos-list/contratos-list.component').then(

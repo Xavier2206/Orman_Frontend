@@ -1,0 +1,211 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.contract-installments-panel {
+  margin-top: 1rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background: var(--theme-card);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.contract-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--theme-border);
+  padding-bottom: 0.8rem;
+}
+
+.contract-panel-heading h2 {
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.contract-panel-heading p {
+  margin-top: 0.2rem;
+  color: var(--theme-text-muted);
+  font-size: 0.75rem;
+}
+
+.contract-panel-heading > mat-icon {
+  color: var(--theme-accent-text);
+}
+
+.contract-table-scroll {
+  overflow-x: auto;
+  margin: 0.9rem -0.35rem -0.35rem;
+  padding: 0 0.35rem 0.35rem;
+}
+
+.contract-installments-table {
+  width: 100%;
+  min-width: 54rem;
+  border-collapse: collapse;
+  color: var(--theme-text);
+  font-size: 0.76rem;
+}
+
+.contract-installments-table th {
+  background: var(--theme-surface);
+  color: var(--theme-text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.contract-installments-table th,
+.contract-installments-table td {
+  border-bottom: 1px solid var(--theme-border);
+  padding: 0.7rem 0.55rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.contract-installments-table tbody tr:hover {
+  background: var(--theme-card-hover);
+}
+
+.installment-status {
+  display: inline-flex;
+  border: 1px solid var(--theme-success-border);
+  border-radius: 9999px;
+  background: var(--theme-success-bg);
+  padding: 0.3rem 0.55rem;
+  color: var(--theme-success-text);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.installment-status-pendiente,
+.installment-status-parcial {
+  border-color: var(--theme-warning-border);
+  background: var(--theme-warning-bg);
+  color: var(--theme-warning-text);
+}
+
+.installment-status-anulada {
+  border-color: var(--theme-info-border);
+  background: var(--theme-info-bg);
+  color: var(--theme-info-text);
+}
+
+.installment-action {
+  display: inline-flex;
+  min-height: 2.15rem;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-sm);
+  background: var(--theme-surface);
+  padding: 0.35rem 0.55rem;
+  color: var(--theme-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.installment-action:hover:not(:disabled) {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent-text);
+}
+
+.installment-action:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.installment-action-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.installment-no-action {
+  color: var(--theme-text-muted);
+  font-size: 0.7rem;
+}
+
+.contract-detail-inline-error,
+.contract-detail-empty {
+  display: flex;
+  min-height: 8rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-surface);
+  padding: 1rem;
+  color: var(--theme-text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.contract-detail-inline-error {
+  color: var(--theme-danger-text);
+}
+
+.contract-detail-empty {
+  flex-direction: column;
+}
+
+.contract-detail-empty mat-icon {
+  color: var(--theme-accent-text);
+}
+
+.contract-detail-empty strong {
+  color: var(--theme-text);
+}
+
+.detail-loading-line {
+  display: block;
+  width: min(100%, 15rem);
+  height: 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--theme-surface);
+}
+
+.detail-loading-title {
+  width: min(100%, 10rem);
+  height: 1.2rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+mat-icon.mat-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-family: 'Material Symbols Rounded' !important;
+  font-feature-settings: 'liga';
+  font-size: 1.2rem;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 35rem) {
+  .contract-installments-panel {
+    padding: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .installment-action {
+    transition: none;
+  }
+}
