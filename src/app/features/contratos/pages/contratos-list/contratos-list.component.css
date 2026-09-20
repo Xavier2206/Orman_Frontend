@@ -473,8 +473,8 @@ input:focus,
 }
 
 .action-rescind:hover:not(:disabled) {
-  background: var(--theme-warning-bg);
-  color: var(--theme-warning-text);
+  background: var(--theme-danger-bg);
+  color: var(--theme-danger-text);
 }
 
 .tooltip-trigger {

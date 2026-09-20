@@ -128,4 +128,29 @@ describe('ContratoApiService', () => {
     expect(request.request.method).toBe('GET');
     request.flush({});
   });
+
+  it('rescinds a contract with the selected month and reason', () => {
+    const requestBody = {
+      fechaRescision: '2026-09-01',
+      motivoRescision: 'Entrega anticipada de la unidad',
+    };
+
+    service.rescind(42, requestBody).subscribe();
+
+    const request = http.expectOne('/api/v1/contratos/42/rescindir');
+
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual(requestBody);
+    request.flush({});
+  });
+
+  it('finalizes a contract without a request body', () => {
+    service.finalizeContract(42).subscribe();
+
+    const request = http.expectOne('/api/v1/contratos/42/finalizar');
+
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toBeNull();
+    request.flush({});
+  });
 });

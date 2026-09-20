@@ -7,7 +7,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageResponse } from '../../../personas/models/persona.model';
 import { Propiedad } from '../../../propiedades/models/propiedad.model';
 import { UnidadResponse } from '../../../unidades/models/unidad.model';
-import { Contrato, ContratoResumen } from '../../models/contrato.model';
+import {
+  Contrato,
+  ContratoRescindRequest,
+  ContratoResumen,
+  CuotaResponse,
+} from '../../models/contrato.model';
 import { ContratosListComponent } from './contratos-list.component';
 
 describe('ContratosListComponent', () => {
@@ -116,6 +121,20 @@ describe('ContratosListComponent', () => {
     },
   };
 
+  const installments: readonly CuotaResponse[] = [
+    {
+      codcuo: 101,
+      codcon: 1,
+      periodo: '2026-01',
+      fechaVencimiento: '2026-01-01',
+      monto: 1500,
+      montoConfirmado: 0,
+      saldo: 1500,
+      montoPendienteRevision: 0,
+      estado: 'PENDIENTE',
+    },
+  ];
+
   const page: PageResponse<Contrato> = {
     content: contracts,
     page: 0,
@@ -189,12 +208,18 @@ describe('ContratosListComponent', () => {
   }
 
   function selectCatalogFilter(filter: 'property' | 'unit', value: number | null): void {
-    const select = fixture.nativeElement.querySelector(
+    const trigger = fixture.nativeElement.querySelector(
       `#contract-${filter}-select`,
-    ) as HTMLSelectElement;
+    ) as HTMLButtonElement;
 
-    select.value = value === null ? '' : `${value}`;
-    select.dispatchEvent(new Event('change'));
+    trigger.click();
+    fixture.detectChanges();
+
+    const option = fixture.nativeElement.querySelector(
+      `[data-filter="${filter}"][data-value="${value === null ? '' : value}"]`,
+    ) as HTMLButtonElement;
+
+    option.click();
     fixture.detectChanges();
   }
 
@@ -294,8 +319,10 @@ describe('ContratosListComponent', () => {
 
     const unitSelect = fixture.nativeElement.querySelector(
       '#contract-unit-select',
-    ) as HTMLSelectElement;
+    ) as HTMLButtonElement;
     expect(unitSelect.disabled).toBe(false);
+    unitSelect.click();
+    fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Departamento 1A');
   });
 
@@ -304,7 +331,7 @@ describe('ContratosListComponent', () => {
 
     const unitSelect = fixture.nativeElement.querySelector(
       '#contract-unit-select',
-    ) as HTMLSelectElement;
+    ) as HTMLButtonElement;
 
     expect(fixture.nativeElement.querySelector('#contract-property-select')).not.toBeNull();
     expect(unitSelect.disabled).toBe(true);
@@ -423,7 +450,7 @@ describe('ContratosListComponent', () => {
 
     const cardVigente = cards[0];
     expect(cardVigente.querySelector('.action-view')).not.toBeNull();
-    expect(cardVigente.querySelector('.action-payment')).not.toBeNull();
+    expect(cardVigente.querySelector('.action-payment')).toBeNull();
     expect(cardVigente.querySelector('.action-finish')).not.toBeNull();
     expect(cardVigente.querySelector('.action-rescind')).not.toBeNull();
 
@@ -444,6 +471,80 @@ describe('ContratosListComponent', () => {
     expect(cardRescindido.querySelector('.action-payment')).toBeNull();
     expect(cardRescindido.querySelector('.action-finish')).toBeNull();
     expect(cardRescindido.querySelector('.action-rescind')).toBeNull();
+  });
+
+  it('rescisión: abre el modal, carga cuotas y actualiza el listado después del PATCH', () => {
+    flushInitialData();
+
+    const rescindButton = fixture.nativeElement.querySelector('.action-rescind') as HTMLButtonElement;
+    rescindButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-contrato-rescind-modal')).not.toBeNull();
+    http.expectOne('/api/v1/contratos/1/cuotas').flush(installments);
+    fixture.detectChanges();
+
+    const monthSelect = fixture.nativeElement.querySelector('#rescind-month') as HTMLSelectElement;
+    monthSelect.value = '2026-09';
+    monthSelect.dispatchEvent(new Event('change'));
+
+    const reason = fixture.nativeElement.querySelector('#rescind-reason') as HTMLTextAreaElement;
+    reason.value = 'Entrega anticipada de la unidad';
+    reason.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const submit = fixture.nativeElement.querySelector(
+      'app-contrato-rescind-modal .action-modal-submit',
+    ) as HTMLButtonElement;
+    expect(submit.disabled).toBe(false);
+    const component = fixture.componentInstance as unknown as {
+      confirmRescind(request: ContratoRescindRequest): void;
+    };
+    component.confirmRescind({
+      fechaRescision: '2026-09-01',
+      motivoRescision: 'Entrega anticipada de la unidad',
+    });
+
+    const rescindRequest = http.expectOne('/api/v1/contratos/1/rescindir');
+    expect(rescindRequest.request.method).toBe('PATCH');
+    expect(rescindRequest.request.body).toEqual({
+      fechaRescision: '2026-09-01',
+      motivoRescision: 'Entrega anticipada de la unidad',
+    });
+    rescindRequest.flush({ ...contracts[0], estado: 'RESCINDIDO' });
+
+    http.expectOne((request) => request.url === '/api/v1/contratos').flush({
+      ...page,
+      content: [{ ...contracts[0], estado: 'RESCINDIDO' }],
+    });
+    http.expectOne('/api/v1/contratos/resumen').flush({
+      ...resumen,
+      vigentes: 3,
+      rescindidos: 2,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-contrato-rescind-modal')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Rescindido');
+  });
+
+  it('finalización: bloquea la confirmación cuando existen cuotas pendientes', () => {
+    flushInitialData();
+
+    const finishButton = fixture.nativeElement.querySelector('.action-finish') as HTMLButtonElement;
+    finishButton.click();
+    fixture.detectChanges();
+
+    http.expectOne('/api/v1/contratos/1/cuotas').flush(installments);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'No es posible finalizar porque existen cuotas pendientes.',
+    );
+    const submit = fixture.nativeElement.querySelector(
+      'app-contrato-finalize-modal .action-modal-submit',
+    ) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
   });
 
   it('responsive básico: grid uses 1 column on mobile and 2 columns on desktop', () => {

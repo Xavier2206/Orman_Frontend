@@ -15,6 +15,11 @@ export interface ContratoCreateRequest {
   readonly garantia: number;
 }
 
+export interface ContratoRescindRequest {
+  readonly fechaRescision: string;
+  readonly motivoRescision: string;
+}
+
 export interface ContratoInquilino {
   readonly codper: number;
   readonly nombreCompleto: string;

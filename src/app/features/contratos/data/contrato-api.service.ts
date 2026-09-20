@@ -8,6 +8,7 @@ import {
   Contrato,
   ContratoCreateRequest,
   ContratoListFilters,
+  ContratoRescindRequest,
   ContratoResumen,
 } from '../models/contrato.model';
 
@@ -52,5 +53,13 @@ export class ContratoApiService {
 
   get(codcon: number): Observable<Contrato> {
     return this.http.get<Contrato>(`${this.contratosPath}/${codcon}`);
+  }
+
+  rescind(codcon: number, request: ContratoRescindRequest): Observable<Contrato> {
+    return this.http.patch<Contrato>(`${this.contratosPath}/${codcon}/rescindir`, request);
+  }
+
+  finalizeContract(codcon: number): Observable<Contrato> {
+    return this.http.patch<Contrato>(`${this.contratosPath}/${codcon}/finalizar`, undefined);
   }
 }

@@ -95,23 +95,71 @@
     </div>
 
     <div class="relative min-w-0">
-      <label for="contract-property-select">Propiedad</label>
-      <select
+      <label id="contract-property-label" for="contract-property-select">Propiedad</label>
+      <button
         id="contract-property-select"
-        class="filter-select mt-[.35rem]"
-        [disabled]="propertyLoading() || propertyError() !== null || properties().length === 0"
-        [value]="filters().codprop ?? ''"
-        (change)="setProperty($event)"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        role="combobox"
+        aria-labelledby="contract-property-label"
+        aria-controls="contract-property-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'property'"
+        [disabled]="propertyFilterDisabled()"
+        (click)="toggleCatalogFilter('property')"
+        (keydown)="handleCatalogFilterTriggerKeydown($event, 'property')"
       >
-        <option value="">
-          {{ propertyLoading() ? 'Cargando propiedades...' : 'Seleccione una propiedad' }}
-        </option>
-        @for (property of properties(); track property.codprop) {
-          <option [value]="property.codprop">
-            {{ property.nombre }} (#{{ property.codprop }})
-          </option>
-        }
-      </select>
+        <span>{{ selectedPropertyLabel() }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'property' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'property') {
+        <div
+          id="contract-property-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="contract-property-label"
+        >
+          <button
+            type="button"
+            class="filter-option"
+            [class.filter-option-selected]="filters().codprop === null"
+            [attr.aria-selected]="filters().codprop === null"
+            data-filter="property"
+            data-index="0"
+            data-value=""
+            role="option"
+            (click)="selectProperty('')"
+            (keydown)="handleCatalogFilterOptionKeydown($event, 'property', '', 0)"
+          >
+            Seleccione una propiedad
+          </button>
+          @for (property of properties(); track property.codprop; let index = $index) {
+            <button
+              type="button"
+              class="filter-option"
+              [class.filter-option-selected]="property.codprop === filters().codprop"
+              [attr.aria-selected]="property.codprop === filters().codprop"
+              data-filter="property"
+              [attr.data-index]="index + 1"
+              [attr.data-value]="property.codprop"
+              role="option"
+              (click)="selectProperty(property.codprop.toString())"
+              (keydown)="
+                handleCatalogFilterOptionKeydown(
+                  $event,
+                  'property',
+                  property.codprop.toString(),
+                  index + 1
+                )
+              "
+            >
+              {{ property.nombre }} (#{{ property.codprop }})
+            </button>
+          }
+        </div>
+      }
       @if (propertyError(); as message) {
         <div class="filter-inline-error mt-2" role="alert">
           <span>{{ message }}</span>
@@ -121,32 +169,71 @@
     </div>
 
     <div class="relative min-w-0">
-      <label for="contract-unit-select">Unidad</label>
-      <select
+      <label id="contract-unit-label" for="contract-unit-select">Unidad</label>
+      <button
         id="contract-unit-select"
-        class="filter-select mt-[.35rem]"
-        [disabled]="
-          filters().codprop === null ||
-          unitLoading() ||
-          unitError() !== null ||
-          units().length === 0
-        "
-        [value]="filters().coduni ?? ''"
-        (change)="setUnit($event)"
+        type="button"
+        class="filter-trigger mt-[.35rem]"
+        role="combobox"
+        aria-labelledby="contract-unit-label"
+        aria-controls="contract-unit-options"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="openFilter() === 'unit'"
+        [disabled]="unitFilterDisabled()"
+        (click)="toggleCatalogFilter('unit')"
+        (keydown)="handleCatalogFilterTriggerKeydown($event, 'unit')"
       >
-        <option value="">
-          {{
-            unitLoading()
-              ? 'Cargando unidades...'
-              : filters().codprop === null
-                ? 'Seleccione una propiedad primero'
-                : 'Seleccione una unidad'
-          }}
-        </option>
-        @for (unit of units(); track unit.coduni) {
-          <option [value]="unit.coduni">{{ unit.nombre }} (#{{ unit.coduni }})</option>
-        }
-      </select>
+        <span>{{ selectedUnitLabel() }}</span>
+        <mat-icon aria-hidden="true">{{
+          openFilter() === 'unit' ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </button>
+      @if (openFilter() === 'unit') {
+        <div
+          id="contract-unit-options"
+          class="filter-options"
+          role="listbox"
+          aria-labelledby="contract-unit-label"
+        >
+          <button
+            type="button"
+            class="filter-option"
+            [class.filter-option-selected]="filters().coduni === null"
+            [attr.aria-selected]="filters().coduni === null"
+            data-filter="unit"
+            data-index="0"
+            data-value=""
+            role="option"
+            (click)="selectUnit('')"
+            (keydown)="handleCatalogFilterOptionKeydown($event, 'unit', '', 0)"
+          >
+            Seleccione una unidad
+          </button>
+          @for (unit of units(); track unit.coduni; let index = $index) {
+            <button
+              type="button"
+              class="filter-option"
+              [class.filter-option-selected]="unit.coduni === filters().coduni"
+              [attr.aria-selected]="unit.coduni === filters().coduni"
+              data-filter="unit"
+              [attr.data-index]="index + 1"
+              [attr.data-value]="unit.coduni"
+              role="option"
+              (click)="selectUnit(unit.coduni.toString())"
+              (keydown)="
+                handleCatalogFilterOptionKeydown(
+                  $event,
+                  'unit',
+                  unit.coduni.toString(),
+                  index + 1
+                )
+              "
+            >
+              {{ unit.nombre }} (#{{ unit.coduni }})
+            </button>
+          }
+        </div>
+      }
       @if (unitError(); as message) {
         <div class="filter-inline-error mt-2" role="alert">
           <span>{{ message }}</span>
@@ -344,19 +431,10 @@
               @if (contrato.estado === 'VIGENTE') {
                 <button
                   type="button"
-                  class="action tooltip-trigger action-payment"
-                  [attr.aria-label]="'Registrar pago del contrato #' + contrato.codcon"
-                  title="Registrar pago"
-                >
-                  <mat-icon aria-hidden="true">payments</mat-icon>
-                  <span class="action-tooltip" role="tooltip">Registrar pago</span>
-                </button>
-
-                <button
-                  type="button"
                   class="action tooltip-trigger action-finish"
                   [attr.aria-label]="'Finalizar contrato #' + contrato.codcon"
                   title="Finalizar"
+                  (click)="openFinalizeModal(contrato)"
                 >
                   <mat-icon aria-hidden="true">check_circle</mat-icon>
                   <span class="action-tooltip" role="tooltip">Finalizar</span>
@@ -367,6 +445,7 @@
                   class="action tooltip-trigger action-rescind"
                   [attr.aria-label]="'Rescindir contrato #' + contrato.codcon"
                   title="Rescindir"
+                  (click)="openRescindModal(contrato)"
                 >
                   <mat-icon aria-hidden="true">event_busy</mat-icon>
                   <span class="action-tooltip" role="tooltip">Rescindir</span>
@@ -420,3 +499,33 @@
     }
   }
 </section>
+
+@if (actionModal() === 'rescind') {
+  @if (actionContract(); as contract) {
+    <app-contrato-rescind-modal
+      [contract]="contract"
+      [installments]="actionInstallments()"
+      [installmentsLoading]="actionInstallmentsLoading()"
+      [installmentsError]="actionInstallmentsError()"
+      [submitting]="actionSubmitting()"
+      [feedback]="actionFeedback()"
+      (confirmed)="confirmRescind($event)"
+      (closed)="closeActionModal()"
+    />
+  }
+}
+
+@if (actionModal() === 'finalize') {
+  @if (actionContract(); as contract) {
+    <app-contrato-finalize-modal
+      [contract]="contract"
+      [installments]="actionInstallments()"
+      [installmentsLoading]="actionInstallmentsLoading()"
+      [installmentsError]="actionInstallmentsError()"
+      [submitting]="actionSubmitting()"
+      [feedback]="actionFeedback()"
+      (confirmed)="confirmFinalize()"
+      (closed)="closeActionModal()"
+    />
+  }
+}

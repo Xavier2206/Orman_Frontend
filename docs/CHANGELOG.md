@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-09-19 - Fase 23: Modales de acciones del listado de Contratos
+
+### Añadido
+
+- Se añadieron modales ORMAN para rescindir y finalizar contratos desde las
+  acciones del listado, sin crear rutas ni páginas nuevas.
+- La rescisión carga cuotas bajo demanda, permite seleccionar un mes válido,
+  captura un motivo de hasta 500 caracteres y envía el primer día del mes al
+  endpoint confirmado.
+- La finalización muestra las validaciones de fecha, cuotas pagadas y pagos
+  pendientes de revisión antes de habilitar la confirmación.
+- Después de una operación exitosa se actualizan el listado, el resumen y la
+  disponibilidad del catálogo de unidades cuando corresponde.
+- Se corrigió visualmente el ancho del panel compartido a `36rem` y la fuente
+  de ligaduras de Material Symbols, sin alterar la lógica de las acciones.
+
+### Verificado
+
+- Typecheck correcto.
+- Pruebas focalizadas: 2 archivos; 19 pruebas aprobadas.
+- Suite completa: 75 archivos; 528 pruebas aprobadas.
+- Build de producción correcto; persisten avisos de presupuesto CSS y
+  dependencias CommonJS.
+- No se modificó Backend ni `package-lock.json`.
+
 ## 2026-09-19 - Fase 22: Rediseño de cabecera y tarjetas del Detalle de Contrato
 
 ### Cambiado

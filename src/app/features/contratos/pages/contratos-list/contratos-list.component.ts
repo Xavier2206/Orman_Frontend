@@ -25,12 +25,17 @@ import { PageResponse } from '../../../personas/models/persona.model';
 import { UnidadApiService } from '../../../unidades/data/unidad-api.service';
 import { UnidadResponse } from '../../../unidades/models/unidad.model';
 import { ContratosResumenComponent } from '../../components/contratos-resumen/contratos-resumen.component';
+import { ContratoFinalizeModalComponent } from '../../components/contrato-finalize-modal/contrato-finalize-modal.component';
+import { ContratoRescindModalComponent } from '../../components/contrato-rescind-modal/contrato-rescind-modal.component';
 import { ContratoApiService } from '../../data/contrato-api.service';
+import { CuotaApiService } from '../../data/cuota-api.service';
 import {
   Contrato,
   ContratoEstado,
   ContratoListFilters,
+  ContratoRescindRequest,
   ContratoResumen,
+  CuotaResponse,
 } from '../../models/contrato.model';
 
 interface FilterOption {
@@ -38,7 +43,9 @@ interface FilterOption {
   readonly label: string;
 }
 
-type FilterMenu = 'status';
+type FilterMenu = 'status' | 'property' | 'unit';
+type CatalogFilter = 'property' | 'unit';
+type ActionModal = 'rescind' | 'finalize' | null;
 
 interface PropertyLoadResult {
   readonly properties: readonly Propiedad[] | null;
@@ -61,7 +68,13 @@ type ListResult =
 
 @Component({
   selector: 'app-contratos-list',
-  imports: [MatIconModule, RouterLink, ContratosResumenComponent],
+  imports: [
+    MatIconModule,
+    RouterLink,
+    ContratosResumenComponent,
+    ContratoFinalizeModalComponent,
+    ContratoRescindModalComponent,
+  ],
   templateUrl: './contratos-list.component.html',
   styleUrl: './contratos-list.component.css',
 })
@@ -69,6 +82,7 @@ export class ContratosListComponent {
   private readonly api = inject(ContratoApiService);
   private readonly propiedadApi = inject(PropiedadApiService);
   private readonly unidadApi = inject(UnidadApiService);
+  private readonly cuotaApi = inject(CuotaApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly search$ = new Subject<string>();
@@ -79,6 +93,7 @@ export class ContratosListComponent {
   private readonly catalogPageSize = 100;
   private readonly contractSort = 'fechaInicio,desc';
   private readonly catalogSort = 'nombre,asc';
+  private actionLoadToken = 0;
 
   protected readonly page = signal<PageResponse<Contrato> | null>(null);
   protected readonly loading = signal(true);
@@ -97,6 +112,13 @@ export class ContratosListComponent {
   protected readonly units = signal<readonly UnidadResponse[]>([]);
   protected readonly unitLoading = signal(false);
   protected readonly unitError = signal<string | null>(null);
+  protected readonly actionModal = signal<ActionModal>(null);
+  protected readonly actionContract = signal<Contrato | null>(null);
+  protected readonly actionInstallments = signal<readonly CuotaResponse[]>([]);
+  protected readonly actionInstallmentsLoading = signal(false);
+  protected readonly actionInstallmentsError = signal<string | null>(null);
+  protected readonly actionSubmitting = signal(false);
+  protected readonly actionFeedback = signal<string | null>(null);
   protected readonly openFilter = signal<FilterMenu | null>(null);
   protected readonly filters = signal<ContratoListFilters>({
     q: '',
@@ -177,9 +199,14 @@ export class ContratosListComponent {
     this.search$.next((event.target as HTMLInputElement).value);
   }
 
-  protected setProperty(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
+  protected selectProperty(value: string): void {
     const codprop = this.parseCatalogId(value, this.properties(), 'codprop');
+
+    this.applyPropertyFilter(codprop);
+    this.closeFilter(true, 'property');
+  }
+
+  private applyPropertyFilter(codprop: number | null): void {
 
     if (codprop === this.filters().codprop) {
       return;
@@ -196,11 +223,52 @@ export class ContratosListComponent {
     }
   }
 
-  protected setUnit(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
+  protected selectUnit(value: string): void {
     const coduni = this.parseCatalogId(value, this.units(), 'coduni');
 
     this.load({ coduni, page: 0 });
+    this.closeFilter(true, 'unit');
+  }
+
+  protected propertyFilterDisabled(): boolean {
+    return this.propertyLoading() || this.propertyError() !== null || this.properties().length === 0;
+  }
+
+  protected unitFilterDisabled(): boolean {
+    return (
+      this.filters().codprop === null ||
+      this.unitLoading() ||
+      this.unitError() !== null ||
+      this.units().length === 0
+    );
+  }
+
+  protected selectedPropertyLabel(): string {
+    const selectedProperty = this.properties().find(
+      (property) => property.codprop === this.filters().codprop,
+    );
+
+    if (selectedProperty) {
+      return `${selectedProperty.nombre} (#${selectedProperty.codprop})`;
+    }
+
+    return this.propertyLoading() ? 'Cargando propiedades...' : 'Seleccione una propiedad';
+  }
+
+  protected selectedUnitLabel(): string {
+    const selectedUnit = this.units().find((unit) => unit.coduni === this.filters().coduni);
+
+    if (selectedUnit) {
+      return `${selectedUnit.nombre} (#${selectedUnit.coduni})`;
+    }
+
+    if (this.unitLoading()) {
+      return 'Cargando unidades...';
+    }
+
+    return this.filters().codprop === null
+      ? 'Seleccione una propiedad primero'
+      : 'Seleccione una unidad';
   }
 
   protected setState(value: string): void {
@@ -268,6 +336,66 @@ export class ContratosListComponent {
     }
   }
 
+  protected toggleCatalogFilter(filter: CatalogFilter): void {
+    if (this.catalogFilterDisabled(filter)) {
+      return;
+    }
+
+    if (this.openFilter() === filter) {
+      this.closeFilter();
+      return;
+    }
+
+    this.openFilter.set(filter);
+    this.focusFilterOption(this.selectedCatalogIndex(filter), filter);
+  }
+
+  protected handleCatalogFilterTriggerKeydown(
+    event: KeyboardEvent,
+    filter: CatalogFilter,
+  ): void {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+      return;
+    }
+
+    event.preventDefault();
+    this.openFilter.set(filter);
+    this.focusFilterOption(this.selectedCatalogIndex(filter), filter);
+  }
+
+  protected handleCatalogFilterOptionKeydown(
+    event: KeyboardEvent,
+    filter: CatalogFilter,
+    value: string,
+    index: number,
+  ): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeFilter(true, filter);
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+
+      if (filter === 'property') {
+        this.selectProperty(value);
+      } else {
+        this.selectUnit(value);
+      }
+
+      return;
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const offset = event.key === 'ArrowDown' ? 1 : -1;
+      const optionCount = this.catalogOptionCount(filter);
+      const nextIndex = (index + offset + optionCount) % optionCount;
+      this.focusFilterOption(nextIndex, filter);
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   protected closeFilterOnOutsideClick(event: MouseEvent): void {
     const target = event.target;
@@ -315,6 +443,47 @@ export class ContratosListComponent {
 
   protected retry(): void {
     this.load();
+  }
+
+  protected openRescindModal(contract: Contrato): void {
+    this.openActionModal('rescind', contract);
+  }
+
+  protected openFinalizeModal(contract: Contrato): void {
+    this.openActionModal('finalize', contract);
+  }
+
+  protected closeActionModal(): void {
+    if (this.actionSubmitting()) {
+      return;
+    }
+
+    this.actionModal.set(null);
+    this.actionContract.set(null);
+    this.actionInstallments.set([]);
+    this.actionInstallmentsLoading.set(false);
+    this.actionInstallmentsError.set(null);
+    this.actionFeedback.set(null);
+  }
+
+  protected confirmRescind(request: ContratoRescindRequest): void {
+    const contract = this.actionContract();
+
+    if (!contract || this.actionSubmitting()) {
+      return;
+    }
+
+    this.submitContractAction(() => this.api.rescind(contract.codcon, request));
+  }
+
+  protected confirmFinalize(): void {
+    const contract = this.actionContract();
+
+    if (!contract || this.actionSubmitting()) {
+      return;
+    }
+
+    this.submitContractAction(() => this.api.finalizeContract(contract.codcon));
   }
 
   protected changePage(page: number): void {
@@ -422,6 +591,76 @@ export class ContratosListComponent {
     this.loading.set(true);
     this.error.set(null);
     this.requests$.next(filters);
+  }
+
+  private openActionModal(type: Exclude<ActionModal, null>, contract: Contrato): void {
+    this.actionModal.set(type);
+    this.actionContract.set(contract);
+    this.actionInstallments.set([]);
+    this.actionInstallmentsLoading.set(true);
+    this.actionInstallmentsError.set(null);
+    this.actionSubmitting.set(false);
+    this.actionFeedback.set(null);
+    this.loadActionInstallments(contract.codcon);
+  }
+
+  private loadActionInstallments(codcon: number): void {
+    const loadToken = ++this.actionLoadToken;
+
+    this.cuotaApi
+      .listByContract(codcon)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          if (loadToken === this.actionLoadToken) {
+            this.actionInstallmentsLoading.set(false);
+          }
+        }),
+      )
+      .subscribe({
+        next: (installments) => {
+          if (loadToken === this.actionLoadToken) {
+            this.actionInstallments.set(installments);
+          }
+        },
+        error: (requestError: unknown) => {
+          if (loadToken === this.actionLoadToken) {
+            this.actionInstallmentsError.set(
+              this.errorMessage(requestError, 'No fue posible cargar las cuotas del contrato.'),
+            );
+          }
+        },
+      });
+  }
+
+  private submitContractAction(action: () => Observable<Contrato>): void {
+    this.actionSubmitting.set(true);
+    this.actionFeedback.set(null);
+
+    action()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.actionSubmitting.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          const propertyCode = this.filters().codprop;
+
+          this.actionSubmitting.set(false);
+          this.closeActionModal();
+          this.load();
+          this.loadResumen();
+
+          if (propertyCode !== null) {
+            this.retryUnits();
+          }
+        },
+        error: (requestError: unknown) => {
+          this.actionFeedback.set(
+            this.errorMessage(requestError, 'No fue posible actualizar el contrato.'),
+          );
+        },
+      });
   }
 
   private loadProperties(): void {
@@ -540,24 +779,48 @@ export class ContratosListComponent {
     );
   }
 
-  private closeFilter(restoreFocus = false): void {
+  private closeFilter(restoreFocus = false, filter: FilterMenu | null = this.openFilter()): void {
     this.openFilter.set(null);
 
-    if (restoreFocus) {
+    if (restoreFocus && filter) {
       queueMicrotask(() => {
         this.host.nativeElement
-          .querySelector<HTMLButtonElement>('#contract-status-trigger')
+          .querySelector<HTMLButtonElement>(`#contract-${filter}-trigger`)
           ?.focus();
       });
     }
   }
 
-  private focusFilterOption(index: number): void {
+  private focusFilterOption(index: number, filter: FilterMenu = 'status'): void {
     queueMicrotask(() => {
       this.host.nativeElement
-        .querySelector<HTMLElement>(`[data-filter="status"][data-index="${index}"]`)
+        .querySelector<HTMLElement>(`[data-filter="${filter}"][data-index="${index}"]`)
         ?.focus();
     });
+  }
+
+  private selectedCatalogIndex(filter: CatalogFilter): number {
+    if (filter === 'property') {
+      const selectedIndex = this.properties().findIndex(
+        (property) => property.codprop === this.filters().codprop,
+      );
+
+      return selectedIndex < 0 ? 0 : selectedIndex + 1;
+    }
+
+    const selectedIndex = this.units().findIndex(
+      (unit) => unit.coduni === this.filters().coduni,
+    );
+
+    return selectedIndex < 0 ? 0 : selectedIndex + 1;
+  }
+
+  private catalogOptionCount(filter: CatalogFilter): number {
+    return filter === 'property' ? this.properties().length + 1 : this.units().length + 1;
+  }
+
+  private catalogFilterDisabled(filter: CatalogFilter): boolean {
+    return filter === 'property' ? this.propertyFilterDisabled() : this.unitFilterDisabled();
   }
 
   private parseCatalogId(

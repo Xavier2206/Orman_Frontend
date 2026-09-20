@@ -1,0 +1,108 @@
+<div class="action-modal-overlay">
+  <section
+    appPersonaModalFocus
+    class="action-modal-panel action-modal-finalize"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="finalize-modal-title"
+    aria-describedby="finalize-modal-description"
+    [attr.aria-busy]="submitting() || installmentsLoading()"
+    [initialFocusSelector]="'.action-modal-submit'"
+    (escapePressed)="close()"
+  >
+    <header class="action-modal-header">
+      <div class="action-modal-heading">
+        <span class="action-modal-icon" aria-hidden="true">
+          <mat-icon>task_alt</mat-icon>
+        </span>
+        <div>
+          <h2 id="finalize-modal-title">Finalizar contrato</h2>
+          <p id="finalize-modal-description">
+            El contrato llegó a su fecha de finalización. Se conservarán cuotas, pagos y documentos
+            históricos.
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="action-modal-close"
+        aria-label="Cerrar"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    @if (feedback(); as message) {
+      <p class="action-modal-feedback" role="alert">{{ message }}</p>
+    }
+
+    <div class="action-modal-body">
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Información del contrato</h3>
+        <div class="action-modal-card action-modal-info-grid">
+          <div><span>Contrato</span><strong>CON-{{ contract().codcon }}</strong></div>
+          <div><span>Inquilino</span><strong>{{ tenantName() }}</strong></div>
+          <div><span>Unidad</span><strong>{{ unitName() }}</strong></div>
+          <div><span>Fecha fin</span><strong>{{ formatDate(contract().fechaFin) }}</strong></div>
+          <div><span>Estado actual</span><strong>{{ contract().estado }}</strong></div>
+        </div>
+      </section>
+
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Validaciones</h3>
+        @if (installmentsLoading()) {
+          <div class="action-modal-card action-modal-loading" aria-live="polite">Cargando cuotas...</div>
+        } @else if (installmentsError(); as message) {
+          <div class="action-modal-card action-modal-field-error" role="alert">{{ message }}</div>
+        } @else {
+          <div class="action-modal-card">
+            <ul class="action-modal-validation-list">
+              <li [class.invalid]="!validation().endReached">
+                <mat-icon aria-hidden="true">{{ validation().endReached ? 'check_circle' : 'cancel' }}</mat-icon>
+                <span>{{ validation().endReached ? 'Fecha de finalización alcanzada.' : 'La fecha de finalización aún no fue alcanzada.' }}</span>
+              </li>
+              <li [class.invalid]="!validation().allPaid">
+                <mat-icon aria-hidden="true">{{ validation().allPaid ? 'check_circle' : 'cancel' }}</mat-icon>
+                <span>{{ validation().allPaid ? 'Todas las cuotas están pagadas.' : 'No es posible finalizar porque existen cuotas pendientes.' }}</span>
+              </li>
+              <li [class.invalid]="!validation().noPendingReview">
+                <mat-icon aria-hidden="true">{{ validation().noPendingReview ? 'check_circle' : 'cancel' }}</mat-icon>
+                <span>{{ validation().noPendingReview ? 'No existen pagos pendientes de revisión.' : 'Existe un pago pendiente de revisión.' }}</span>
+              </li>
+            </ul>
+          </div>
+        }
+      </section>
+
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Resumen financiero</h3>
+        <div class="action-modal-card action-modal-financial-grid">
+          <div><span>Total cuotas</span><strong>{{ contract().cuotas?.totalCuotas ?? 0 }}</strong></div>
+          <div><span>Cuotas pagadas</span><strong>{{ contract().cuotas?.cuotasPagadas ?? 0 }}</strong></div>
+          <div><span>Saldo pendiente</span><strong>{{ formatMoney(contract().cuotas?.saldoPendiente ?? 0) }}</strong></div>
+        </div>
+      </section>
+
+      <p class="action-modal-warning">
+        Al finalizar, el contrato cambiará a FINALIZADO y conservará todo su historial.
+      </p>
+    </div>
+
+    <footer class="action-modal-footer">
+      <button type="button" class="action-modal-cancel" [disabled]="submitting()" (click)="close()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="action-modal-submit"
+        [disabled]="!canConfirm() || submitting()"
+        (click)="confirm()"
+      >
+        <mat-icon aria-hidden="true">task_alt</mat-icon>
+        {{ submitting() ? 'Finalizando...' : 'Confirmar finalización' }}
+      </button>
+    </footer>
+  </section>
+</div>

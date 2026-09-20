@@ -1,0 +1,190 @@
+<div class="action-modal-overlay">
+  <section
+    appPersonaModalFocus
+    class="action-modal-panel action-modal-rescind"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="rescind-modal-title"
+    aria-describedby="rescind-modal-description"
+    [attr.aria-busy]="submitting() || installmentsLoading()"
+    [initialFocusSelector]="'#rescind-month'"
+    (escapePressed)="close()"
+  >
+    <header class="action-modal-header">
+      <div class="action-modal-heading">
+        <span class="action-modal-icon" aria-hidden="true">
+          <mat-icon>event_busy</mat-icon>
+        </span>
+        <div>
+          <h2 id="rescind-modal-title">Rescindir contrato</h2>
+          <p id="rescind-modal-description">
+            Esta acción termina anticipadamente el contrato y conserva el historial de cuotas,
+            pagos y documentos.
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="action-modal-close"
+        aria-label="Cerrar"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    @if (feedback(); as message) {
+      <p class="action-modal-feedback" role="alert">{{ message }}</p>
+    }
+
+    <form class="action-modal-body" (ngSubmit)="submit()">
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Información del contrato</h3>
+        <div class="action-modal-card action-modal-info-grid">
+          <div><span>Inquilino</span><strong>{{ tenantName() }}</strong></div>
+          <div><span>Unidad</span><strong>{{ unitName() }}</strong></div>
+          <div>
+            <span>Periodo contractual</span>
+            <strong>{{ formatDate(contract().fechaInicio) }} - {{ formatDate(contract().fechaFin) }}</strong>
+          </div>
+          <div><span>Estado actual</span><strong>{{ contract().estado }}</strong></div>
+        </div>
+      </section>
+
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Periodo efectivo de rescisión</h3>
+        <div class="action-modal-card">
+          <div class="action-modal-field">
+            <label for="rescind-month">Fecha de rescisión <span aria-hidden="true">*</span></label>
+            <select
+              id="rescind-month"
+              [value]="effectiveMonth()"
+              [disabled]="submitting() || installmentsLoading() || validMonths().length === 0"
+              aria-required="true"
+              (change)="onMonthChange($event)"
+            >
+              <option value="" disabled>Selecciona un mes</option>
+              @for (month of validMonths(); track month.value) {
+                <option [value]="month.value">{{ month.label }}</option>
+              }
+            </select>
+            <p class="action-modal-help">Cierre formal: {{ formalCloseDate() }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Motivo de rescisión</h3>
+        <div class="action-modal-card action-modal-field">
+          <label for="rescind-reason">Motivo <span aria-hidden="true">*</span></label>
+          <textarea
+            id="rescind-reason"
+            maxlength="500"
+            [value]="reason()"
+            [disabled]="submitting()"
+            aria-required="true"
+            (input)="onReasonInput($event)"
+          ></textarea>
+          <p class="action-modal-counter">{{ remainingCharacters() }} caracteres restantes</p>
+          @if (!validation().hasReason) {
+            <p class="action-modal-field-error">Ingresa un motivo para continuar.</p>
+          }
+        </div>
+      </section>
+
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Estado de cuotas</h3>
+        @if (installmentsLoading()) {
+          <div class="action-modal-card action-modal-loading" aria-live="polite">Cargando cuotas...</div>
+        } @else if (installmentsError(); as message) {
+          <div class="action-modal-card action-modal-field-error" role="alert">{{ message }}</div>
+        } @else {
+          <div class="action-modal-card action-modal-metrics">
+            <div><span>Pagadas hasta la rescisión</span><strong>{{ summary().paid }}</strong></div>
+            <div><span>Pendientes hasta la rescisión</span><strong>{{ summary().pending }}</strong></div>
+            <div><span>Saldo</span><strong>{{ formatMoney(summary().balance) }}</strong></div>
+          </div>
+          <div class="action-modal-quota-columns">
+            <div class="action-modal-card">
+              <h4>Cuotas exigibles</h4>
+              @if (demandedInstallments().length === 0) {
+                <p class="action-modal-empty">No hay cuotas exigibles.</p>
+              } @else {
+                <ul class="action-modal-installment-list">
+                  @for (installment of demandedInstallments(); track installment.codcuo) {
+                    <li>
+                      <span [class.pending]="installment.estado !== 'PAGADA'">
+                        {{ installment.estado === 'PAGADA' ? '✓' : '!' }}
+                      </span>
+                      <div>
+                        <strong>{{ formatInstallmentPeriod(installment) }}</strong>
+                        <small>{{ formatMoney(installment.monto) }}</small>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+            <div class="action-modal-card">
+              <h4>Cuotas posteriores</h4>
+              @if (subsequentInstallments().length === 0) {
+                <p class="action-modal-empty">No hay cuotas posteriores.</p>
+              } @else {
+                <p class="action-modal-muted">Se anularán:</p>
+                <ul class="action-modal-subsequent-list">
+                  @for (installment of subsequentInstallments(); track installment.codcuo) {
+                    <li>{{ formatInstallmentPeriod(installment) }}</li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+          <p class="action-modal-muted">No se eliminan cuotas. Se conservan como historial.</p>
+        }
+      </section>
+
+      <section class="action-modal-section">
+        <h3 class="action-modal-section-title">Validaciones previas</h3>
+        <div class="action-modal-card">
+          <ul class="action-modal-validation-list">
+            <li [class.invalid]="!validation().allDemandedPaid">
+              <mat-icon aria-hidden="true">{{ validation().allDemandedPaid ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span>{{ validation().allDemandedPaid ? 'Todas las cuotas exigibles están pagadas.' : 'Existe saldo pendiente en una cuota.' }}</span>
+            </li>
+            <li [class.invalid]="!validation().noPendingReview">
+              <mat-icon aria-hidden="true">{{ validation().noPendingReview ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span>{{ validation().noPendingReview ? 'No existen pagos pendientes de revisión.' : 'Existe un pago pendiente de revisión.' }}</span>
+            </li>
+            <li [class.invalid]="!validation().hasMonth">
+              <mat-icon aria-hidden="true">{{ validation().hasMonth ? 'check_circle' : 'cancel' }}</mat-icon>
+              <span>{{ validation().hasMonth ? 'Fecha válida para rescisión.' : 'No hay meses válidos para rescindir.' }}</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="action-modal-section">
+        <div class="action-modal-card action-modal-guarantee">
+          <span>Garantía registrada</span>
+          <strong>{{ formatMoney(contract().garantia) }}</strong>
+          <p>La devolución o retención de garantía debe gestionarse según el acuerdo contractual.</p>
+        </div>
+      </section>
+
+      <p class="action-modal-warning">
+        Las cuotas, pagos y recibos históricos se conservarán. Las cuotas posteriores serán anuladas.
+      </p>
+
+      <footer class="action-modal-footer">
+        <button type="button" class="action-modal-cancel" [disabled]="submitting()" (click)="close()">
+          Cancelar
+        </button>
+        <button type="submit" class="action-modal-submit" [disabled]="!canConfirm() || submitting()">
+          <mat-icon aria-hidden="true">event_busy</mat-icon>
+          {{ submitting() ? 'Rescindiendo...' : 'Confirmar rescisión' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
