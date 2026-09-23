@@ -1,87 +1,356 @@
 # ORMAN Frontend
 
-Frontend público de ORMAN, una plataforma familiar para presentar propiedades y unidades disponibles en alquiler.
+Frontend web del sistema **ORMAN**, desarrollado con Angular para la gestión inmobiliaria y la administración de personas, usuarios, roles, propiedades, unidades y contratos.
 
-## Estado actual
-
-- Fases 00 a 05, corrección 05.1 y Fases 06.1–06.2 completadas.
-- Fase 10 de modal visual de inicio de sesión en dos pasos completada.
-- Landing pública estructural disponible en `/`.
-- Layout público reutilizable con encabezado, contenido mediante `router-outlet` y pie de página.
-- Logotipo oficial visible en el encabezado desde `/images/brand/orman-logo.svg`.
-- Hero con logotipo oficial, composición arquitectónica decorativa y movimiento reducido compatible; además de marcadores temporales para propiedades, funcionamiento y contacto.
-- Navegación interna por anclas, header persistente y menú móvil controlado con Angular Signal.
-- Selector compacto de temas ORMAN, Día y Noche integrado en el encabezado.
-- Acceso visual responsive con QuickMenu no modal y LoginModal de credenciales independientes, coordinados desde el header.
-- Estructura `public/images/` preparada, documentada y con el logotipo oficial integrado.
-- Próxima fase pendiente de autorización expresa.
-
-La landing todavía no incluye buscador, filtros, tarjetas reales, datos, autenticación real ni integración con backend. El modal de acceso es exclusivamente visual y no envía credenciales.
+La aplicación proporciona una interfaz pública de presentación y un área privada protegida que se comunica con el backend ORMAN mediante una API REST.
 
 ## Tecnologías
 
-- Angular 22.0.7 y Angular Router.
-- TypeScript 6.0.3 con configuración estricta.
-- Componentes standalone, Signals y ejecución zoneless.
-- Tailwind CSS 4.3.3 con `@tailwindcss/postcss`.
-- Variables CSS semánticas y tres temas mediante `data-theme`.
-- CSS nativo, sin SCSS ni `tailwind.config.js`.
-- Vitest 4.1.10.
+* Angular 22.0.7
+* TypeScript 6.0.3
+* Angular Router
+* Angular HttpClient
+* Angular Signals
+* RxJS 7.8
+* Angular Material
+* Tailwind CSS 4.3.3
+* ngx-sonner
+* Leaflet
+* jsPDF
+* Vitest
+* jsdom
+* npm
 
-## Instalación y ejecución
+La aplicación utiliza componentes standalone y carga diferida de funcionalidades mediante el router de Angular.
 
-Desde la carpeta `orman-frontend`:
+## Funcionalidades principales
+
+Actualmente el frontend incluye:
+
+* landing pública;
+* navegación pública responsive;
+* sistema de temas;
+* autenticación de usuarios;
+* área privada protegida;
+* gestión de sesión;
+* renovación de autenticación mediante refresh token;
+* guards para protección de rutas;
+* interceptor HTTP;
+* gestión de personas;
+* gestión de roles;
+* asignación de roles;
+* gestión de menús;
+* asignación de menús y procesos;
+* gestión de propiedades;
+* gestión de unidades;
+* gestión de contratos;
+* visualización de detalles de contratos;
+* manejo de documentos PDF asociados a contratos;
+* notificaciones visuales;
+* integración con mapas y geocodificación.
+
+El módulo de pagos todavía no forma parte de las funcionalidades publicadas de la aplicación.
+
+## Arquitectura
+
+El código principal se encuentra en:
+
+```text
+src/app/
+├── core/
+├── features/
+├── layouts/
+└── shared/
+```
+
+### `core`
+
+Contiene elementos utilizados de manera transversal por la aplicación, como:
+
+* configuración de API;
+* autenticación;
+* guards;
+* interceptores;
+* servicios centrales.
+
+### `features`
+
+Contiene las funcionalidades organizadas por dominio, entre ellas:
+
+* autenticación;
+* personas;
+* roles;
+* menús;
+* asignaciones;
+* propiedades;
+* unidades;
+* contratos;
+* funcionalidades públicas.
+
+### `layouts`
+
+Contiene las estructuras principales de presentación para las áreas pública y privada.
+
+### `shared`
+
+Contiene componentes y elementos reutilizables entre distintas funcionalidades.
+
+## Requisitos
+
+Para ejecutar el proyecto se requiere:
+
+* Node.js compatible con Angular 22;
+* npm;
+* backend ORMAN disponible para las operaciones que requieren API.
+
+El proyecto utiliza npm como gestor de dependencias y conserva `package-lock.json` para mantener instalaciones reproducibles.
+
+## Instalación
+
+Clona el repositorio y entra en la carpeta del frontend.
+
+Instala las dependencias:
 
 ```powershell
 npm install
-npm start
 ```
 
-La aplicación estará disponible en `http://localhost:4200/`.
+## Ejecución en desarrollo
 
-## Comandos disponibles
+Inicia el servidor de desarrollo:
 
 ```powershell
 npm start
+```
+
+La aplicación estará disponible normalmente en:
+
+```text
+http://localhost:4200
+```
+
+## Conexión con el backend
+
+Las llamadas de negocio utilizan el prefijo:
+
+```text
+/api/v1
+```
+
+Durante el desarrollo local, `proxy.conf.json` redirige las solicitudes `/api` hacia:
+
+```text
+http://localhost:9090
+```
+
+Por lo tanto, el backend ORMAN debe estar disponible en el puerto `9090` para utilizar las funcionalidades que requieren comunicación con la API.
+
+La aplicación evita incorporar una URL absoluta del backend directamente en los componentes y servicios de negocio.
+
+## Autenticación
+
+El frontend implementa autenticación integrada con el backend ORMAN.
+
+La aplicación utiliza:
+
+* token de acceso;
+* refresh token mediante cookie HttpOnly;
+* interceptor HTTP;
+* protección de rutas mediante guard;
+* renovación de sesión;
+* contexto de usuario autenticado.
+
+El token de acceso se mantiene en memoria y no se almacena en `localStorage`.
+
+`localStorage` se utiliza únicamente para configuraciones locales de la interfaz, como preferencias de tema y datos auxiliares del dispositivo.
+
+## Área pública
+
+La aplicación dispone de una interfaz pública que incluye:
+
+* encabezado responsive;
+* landing principal;
+* logotipo ORMAN;
+* selector de tema;
+* navegación;
+* pie de página;
+* acceso al sistema.
+
+Los recursos públicos se encuentran principalmente en:
+
+```text
+public/
+```
+
+El logotipo principal se encuentra en:
+
+```text
+public/images/brand/orman-logo.svg
+```
+
+## Área privada
+
+Después de autenticarse, el usuario puede acceder a las funcionalidades habilitadas de acuerdo con su contexto y permisos.
+
+Las rutas privadas se cargan de manera diferida y están protegidas mediante el sistema de autenticación de la aplicación.
+
+Entre las áreas actualmente disponibles se encuentran:
+
+```text
+Personas
+Roles
+Menús
+Asignaciones
+Propiedades
+Unidades
+Contratos
+```
+
+## Propiedades y unidades
+
+El frontend permite trabajar con información relacionada con propiedades inmobiliarias y sus unidades.
+
+La interfaz incluye operaciones de consulta, formularios, vistas de detalle y acciones asociadas al estado de los recursos.
+
+También se integra funcionalidad de mapas y geocodificación mediante servicios públicos.
+
+## Contratos
+
+El módulo de contratos permite gestionar y consultar información contractual desde el frontend.
+
+Incluye funcionalidades relacionadas con:
+
+* listado de contratos;
+* creación;
+* visualización de detalles;
+* información relacionada con personas y unidades;
+* documentos asociados;
+* visualización y tratamiento de archivos PDF.
+
+## Assets
+
+Los recursos estáticos públicos se almacenan en:
+
+```text
+public/
+```
+
+Entre ellos se incluyen:
+
+```text
+public/favicon.ico
+public/images/brand/orman-logo.svg
+```
+
+Los archivos dentro de `public/` son copiados a la salida pública de Angular durante el proceso de construcción, por lo que esta carpeta debe contener únicamente recursos destinados a formar parte de la aplicación.
+
+## Comandos disponibles
+
+### Desarrollo
+
+```powershell
+npm start
+```
+
+### Build
+
+```powershell
 npm run build
+```
+
+### Pruebas
+
+```powershell
 npm test -- --watch=false
+```
+
+### Modo watch
+
+```powershell
 npm run watch
 ```
 
-## Estructura pública relevante
+## Pruebas
 
-```text
-public/images/
-├── brand/
-├── hero/
-├── properties/
-└── placeholders/
+El proyecto utiliza Vitest para las pruebas unitarias.
 
-src/app/
-├── layouts/public-layout/
-├── features/auth/
-│   ├── quick-menu/
-│   └── login-modal/
-├── features/public/landing/
-│   └── components/
-│       ├── hero-section/
-│       ├── public-footer/
-│       └── public-header/
-└── shared/components/theme-selector/
+Para ejecutar las pruebas sin modo interactivo:
+
+```powershell
+npm test -- --watch=false
 ```
 
-La ruta raíz carga de forma diferida `PublicLayoutComponent`; su ruta hija vacía carga `LandingComponent` dentro del outlet del layout. El componente raíz conserva su propio outlet como punto de entrada del router.
+Los archivos de prueba se mantienen junto a las funcionalidades correspondientes mediante archivos `*.spec.ts`.
 
-Los recursos colocados en `public/images/` se sirven desde la raíz pública. El logotipo oficial se referencia en Angular mediante `/images/brand/orman-logo.svg`, sin importarlo desde TypeScript. Las convenciones completas se encuentran en [public/images/README.md](public/images/README.md).
+Los datos utilizados en pruebas deben ser ficticios y no deben contener información personal real.
 
-## Temas y accesibilidad
+## Build de producción
 
-Los tokens de las tres paletas viven en `src/styles/themes.css` y se exponen a Tailwind mediante `@theme inline` en `src/styles.css`. La interfaz utiliza colores semánticos, foco visible, landmarks, un único `h1`, enlace de salto, áreas táctiles adecuadas y movimiento reducido cuando el sistema lo solicita. El panel del hero conserva una superficie azul marino para mantener el contraste del logotipo oficial incluso en el tema Día.
+Para generar la aplicación:
 
-## Documentación
+```powershell
+npm run build
+```
 
-El índice se encuentra en [docs/README.md](docs/README.md). La estructura visual pública se documenta en [docs/fases/04-1-recursos-visuales-publicos.md](docs/fases/04-1-recursos-visuales-publicos.md), la landing en [docs/fases/05-estructura-landing-publica.md](docs/fases/05-estructura-landing-publica.md), la integración del logotipo en [docs/fases/05-1-integracion-logo-orman.md](docs/fases/05-1-integracion-logo-orman.md), las mejoras del header en [docs/fases/06-1-mejora-header-selector-temas.md](docs/fases/06-1-mejora-header-selector-temas.md), el hero con logotipo animado en [docs/fases/06-2-mejora-hero-logo-animado.md](docs/fases/06-2-mejora-hero-logo-animado.md) y el modal visual en [docs/fases/10-modal-inicio-sesion.md](docs/fases/10-modal-inicio-sesion.md).
+Angular genera la salida de compilación dentro de:
 
-## Alcance
+```text
+dist/
+```
 
-El repositorio contiene exclusivamente el frontend. No se han implementado backend, autenticación, panel administrativo, API, datos de propiedades ni funcionalidades propias de fases posteriores.
+La carpeta `dist/` es generada automáticamente y no forma parte del repositorio.
+
+## Archivos locales y generados
+
+El repositorio no incluye archivos locales o generados como:
+
+```text
+node_modules/
+dist/
+.angular/
+coverage/
+.env
+docs/
+AGENTS.md
+.vscode/
+.idea/
+.history/
+```
+
+Tampoco se incluyen documentación interna de desarrollo, archivos temporales, datos privados ni documentos utilizados únicamente durante el proceso de implementación.
+
+## Estructura general
+
+```text
+Orman_Frontend/
+├── public/
+│   ├── favicon.ico
+│   └── images/
+│       └── brand/
+│           └── orman-logo.svg
+│
+├── src/
+│   ├── app/
+│   │   ├── core/
+│   │   ├── features/
+│   │   ├── layouts/
+│   │   └── shared/
+│   ├── styles/
+│   ├── index.html
+│   └── main.ts
+│
+├── angular.json
+├── package.json
+├── package-lock.json
+├── proxy.conf.json
+├── tsconfig.json
+├── tsconfig.app.json
+├── tsconfig.spec.json
+└── README.md
+```
+
+## Backend
+
+Este repositorio contiene únicamente el frontend web de ORMAN.
+
+La lógica de negocio, persistencia, autenticación del servidor y API REST pertenecen al proyecto backend ORMAN.
