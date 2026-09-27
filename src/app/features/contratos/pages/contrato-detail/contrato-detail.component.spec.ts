@@ -89,8 +89,9 @@ describe('ContratoDetailComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('PAGADA');
     expect(fixture.nativeElement.querySelector('.contract-detail-sidebar')).toBeNull();
-    const documentsTab = fixture.nativeElement.querySelectorAll('[role="tab"]')[1] as
-      HTMLButtonElement;
+    const documentsTab = fixture.nativeElement.querySelectorAll(
+      '[role="tab"]',
+    )[1] as HTMLButtonElement;
     documentsTab.click();
     fixture.detectChanges();
 
@@ -207,14 +208,13 @@ describe('ContratoDetailComponent', () => {
       {
         codpag: 7,
         codcuo: 1,
-        codcta: null,
+        codqr: 12,
         monto: 2500,
         metodo: 'QR',
-        referenciaExterna: 'QR-001',
         fechaPago: '2026-10-01T12:00:00',
         fechaRegistro: '2026-10-01T12:01:00',
         estado: 'CONFIRMADO',
-        origenRegistro: 'PROPIETARIO',
+        origenRegistro: 'PROPIETARIA',
         registradoPor: 'propietario',
         revisadoPor: 'admin',
         fechaRevision: '2026-10-01T12:05:00',

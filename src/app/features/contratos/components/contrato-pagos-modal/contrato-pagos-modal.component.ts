@@ -73,11 +73,10 @@ export class ContratoPagosModalComponent implements OnChanges {
     return `${day}/${month}/${year}${time ? ` ${time.slice(0, 5)}` : ''}`;
   }
 
-  protected methodLabel(method: string): string {
-    const labels: Record<string, string> = {
+  protected methodLabel(method: PagoResponse['metodo']): string {
+    const labels: Record<PagoResponse['metodo'], string> = {
       EFECTIVO: 'Efectivo',
       QR: 'QR',
-      TRANSFERENCIA: 'Transferencia',
     };
 
     return labels[method] ?? method;

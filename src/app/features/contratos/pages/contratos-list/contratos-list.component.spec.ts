@@ -7,12 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageResponse } from '../../../personas/models/persona.model';
 import { Propiedad } from '../../../propiedades/models/propiedad.model';
 import { UnidadResponse } from '../../../unidades/models/unidad.model';
-import {
-  Contrato,
-  ContratoRescindRequest,
-  ContratoResumen,
-  CuotaResponse,
-} from '../../models/contrato.model';
+import { Contrato, ContratoResumen, CuotaResponse } from '../../models/contrato.model';
 import { ContratosListComponent } from './contratos-list.component';
 
 describe('ContratosListComponent', () => {
@@ -497,13 +492,7 @@ describe('ContratosListComponent', () => {
       'app-contrato-rescind-modal .action-modal-submit',
     ) as HTMLButtonElement;
     expect(submit.disabled).toBe(false);
-    const component = fixture.componentInstance as unknown as {
-      confirmRescind(request: ContratoRescindRequest): void;
-    };
-    component.confirmRescind({
-      fechaRescision: '2026-09-01',
-      motivoRescision: 'Entrega anticipada de la unidad',
-    });
+    submit.click();
 
     const rescindRequest = http.expectOne('/api/v1/contratos/1/rescindir');
     expect(rescindRequest.request.method).toBe('PATCH');

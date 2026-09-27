@@ -17,7 +17,12 @@
             Consulta los pagos asociados a {{ formatMoney(cuota.monto) }}.
           </p>
         </div>
-        <button type="button" class="payments-close-button" aria-label="Cerrar pagos" (click)="close()">
+        <button
+          type="button"
+          class="payments-close-button"
+          aria-label="Cerrar pagos"
+          (click)="close()"
+        >
           <mat-icon aria-hidden="true">close</mat-icon>
         </button>
       </header>
@@ -44,14 +49,13 @@
               <li class="payment-item">
                 <div class="payment-item-main">
                   <strong>{{ formatMoney(payment.monto) }}</strong>
-                  <span>{{ methodLabel(payment.metodo) }} · {{ formatDateTime(payment.fechaPago) }}</span>
+                  <span
+                    >{{ methodLabel(payment.metodo) }} ·
+                    {{ formatDateTime(payment.fechaPago) }}</span
+                  >
                 </div>
                 <span class="payment-status">{{ statusLabel(payment.estado) }}</span>
                 <dl class="payment-details">
-                  <div>
-                    <dt>Referencia</dt>
-                    <dd>{{ payment.referenciaExterna || 'Sin referencia' }}</dd>
-                  </div>
                   <div>
                     <dt>Origen</dt>
                     <dd>{{ payment.origenRegistro }}</dd>
@@ -64,7 +68,12 @@
       </div>
 
       <footer class="payments-modal-footer">
-        <button type="button" class="payments-close-action" [disabled]="loading()" (click)="close()">
+        <button
+          type="button"
+          class="payments-close-action"
+          [disabled]="loading()"
+          (click)="close()"
+        >
           Cerrar
         </button>
       </footer>

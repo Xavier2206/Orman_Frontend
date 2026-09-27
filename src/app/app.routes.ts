@@ -122,6 +122,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pagos',
+        loadChildren: () =>
+          import('./features/pagos/pagos.routes').then((feature) => feature.pagosRoutes),
+      },
+      {
         path: 'roles/listar',
         loadComponent: () =>
           import('./features/roles/pages/roles-list/roles-list.component').then(

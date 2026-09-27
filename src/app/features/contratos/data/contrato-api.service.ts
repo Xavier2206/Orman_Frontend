@@ -7,6 +7,7 @@ import { PageResponse } from '../../personas/models/persona.model';
 import {
   Contrato,
   ContratoCreateRequest,
+  ContratoInquilino,
   ContratoListFilters,
   ContratoRescindRequest,
   ContratoResumen,
@@ -45,6 +46,10 @@ export class ContratoApiService {
 
   resumen(): Observable<ContratoResumen> {
     return this.http.get<ContratoResumen>(`${this.contratosPath}/resumen`);
+  }
+
+  listInquilinos(): Observable<readonly ContratoInquilino[]> {
+    return this.http.get<readonly ContratoInquilino[]>(`${this.contratosPath}/inquilinos`);
   }
 
   create(coduni: number, request: ContratoCreateRequest): Observable<Contrato> {

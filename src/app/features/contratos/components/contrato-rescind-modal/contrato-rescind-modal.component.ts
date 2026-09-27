@@ -1,12 +1,9 @@
 import { Component, computed, input, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 
 import { PersonaModalFocusDirective } from '../../../personas/components/persona-modal-focus.directive';
-import {
-  Contrato,
-  ContratoRescindRequest,
-  CuotaResponse,
-} from '../../models/contrato.model';
+import { Contrato, ContratoRescindRequest, CuotaResponse } from '../../models/contrato.model';
 
 interface ContractMonth {
   readonly value: string;
@@ -24,7 +21,7 @@ interface RescissionSummary {
 
 @Component({
   selector: 'app-contrato-rescind-modal',
-  imports: [MatIconModule, PersonaModalFocusDirective],
+  imports: [FormsModule, MatIconModule, PersonaModalFocusDirective],
   templateUrl: './contrato-rescind-modal.component.html',
   styleUrls: [
     '../contrato-action-modal/contrato-action-modal.css',
@@ -118,7 +115,9 @@ export class ContratoRescindModalComponent {
   }
 
   protected tenantName(): string {
-    return this.contract().inquilino?.nombreCompleto || `Inquilino #${this.contract().codperInquilino}`;
+    return (
+      this.contract().inquilino?.nombreCompleto || `Inquilino #${this.contract().codperInquilino}`
+    );
   }
 
   protected unitName(): string {

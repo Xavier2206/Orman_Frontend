@@ -85,6 +85,17 @@ describe('ContratoApiService', () => {
     request.flush({ vigentes: 4, programados: 2, finalizados: 7, rescindidos: 1 });
   });
 
+  it('lists the tenant catalog from the contracts endpoint', () => {
+    const tenants = [{ codper: 15, nombreCompleto: 'Valeria Mendoza', ci: '1234567' }];
+
+    service.listInquilinos().subscribe((result) => expect(result).toEqual(tenants));
+
+    const request = http.expectOne('/api/v1/contratos/inquilinos');
+
+    expect(request.request.method).toBe('GET');
+    request.flush(tenants);
+  });
+
   it('creates a contract under the selected unit using the confirmed request body', () => {
     const requestBody = {
       codperInquilino: 31,

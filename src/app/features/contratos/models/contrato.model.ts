@@ -62,22 +62,32 @@ export interface CuotaResponse {
 
 export type PagoEstado = 'PENDIENTE_REVISION' | 'CONFIRMADO' | 'RECHAZADO' | 'ANULADO';
 
+export type PagoOrigenRegistro = 'PROPIETARIA' | 'INQUILINO';
+
 export interface PagoResponse {
   readonly codpag: number;
   readonly codcuo: number;
-  readonly codcta: number | null;
+  readonly codqr: number | null;
   readonly monto: number;
-  readonly metodo: string;
-  readonly referenciaExterna: string | null;
+  readonly metodo: MetodoPago;
   readonly fechaPago: string;
   readonly fechaRegistro: string;
   readonly estado: PagoEstado;
-  readonly origenRegistro: string;
+  readonly origenRegistro: PagoOrigenRegistro;
   readonly registradoPor: string;
   readonly revisadoPor: string | null;
   readonly fechaRevision: string | null;
   readonly motivoRechazo: string | null;
   readonly motivoAnulacion: string | null;
+}
+
+export type MetodoPago = 'EFECTIVO' | 'QR';
+
+export interface PagoCreateRequest {
+  readonly monto: number;
+  readonly metodo: MetodoPago;
+  readonly idempotencyKey: string;
+  readonly fechaPago?: string;
 }
 
 export interface Contrato {
