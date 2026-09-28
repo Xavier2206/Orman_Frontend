@@ -17,11 +17,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { AuthContextService } from '../../../../core/auth/auth-context.service';
+import { NotificacionesBellComponent } from '../../../../features/notificaciones/components/notificaciones-bell/notificaciones-bell.component';
 import { ThemeSelectorComponent } from '../../../../shared/components/theme-selector/theme-selector.component';
 
 @Component({
   selector: 'app-private-topbar',
-  imports: [MatIconModule, RouterLink, ThemeSelectorComponent],
+  imports: [MatIconModule, NotificacionesBellComponent, RouterLink, ThemeSelectorComponent],
   templateUrl: './private-topbar.component.html',
   styleUrl: './private-topbar.component.css',
 })

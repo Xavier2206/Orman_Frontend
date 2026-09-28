@@ -1,0 +1,18 @@
+<div class="qr-image-panel" aria-label="Imagen del QR vigente">
+  @if (loading()) {
+    <div class="qr-image-state" role="status" aria-busy="true">
+      <span class="qr-image-spinner" aria-hidden="true"></span>
+      Cargando imagen...
+    </div>
+  } @else if (error(); as message) {
+    <div class="qr-image-state qr-image-error" role="alert">
+      <mat-icon class="material-symbols-rounded" aria-hidden="true">broken_image</mat-icon>
+      <span>{{ message }}</span>
+      @if (hasImage()) {
+        <button class="qr-text-button" type="button" (click)="retry.emit()">Reintentar</button>
+      }
+    </div>
+  } @else if (imageUrl(); as url) {
+    <img [src]="url" alt="QR de cobro vigente" (error)="imageLoadError.emit()" />
+  }
+</div>

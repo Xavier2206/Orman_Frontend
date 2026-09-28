@@ -1,0 +1,97 @@
+<section class="qr-history-section" aria-labelledby="qr-history-title">
+  <div class="qr-history-heading">
+    <div>
+      <p class="qr-section-kicker">Registros anteriores</p>
+      <h2 id="qr-history-title">Historial de QR</h2>
+    </div>
+    <button
+      class="qr-icon-button"
+      type="button"
+      aria-label="Actualizar historial de QR"
+      title="Actualizar historial"
+      [disabled]="loading()"
+      (click)="retry.emit()"
+    >
+      <mat-icon class="material-symbols-rounded" aria-hidden="true">refresh</mat-icon>
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="qr-history-state" role="status" aria-busy="true">
+      <span class="qr-spinner" aria-hidden="true"></span>
+      Cargando historial...
+    </div>
+  } @else if (error(); as message) {
+    <div class="qr-history-state qr-error-state" role="alert">
+      <mat-icon class="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+      <span>{{ message }}</span>
+      <button class="qr-secondary-button" type="button" (click)="retry.emit()">Reintentar</button>
+    </div>
+  } @else if (records().length === 0) {
+    <p class="qr-history-empty" role="status">Todavía no hay QR registrados.</p>
+  } @else {
+    <div class="qr-history-desktop">
+      <table class="qr-history-table">
+        <caption class="sr-only">
+          Historial de QR de cobro
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Vigencia</th>
+            <th scope="col">Archivo</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Registrado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (record of records(); track record.codqr) {
+            <tr>
+              <td>
+                <time [attr.datetime]="record.fechaInicio">{{
+                  formatDate(record.fechaInicio)
+                }}</time>
+                <span aria-hidden="true"> – </span>
+                <time [attr.datetime]="record.fechaFin">{{ formatDate(record.fechaFin) }}</time>
+              </td>
+              <td class="qr-history-file">{{ record.nombreArchivo }}</td>
+              <td>
+                <span class="qr-status-badge" [class.qr-status-active]="record.estado === 'ACTIVO'">
+                  <span class="qr-status-dot" aria-hidden="true"></span>
+                  {{ stateLabel(record.estado) }}
+                </span>
+              </td>
+              <td>
+                <time [attr.datetime]="record.fechaRegistro">
+                  {{ formatDateTime(record.fechaRegistro) }}
+                </time>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="qr-history-mobile">
+      @for (record of records(); track record.codqr) {
+        <article class="qr-history-card">
+          <div class="qr-history-card-heading">
+            <span class="qr-status-badge" [class.qr-status-active]="record.estado === 'ACTIVO'">
+              <span class="qr-status-dot" aria-hidden="true"></span>
+              {{ stateLabel(record.estado) }}
+            </span>
+            <time [attr.datetime]="record.fechaRegistro">
+              {{ formatDate(record.fechaRegistro) }}
+            </time>
+          </div>
+          <p class="qr-history-card-file">{{ record.nombreArchivo }}</p>
+          <p class="qr-history-card-dates">
+            <span>Vigente</span>
+            <time [attr.datetime]="record.fechaInicio">{{ formatDate(record.fechaInicio) }}</time>
+            <span aria-hidden="true">–</span>
+            <time [attr.datetime]="record.fechaFin">{{ formatDate(record.fechaFin) }}</time>
+          </p>
+        </article>
+      }
+    </div>
+  }
+</section>

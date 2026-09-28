@@ -1,0 +1,156 @@
+<div class="notification-anchor relative">
+  <button
+    #triggerButton
+    type="button"
+    class="relative grid size-11 place-items-center rounded-lg border border-theme-border bg-card text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    [attr.aria-label]="triggerLabel()"
+    aria-haspopup="dialog"
+    aria-controls="private-notifications-panel"
+    [attr.aria-expanded]="isPanelOpen()"
+    (click)="togglePanel()"
+  >
+    <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+      >notifications</mat-icon
+    >
+    @if (unreadBadge(); as badge) {
+      <span
+        class="notification-count-badge absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full border-2 border-surface bg-accent px-1 text-[0.65rem] leading-none font-bold text-accent-contrast"
+        aria-hidden="true"
+      >
+        {{ badge }}
+      </span>
+    }
+  </button>
+
+  @if (isPanelOpen()) {
+    <section
+      id="private-notifications-panel"
+      class="notification-panel absolute right-0 top-[calc(100%+0.75rem)] z-50 flex max-h-[calc(100dvh-5rem)] w-[min(26rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border border-theme-border bg-card text-content shadow-xl"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="private-notifications-title"
+    >
+      <header
+        class="flex items-center justify-between gap-3 border-b border-theme-border px-4 py-3"
+      >
+        <div class="min-w-0">
+          <h2 id="private-notifications-title" class="text-base font-bold">Notificaciones</h2>
+          <p class="mt-0.5 text-xs text-muted" aria-live="polite">{{ unreadCount() }} sin leer</p>
+        </div>
+        <button
+          #closeButton
+          type="button"
+          class="grid size-10 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-card-hover hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          aria-label="Cerrar notificaciones"
+          (click)="closePanel()"
+        >
+          <mat-icon class="material-symbols-rounded size-5 leading-none" aria-hidden="true"
+            >close</mat-icon
+          >
+        </button>
+      </header>
+
+      <div class="min-h-0 overflow-y-auto overscroll-contain" aria-live="polite">
+        @if (isListLoading() && notifications().length === 0) {
+          <p class="px-5 py-8 text-center text-sm text-muted" role="status">
+            Cargando notificaciones…
+          </p>
+        }
+
+        @if (isListLoading() && notifications().length > 0) {
+          <p class="sr-only" role="status">Actualizando notificaciones…</p>
+        }
+
+        @if (listError()) {
+          <div class="m-4 rounded-xl border border-theme-border bg-surface p-4 text-sm">
+            <p class="text-content" role="alert">No se pudieron cargar las notificaciones.</p>
+            <button
+              type="button"
+              class="mt-3 min-h-10 rounded-lg border border-theme-border px-3 font-semibold text-content transition-colors hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              (click)="retryList()"
+            >
+              Reintentar
+            </button>
+          </div>
+        }
+
+        @if (!isListLoading() && !listError() && notifications().length === 0) {
+          <p class="px-5 py-8 text-center text-sm text-muted">No tienes notificaciones.</p>
+        }
+
+        @if (notifications().length > 0) {
+          <ul class="divide-y divide-theme-border">
+            @for (notification of notifications(); track notification.codnot) {
+              <li>
+                @if (canOpenNotification(notification)) {
+                  <button
+                    type="button"
+                    class="block w-full px-4 py-4 text-left transition-colors hover:bg-card-hover focus-visible:bg-card-hover focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-focus disabled:cursor-wait disabled:opacity-70"
+                    [class.text-muted]="notification.leida"
+                    [disabled]="isOpening(notification.codnot)"
+                    [attr.aria-label]="'Abrir notificación: ' + notification.titulo"
+                    [attr.aria-busy]="isOpening(notification.codnot)"
+                    (click)="openNotification(notification)"
+                  >
+                    <ng-container
+                      [ngTemplateOutlet]="notificationContent"
+                      [ngTemplateOutletContext]="{
+                        $implicit: notification,
+                        isUnread: !notification.leida,
+                      }"
+                    />
+                  </button>
+                } @else {
+                  <article
+                    class="px-4 py-4 text-muted"
+                    [attr.aria-label]="'Notificación leída: ' + notification.titulo"
+                  >
+                    <ng-container
+                      [ngTemplateOutlet]="notificationContent"
+                      [ngTemplateOutletContext]="{ $implicit: notification, isUnread: false }"
+                    />
+                  </article>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+<ng-template #notificationContent let-notification let-isUnread="isUnread">
+  <span class="flex w-full items-start gap-3">
+    <span
+      class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-theme-border bg-surface text-muted"
+      aria-hidden="true"
+    >
+      <mat-icon class="material-symbols-rounded size-4 leading-none">notifications</mat-icon>
+    </span>
+    <span class="min-w-0 flex-1">
+      <span class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span class="break-all text-[0.65rem] font-semibold uppercase tracking-wide text-muted">
+          {{ notification.tipo }}
+        </span>
+        @if (isUnread) {
+          <span class="inline-flex items-center gap-1.5 text-xs font-bold text-content">
+            <span class="size-2 rounded-full bg-accent" aria-hidden="true"></span>
+            Nueva
+          </span>
+        } @else {
+          <span class="text-xs text-muted">Leída</span>
+        }
+      </span>
+      <span class="mt-1 block text-sm" [class.font-semibold]="isUnread">
+        {{ notification.titulo }}
+      </span>
+      <span class="mt-1 block whitespace-normal text-sm leading-5 text-muted">
+        {{ notification.mensaje }}
+      </span>
+      <span class="mt-2 block text-xs text-muted">
+        {{ notification.fechaCreacion | date: 'dd/MM/yyyy · HH:mm' }}
+      </span>
+    </span>
+  </span>
+</ng-template>

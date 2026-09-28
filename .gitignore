@@ -30,7 +30,6 @@ pnpm-debug.log*
 /public/images/**/README.md
 
 # Funcionalidad todavía no publicada
-/src/app/features/pagos/
 
 # Carpetas vacías
 **/.gitkeep

@@ -1,0 +1,195 @@
+<div class="review-overlay">
+  <section
+    appPersonaModalFocus
+    class="review-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="review-payment-title"
+    [attr.aria-busy]="paymentLoading() || submitting()"
+    [initialFocusSelector]="'.review-close-button'"
+    (escapePressed)="close()"
+  >
+    <header class="review-header">
+      <div class="review-heading">
+        <h2 id="review-payment-title">Revisar pago</h2>
+        <p class="review-kicker">Cuota #{{ cuota().codcuo }}</p>
+      </div>
+      <button
+        class="review-close-button"
+        type="button"
+        aria-label="Cerrar revisión del pago"
+        title="Cerrar"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    <div class="review-content">
+      @if (paymentLoading()) {
+        <div class="review-state" role="status" aria-busy="true">
+          <span class="review-spinner" aria-hidden="true"></span>
+          <span>Cargando pago...</span>
+        </div>
+      } @else if (paymentError(); as message) {
+        <div class="review-state review-error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>{{ message }}</span>
+          <button class="review-retry-button" type="button" (click)="retryPayment()">
+            Reintentar
+          </button>
+        </div>
+      } @else if (payment(); as currentPayment) {
+        <div class="review-columns">
+          <section class="payment-column" aria-labelledby="review-payment-details-title">
+            <h3 id="review-payment-details-title" class="payment-column-heading">
+              Datos del pago
+            </h3>
+            <section class="tenant-card" aria-label="Inquilino y cuota">
+              <div>
+                <p class="tenant-name">{{ cuota().nombreCompleto }}</p>
+                <p class="tenant-location">
+                  {{ cuota().nombrePropiedad }} · {{ cuota().nombreUnidad }}
+                </p>
+                <p class="tenant-period">{{ formatPeriod(cuota().periodo) }}</p>
+              </div>
+              <span class="payment-status">
+                {{ reviewUnavailable() ? 'Pago actualizado' : 'Pendiente de revisión' }}
+              </span>
+            </section>
+
+            <dl class="payment-details">
+              <div>
+                <dt>Monto reportado</dt>
+                <dd>{{ formatMoney(currentPayment.monto) }}</dd>
+              </div>
+              <div>
+                <dt>Método</dt>
+                <dd>{{ methodLabel(currentPayment.metodo) }}</dd>
+              </div>
+              <div>
+                <dt>Fecha de pago</dt>
+                <dd>
+                  <time [attr.datetime]="currentPayment.fechaPago">
+                    {{ formatDateTime(currentPayment.fechaPago) }}
+                  </time>
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <app-comprobante-pago-review
+            class="receipt-column"
+            [codpag]="currentPayment.codpag"
+            (loadedChange)="handleReceiptLoaded($event)"
+          />
+        </div>
+
+        @if (rejectionForm()) {
+          <section class="rejection-section" aria-labelledby="payment-rejection-label">
+            <label id="payment-rejection-label" for="payment-rejection-reason">
+              Motivo del rechazo *
+            </label>
+            <textarea
+              id="payment-rejection-reason"
+              maxlength="500"
+              rows="3"
+              required
+              [value]="rejectionReason()"
+              [disabled]="submitting()"
+              [attr.aria-invalid]="rejectionReason().trim().length === 0 ? 'true' : 'false'"
+              aria-describedby="payment-rejection-counter"
+              placeholder="Describe por qué se rechaza el pago."
+              (input)="updateRejectionReason($event)"
+            ></textarea>
+            <p id="payment-rejection-counter" class="rejection-counter" aria-live="polite">
+              {{ rejectionReasonLength() }} / 500
+            </p>
+          </section>
+        }
+
+        @if (confirmationPrompt()) {
+          <section class="confirmation-prompt" aria-labelledby="payment-confirm-question">
+            <p id="payment-confirm-question">
+              ¿Confirmar este pago de {{ formatMoney(currentPayment.monto) }}?
+            </p>
+            <span>Al confirmar, el monto se aplicará financieramente a la cuota.</span>
+          </section>
+        }
+
+        @if (operationError(); as message) {
+          <p class="review-operation-error" role="alert">{{ message }}</p>
+        }
+
+        <footer class="review-footer">
+          @if (rejectionForm()) {
+            <button
+              class="review-secondary-button"
+              type="button"
+              [disabled]="submitting()"
+              (click)="cancelRejection()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="review-danger-button"
+              type="button"
+              [disabled]="!canReject()"
+              (click)="rejectPayment()"
+            >
+              @if (submitting()) {
+                <span class="review-spinner" aria-hidden="true"></span>
+              }
+              {{ submitting() ? 'Rechazando...' : 'Rechazar pago' }}
+            </button>
+          } @else if (confirmationPrompt()) {
+            <button
+              class="review-secondary-button cancel-confirmation"
+              type="button"
+              [disabled]="submitting()"
+              (click)="cancelConfirmation()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="review-primary-button"
+              type="button"
+              [disabled]="!canConfirm()"
+              (click)="confirmPayment()"
+            >
+              @if (submitting()) {
+                <span class="review-spinner" aria-hidden="true"></span>
+              }
+              {{ submitting() ? 'Confirmando...' : 'Confirmar pago' }}
+            </button>
+          } @else {
+            <button
+              class="review-danger-button reject-payment-action"
+              type="button"
+              [disabled]="submitting() || reviewUnavailable()"
+              (click)="beginRejection()"
+            >
+              <mat-icon aria-hidden="true">close</mat-icon>
+              Rechazar pago
+            </button>
+            <button
+              class="review-primary-button confirm-payment-action"
+              type="button"
+              [disabled]="!canConfirm()"
+              (click)="beginConfirmation()"
+            >
+              <mat-icon aria-hidden="true">check</mat-icon>
+              Confirmar pago
+            </button>
+          }
+        </footer>
+      } @else if (reviewUnavailable()) {
+        <div class="review-state review-error" role="alert">
+          <mat-icon aria-hidden="true">info</mat-icon>
+          <span>{{ operationError() }}</span>
+        </div>
+      }
+    </div>
+  </section>
+</div>

@@ -1,0 +1,210 @@
+<div class="history-overlay">
+  <section
+    appPersonaModalFocus
+    class="history-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payment-history-title"
+    aria-describedby="payment-history-summary"
+    [attr.aria-busy]="loading()"
+    (escapePressed)="close()"
+  >
+    <header class="history-header">
+      <div class="history-heading">
+        <p class="history-kicker">Cuota #{{ cuota().codcuo }}</p>
+        <h2 id="payment-history-title">Historial de pagos</h2>
+      </div>
+      <button
+        class="history-close-button"
+        type="button"
+        aria-label="Cerrar historial de pagos"
+        title="Cerrar"
+        (click)="close()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    <section id="payment-history-summary" class="quota-summary" aria-label="Resumen de la cuota">
+      <div class="quota-identity">
+        <p class="tenant-name">{{ cuota().nombreCompleto }}</p>
+        <p class="quota-location">{{ cuota().nombrePropiedad }} · {{ cuota().nombreUnidad }}</p>
+        <p class="quota-period">{{ formatPeriod(cuota().periodo) }}</p>
+      </div>
+
+      <dl class="quota-amounts">
+        <div>
+          <dt>Monto de cuota</dt>
+          <dd>{{ formatMoney(cuota().monto) }}</dd>
+        </div>
+        <div>
+          <dt>Pagado confirmado</dt>
+          <dd>{{ formatMoney(cuota().montoConfirmado) }}</dd>
+        </div>
+        @if (cuota().montoPendienteRevision > 0) {
+          <div class="pending-review-row">
+            <dt>Pendiente de revisión</dt>
+            <dd>{{ formatMoney(cuota().montoPendienteRevision) }}</dd>
+          </div>
+        }
+        <div class="outstanding-balance-row">
+          <dt>Saldo pendiente</dt>
+          <dd>{{ formatMoney(cuota().saldo) }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <div class="history-content" role="region" tabindex="0" aria-label="Movimientos de pago">
+      @if (loading()) {
+        <div class="history-state" role="status" aria-busy="true">
+          <span class="history-spinner" aria-hidden="true"></span>
+          Cargando historial...
+        </div>
+      } @else if (error(); as message) {
+        <div class="history-state history-error" role="alert">
+          <mat-icon aria-hidden="true">error</mat-icon>
+          <span>{{ message }}</span>
+          <button class="retry-button" type="button" (click)="retry()">Reintentar</button>
+        </div>
+      } @else if (payments().length === 0) {
+        <div class="history-state history-empty" role="status">
+          <mat-icon aria-hidden="true">history</mat-icon>
+          <strong>No hay pagos registrados</strong>
+          <span>Esta cuota todavía no tiene movimientos de pago.</span>
+        </div>
+      } @else {
+        <div class="desktop-history">
+          <table class="history-table">
+            <caption class="sr-only">
+              Historial de pagos de la cuota
+              {{
+                cuota().codcuo
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Método</th>
+                <th class="amount-heading" scope="col">Monto</th>
+                <th scope="col">Origen</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (payment of payments(); track payment.codpag) {
+                <tr [attr.data-payment-id]="payment.codpag">
+                  <td>
+                    <time [attr.datetime]="payment.fechaPago">
+                      {{ formatDateTime(payment.fechaPago) }}
+                    </time>
+                    @if (payment.fechaRevision) {
+                      <span class="reviewed-date">
+                        Revisado: {{ formatDateTime(payment.fechaRevision) }}
+                      </span>
+                    }
+                  </td>
+                  <td>
+                    <span class="method-value">
+                      <mat-icon aria-hidden="true">{{ methodIcon(payment.metodo) }}</mat-icon>
+                      {{ methodLabel(payment.metodo) }}
+                    </span>
+                  </td>
+                  <td class="amount-value">{{ formatMoney(payment.monto) }}</td>
+                  <td>{{ originLabel(payment.origenRegistro) }}</td>
+                  <td>
+                    <span class="history-status" [class]="statusClass(payment.estado)">
+                      {{ statusLabel(payment.estado) }}
+                    </span>
+                  </td>
+                  <td class="payment-actions">
+                    @if (canAnnulPayment(payment)) {
+                      <button
+                        class="annul-payment-button"
+                        type="button"
+                        title="Anular pago"
+                        [attr.aria-label]="annulActionLabel(payment)"
+                        (click)="openAnnulment(payment)"
+                      >
+                        <mat-icon aria-hidden="true">block</mat-icon>
+                        <span>Anular pago</span>
+                      </button>
+                    }
+                  </td>
+                </tr>
+                @if (rejectionReason(payment); as reason) {
+                  <tr class="reason-row">
+                    <td colspan="6"><strong>Motivo:</strong> {{ reason }}</td>
+                  </tr>
+                }
+                @if (annulmentReason(payment); as reason) {
+                  <tr class="reason-row">
+                    <td colspan="6"><strong>Motivo:</strong> {{ reason }}</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <ol class="mobile-history" aria-label="Movimientos de pago">
+          @for (payment of payments(); track payment.codpag) {
+            <li class="payment-card" [attr.data-payment-id]="payment.codpag">
+              <div class="payment-card-heading">
+                <time [attr.datetime]="payment.fechaPago">
+                  {{ formatDateTime(payment.fechaPago) }}
+                </time>
+                <span class="history-status" [class]="statusClass(payment.estado)">
+                  {{ statusLabel(payment.estado) }}
+                </span>
+              </div>
+              @if (payment.fechaRevision) {
+                <span class="reviewed-date">
+                  Revisado: {{ formatDateTime(payment.fechaRevision) }}
+                </span>
+              }
+              <div class="payment-card-main">
+                <span class="method-value">
+                  <mat-icon aria-hidden="true">{{ methodIcon(payment.metodo) }}</mat-icon>
+                  {{ methodLabel(payment.metodo) }}
+                </span>
+                <strong>{{ formatMoney(payment.monto) }}</strong>
+              </div>
+              <p class="payment-origin">{{ originLabel(payment.origenRegistro) }}</p>
+              @if (rejectionReason(payment); as reason) {
+                <p class="payment-reason"><strong>Motivo:</strong> {{ reason }}</p>
+              }
+              @if (annulmentReason(payment); as reason) {
+                <p class="payment-reason"><strong>Motivo:</strong> {{ reason }}</p>
+              }
+              @if (canAnnulPayment(payment)) {
+                <button
+                  class="annul-payment-button mobile-annul-button"
+                  type="button"
+                  title="Anular pago"
+                  [attr.aria-label]="annulActionLabel(payment)"
+                  (click)="openAnnulment(payment)"
+                >
+                  <mat-icon aria-hidden="true">block</mat-icon>
+                  <span>Anular pago</span>
+                </button>
+              }
+            </li>
+          }
+        </ol>
+      }
+    </div>
+
+    <footer class="history-footer">
+      <button class="close-action" type="button" (click)="close()">Cerrar</button>
+    </footer>
+  </section>
+</div>
+
+@if (selectedPaymentToAnnul(); as payment) {
+  <app-anular-pago-modal
+    [payment]="payment"
+    (closed)="closeAnnulment($event)"
+    (annulled)="handlePaymentAnnulled()"
+  />
+}

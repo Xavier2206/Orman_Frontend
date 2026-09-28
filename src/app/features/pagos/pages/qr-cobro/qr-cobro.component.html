@@ -1,0 +1,47 @@
+<main class="qr-page" aria-labelledby="qr-page-title">
+  <header class="qr-page-header">
+    <div class="qr-page-heading">
+      <span class="qr-page-icon" aria-hidden="true">
+        <mat-icon class="material-symbols-rounded" aria-hidden="true">qr_code_2</mat-icon>
+      </span>
+      <div>
+        <p class="qr-page-kicker">Gestión de pagos</p>
+        <h1 id="qr-page-title">QR de cobro</h1>
+      </div>
+    </div>
+    <p class="qr-page-description">
+      Configura el QR que utilizarán tus inquilinos para realizar pagos desde sus aplicaciones
+      bancarias.
+    </p>
+  </header>
+
+  <app-qr-cobro-current
+    [currentQr]="currentQr()"
+    [loading]="currentLoading()"
+    [error]="currentError()"
+    [imageLoading]="imageLoading()"
+    [imageError]="imageError()"
+    [imageUrl]="imageUrl()"
+    [hasHistory]="history().length > 0"
+    (retryCurrent)="retryCurrent()"
+    (retryImage)="retryImage()"
+    (configure)="openConfigModal()"
+    (imageLoadError)="handleImageError()"
+  />
+
+  <app-qr-cobro-history
+    [records]="history()"
+    [loading]="historyLoading()"
+    [error]="historyError()"
+    (retry)="retryHistory()"
+  />
+
+  @if (configModalOpen()) {
+    <app-qr-cobro-config-modal
+      [currentQr]="currentQr()"
+      (closed)="closeConfigModal()"
+      (saved)="handleSaved()"
+      (recoveryFailed)="handleRecoveryFailed()"
+    />
+  }
+</main>

@@ -69,8 +69,9 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const router = TestBed.inject(Router);
     const auth = TestBed.inject(AuthService);
+    const http = TestBed.inject(HttpTestingController);
     auth.login('usuario.demo', 'password-demo').subscribe();
-    TestBed.inject(HttpTestingController).expectOne('/api/v1/auth/login').flush({
+    http.expectOne('/api/v1/auth/login').flush({
       status: 'AUTHENTICATED',
       login: 'usuario.demo',
       codper: 10,
@@ -82,6 +83,9 @@ describe('App', () => {
     fixture.detectChanges();
 
     await router.navigateByUrl('/app');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 0 });
     await fixture.whenStable();
     fixture.detectChanges();
 

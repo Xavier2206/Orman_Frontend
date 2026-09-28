@@ -20,6 +20,18 @@ describe('PagoApiService', () => {
 
   afterEach(() => http.verify());
 
+  it('gets a payment by its identifier', () => {
+    const response = paymentResponse(1894);
+
+    service.getById(response.codpag).subscribe((payment) => {
+      expect(payment).toEqual(response);
+    });
+
+    const request = http.expectOne('/api/v1/pagos/9');
+    expect(request.request.method).toBe('GET');
+    request.flush(response);
+  });
+
   it('lists payments for an installment using the backend response fields', () => {
     const response: PagoResponse[] = [paymentResponse()];
 
@@ -108,6 +120,63 @@ describe('PagoApiService', () => {
     expect(request.request.method).toBe('PATCH');
     expect(request.request.body).toEqual(requestBody);
     expect(request.request.body).not.toBeInstanceOf(FormData);
+    request.flush(response);
+  });
+
+  it('loads receipt metadata from the private payment endpoint', () => {
+    const metadata = {
+      nombreArchivo: 'comprobante.png',
+      tipoContenido: 'image/png',
+      fechaRegistro: '2026-09-27T10:15:00',
+    };
+
+    service.getReceiptMetadata(31).subscribe((result) => {
+      expect(result).toEqual(metadata);
+    });
+
+    const request = http.expectOne('/api/v1/pagos/31/comprobante/metadata');
+    expect(request.request.method).toBe('GET');
+    request.flush(metadata);
+  });
+
+  it('loads the private receipt as a blob through HttpClient', () => {
+    const receipt = new Blob(['image bytes'], { type: 'image/jpeg' });
+
+    service.getReceipt(32).subscribe((result) => {
+      expect(result.type).toBe('image/jpeg');
+      expect(result.size).toBe(receipt.size);
+    });
+
+    const request = http.expectOne('/api/v1/pagos/32/comprobante');
+    expect(request.request.method).toBe('GET');
+    expect(request.request.responseType).toBe('blob');
+    request.flush(receipt);
+  });
+
+  it('confirms a payment with a PATCH that has no request body', () => {
+    const response = paymentResponse();
+
+    service.confirmReview(response.codpag).subscribe((payment) => {
+      expect(payment).toEqual(response);
+    });
+
+    const request = http.expectOne('/api/v1/pagos/9/confirmar');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toBeNull();
+    request.flush(response);
+  });
+
+  it('rejects a payment with only the trimmed motivo field', () => {
+    const response = paymentResponse();
+
+    service.rejectReview(response.codpag, 'Comprobante ilegible').subscribe((payment) => {
+      expect(payment).toEqual(response);
+    });
+
+    const request = http.expectOne('/api/v1/pagos/9/rechazar');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ motivo: 'Comprobante ilegible' });
+    expect(Object.keys(request.request.body)).toEqual(['motivo']);
     request.flush(response);
   });
 });

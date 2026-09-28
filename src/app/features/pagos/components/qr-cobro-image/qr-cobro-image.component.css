@@ -1,0 +1,94 @@
+:host {
+  display: block;
+  width: min(100%, 21rem);
+  min-width: 0;
+  min-height: 16rem;
+  aspect-ratio: 1;
+  justify-self: center;
+}
+
+.qr-image-panel {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background: var(--theme-card);
+  padding: 0.75rem;
+}
+
+.qr-image-panel img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.qr-image-state {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: var(--theme-text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.qr-image-error {
+  color: var(--theme-danger-text);
+}
+
+.qr-text-button {
+  display: inline-flex;
+  min-height: 1.8rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  padding: 0.4rem 0.6rem;
+  color: var(--theme-accent-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.qr-image-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: qr-image-spin 0.8s linear infinite;
+}
+
+@keyframes qr-image-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 56rem) {
+  :host {
+    width: min(100%, 19rem);
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-image-spinner {
+    animation: none;
+  }
+}

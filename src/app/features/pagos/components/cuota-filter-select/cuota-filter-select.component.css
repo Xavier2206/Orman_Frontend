@@ -1,0 +1,116 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+label {
+  color: var(--theme-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.filter-select {
+  position: relative;
+  min-width: 0;
+}
+
+.filter-select-expanded {
+  z-index: 50;
+}
+
+.filter-select-trigger {
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  border: 1px solid var(--theme-field-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-field);
+  padding: 0.5rem 0.75rem;
+  color: var(--theme-text);
+  text-align: left;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.filter-select-trigger:hover:not(:disabled) {
+  border-color: var(--theme-border);
+}
+
+.filter-select-trigger:focus-visible {
+  border-color: var(--theme-focus);
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.filter-select-trigger:disabled {
+  cursor: not-allowed;
+  color: var(--theme-text-muted);
+  opacity: 0.72;
+}
+
+.filter-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-select-options {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.35rem);
+  width: 100%;
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-card);
+  padding: 0.25rem;
+  box-shadow: var(--shadow-md);
+}
+
+.filter-select-option {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
+  color: var(--theme-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.filter-select-option:hover,
+.filter-select-option:focus-visible {
+  outline: none;
+  background: var(--theme-card-hover);
+}
+
+.filter-select-option-selected {
+  background: var(--theme-surface);
+  color: var(--theme-accent-text);
+  font-weight: 600;
+}
+
+.mat-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  font-family: 'Material Symbols Rounded' !important;
+  font-feature-settings: 'liga';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-select-trigger {
+    transition: none;
+  }
+}

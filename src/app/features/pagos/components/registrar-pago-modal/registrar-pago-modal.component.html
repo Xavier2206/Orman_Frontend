@@ -1,0 +1,243 @@
+<div class="overlay">
+  <section
+    appPersonaModalFocus
+    class="modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="register-payment-title"
+    aria-describedby="register-payment-summary"
+    [attr.aria-busy]="submitting()"
+    (escapePressed)="close()"
+  >
+    <header class="modal-header">
+      <div class="heading-copy">
+        <p class="modal-kicker">Cuota #{{ cuota().codcuo }}</p>
+        <h2 id="register-payment-title">Registrar pago</h2>
+      </div>
+      <button
+        class="close-button"
+        type="button"
+        aria-label="Cerrar modal registrar pago"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <section id="register-payment-summary" class="quota-summary" aria-label="Resumen de la cuota">
+        <div class="quota-identity">
+          <p class="tenant-name">{{ cuota().nombreCompleto }}</p>
+          <p class="quota-location">{{ cuota().nombrePropiedad }} · {{ cuota().nombreUnidad }}</p>
+          <p class="quota-period">{{ formatPeriod(cuota().periodo) }}</p>
+        </div>
+
+        <dl class="amount-summary">
+          <div>
+            <dt>Monto de cuota</dt>
+            <dd>{{ formatMoney(cuota().monto) }}</dd>
+          </div>
+          <div>
+            <dt>Pagado</dt>
+            <dd>{{ formatMoney(cuota().montoConfirmado) }}</dd>
+          </div>
+          <div class="balance-row">
+            <dt>Saldo pendiente</dt>
+            <dd>{{ formatMoney(cuota().saldo) }}</dd>
+          </div>
+          @if (cuota().montoPendienteRevision > 0) {
+            <div class="review-row">
+              <dt>Pendiente de revisión</dt>
+              <dd>{{ formatMoney(cuota().montoPendienteRevision) }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      @if (cuota().montoPendienteRevision > 0) {
+        <p class="review-warning" role="note">
+          Esta cuota tiene un pago pendiente de revisión. Si corresponde al mismo movimiento,
+          revísalo en lugar de registrar otro pago.
+        </p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="form-field amount-field">
+          <label for="payment-amount">Monto a pagar <span aria-hidden="true">*</span></label>
+          <input
+            id="payment-amount"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            formControlName="monto"
+            aria-describedby="payment-balance-help payment-balance-preview payment-amount-error"
+            [attr.aria-invalid]="form.controls.monto.touched && form.controls.monto.invalid"
+          />
+          <span id="payment-balance-help" class="field-help">
+            Saldo disponible: {{ formatMoney(cuota().saldo) }}
+          </span>
+          <span id="payment-balance-preview" class="field-help" aria-live="polite">
+            @if (balanceAfterPayment(); as balance) {
+              Saldo después del pago: {{ balance }}
+            }
+          </span>
+          <div id="payment-amount-error" class="field-error" aria-live="polite">
+            @if (showAmountError('required')) {
+              <span>Ingresa el monto a pagar.</span>
+            } @else if (showAmountError('minimumAmount')) {
+              <span>El monto mínimo es Bs 0,01.</span>
+            } @else if (showAmountError('maxDecimals')) {
+              <span>Ingresa un monto numérico con máximo dos decimales.</span>
+            } @else if (showAmountError('exceedsBalance')) {
+              <span>
+                El monto no puede superar el saldo disponible de {{ formatMoney(cuota().saldo) }}.
+              </span>
+            }
+          </div>
+        </div>
+
+        <fieldset class="method-fieldset">
+          <legend>Método de pago <span aria-hidden="true">*</span></legend>
+          <div class="method-options">
+            <label class="method-option" for="payment-method-cash">
+              <input
+                id="payment-method-cash"
+                type="radio"
+                value="EFECTIVO"
+                formControlName="metodo"
+              />
+              <mat-icon aria-hidden="true">payments</mat-icon>
+              <span>Efectivo</span>
+            </label>
+            <label class="method-option" for="payment-method-qr">
+              <input id="payment-method-qr" type="radio" value="QR" formControlName="metodo" />
+              <mat-icon aria-hidden="true">qr_code_2</mat-icon>
+              <span>QR</span>
+            </label>
+          </div>
+        </fieldset>
+
+        @if (isQr()) {
+          <div class="qr-fields">
+            <div class="date-time-fields">
+              <div class="form-field">
+                <label for="payment-date">Fecha del pago <span aria-hidden="true">*</span></label>
+                <input
+                  id="payment-date"
+                  type="date"
+                  formControlName="fecha"
+                  [attr.required]="isQr() ? '' : null"
+                  [max]="businessDate"
+                  aria-describedby="payment-datetime-error"
+                  [attr.aria-invalid]="form.controls.fecha.touched && form.controls.fecha.invalid"
+                />
+                @if (form.controls.fecha.touched && form.controls.fecha.hasError('required')) {
+                  <span class="field-error">Selecciona la fecha en que ocurrió el pago.</span>
+                }
+              </div>
+              <div class="form-field">
+                <label for="payment-time">Hora del pago <span aria-hidden="true">*</span></label>
+                <input
+                  id="payment-time"
+                  type="time"
+                  formControlName="hora"
+                  [attr.required]="isQr() ? '' : null"
+                  [attr.max]="maxTimeForDate()"
+                  aria-describedby="payment-datetime-error"
+                  [attr.aria-invalid]="form.controls.hora.touched && form.controls.hora.invalid"
+                />
+                @if (form.controls.hora.touched && form.controls.hora.hasError('required')) {
+                  <span class="field-error">Selecciona la hora en que ocurrió el pago.</span>
+                }
+              </div>
+            </div>
+
+            @if (
+              form.hasError('futureDateTime') &&
+              (form.controls.fecha.dirty ||
+                form.controls.fecha.touched ||
+                form.controls.hora.dirty ||
+                form.controls.hora.touched)
+            ) {
+              <p id="payment-datetime-error" class="field-error" role="alert">
+                No se permiten fechas u horas futuras.
+              </p>
+            } @else {
+              <span id="payment-datetime-error" class="sr-only">
+                Ingresa la fecha y la hora reales del pago. No se permiten valores futuros.
+              </span>
+            }
+
+            <div class="form-field comprobante-field">
+              <label for="payment-proof">Comprobante de pago (opcional)</label>
+              <input
+                #comprobanteInput
+                id="payment-proof"
+                class="proof-input sr-only"
+                type="file"
+                accept="image/png,image/jpeg"
+                aria-describedby="payment-proof-help payment-proof-error"
+                [disabled]="submitting()"
+                (change)="selectComprobante($event)"
+              />
+              <label class="proof-select-button" for="payment-proof">
+                <mat-icon aria-hidden="true">upload</mat-icon>
+                Seleccionar imagen
+              </label>
+              <span id="payment-proof-help" class="field-help"> PNG o JPEG · máximo 5 MB </span>
+              @if (comprobante(); as selectedFile) {
+                <div class="selected-file">
+                  <span>{{ selectedFile.name }} · {{ formatFileSize(selectedFile.size) }}</span>
+                  <button
+                    class="text-button"
+                    type="button"
+                    [disabled]="submitting()"
+                    (click)="removeComprobante(comprobanteInput)"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              }
+              @if (comprobanteError(); as fileError) {
+                <span id="payment-proof-error" class="field-error" role="alert">
+                  {{ fileError }}
+                </span>
+              } @else {
+                <span id="payment-proof-error" class="sr-only"></span>
+              }
+            </div>
+          </div>
+        }
+
+        @if (feedback(); as errorMessage) {
+          <p class="status-error" role="alert">{{ errorMessage }}</p>
+        }
+
+        <footer class="modal-footer">
+          <button
+            class="secondary-button"
+            type="button"
+            [disabled]="submitting()"
+            (click)="close()"
+          >
+            Cancelar
+          </button>
+          <button
+            id="register-payment-submit"
+            class="primary-button"
+            type="submit"
+            [disabled]="submitting() || form.invalid || comprobanteError() !== null"
+          >
+            @if (submitting()) {
+              <span class="spinner" aria-hidden="true"></span>
+            } @else {
+              <mat-icon aria-hidden="true">add_card</mat-icon>
+            }
+            <span aria-live="polite">{{ submitting() ? 'Registrando...' : 'Registrar pago' }}</span>
+          </button>
+        </footer>
+      </form>
+    </div>
+  </section>
+</div>

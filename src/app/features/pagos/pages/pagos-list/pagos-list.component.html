@@ -1,0 +1,248 @@
+<section class="mx-auto w-full min-w-0 max-w-375" aria-labelledby="pagos-title">
+  <header>
+    <h1 id="pagos-title" class="text-3xl font-bold text-content">Gestión de pagos</h1>
+    <p class="mt-2 text-muted">Consulta y administra las cuotas de tus contratos.</p>
+  </header>
+
+  <section
+    class="payments-filter-panel mt-6 grid min-w-0 grid-cols-1 gap-4 rounded-xl border border-theme-border bg-surface p-4 shadow-sm md:grid-cols-2 xl:grid-cols-4"
+    aria-label="Filtros de cuotas"
+  >
+    <app-cuota-filter-select
+      filterId="payment-tenant"
+      label="Inquilino"
+      [options]="tenantOptions()"
+      [value]="filters().inquilino"
+      [placeholder]="tenantLoading() ? 'Cargando inquilinos…' : 'Todos los inquilinos'"
+      [disabled]="tenantLoading() || tenantError() !== null"
+      [loading]="tenantLoading()"
+      (selectionChange)="setTenant($event)"
+    />
+
+    <div class="min-w-0">
+      <label class="filter-label" for="payment-period">Período</label>
+      <div class="period-field">
+        <input
+          id="payment-period"
+          type="month"
+          [class.period-field-empty]="!filters().periodoMes"
+          [value]="filters().periodoMes"
+          aria-describedby="payment-period-hint"
+          (change)="setMonth($event)"
+        />
+        @if (!filters().periodoMes) {
+          <span class="period-placeholder" aria-hidden="true">Todos los períodos</span>
+        } @else {
+          <button
+            class="period-clear"
+            type="button"
+            aria-label="Mostrar todos los períodos"
+            title="Mostrar todos los períodos"
+            (click)="clearMonth()"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        }
+      </div>
+      <span id="payment-period-hint" class="sr-only">
+        Sin selección se muestran todos los períodos.
+      </span>
+    </div>
+
+    <app-cuota-filter-select
+      filterId="payment-state"
+      label="Estado"
+      [options]="stateOptions"
+      [value]="filters().estado"
+      (selectionChange)="setState($event)"
+    />
+
+    <app-cuota-filter-select
+      filterId="payment-due"
+      label="Vencimiento"
+      [options]="dueOptions"
+      [value]="filters().vencimiento"
+      (selectionChange)="setDue($event)"
+    />
+
+    <div class="filter-toolbar md:col-span-2 xl:col-span-4">
+      <button
+        type="button"
+        class="secondary-button"
+        aria-controls="payment-more-filters"
+        [attr.aria-expanded]="moreFiltersExpanded()"
+        (click)="toggleMoreFilters()"
+      >
+        <mat-icon aria-hidden="true">{{ moreFiltersExpanded() ? 'expand_less' : 'tune' }}</mat-icon>
+        {{ moreFiltersExpanded() ? 'Menos filtros' : 'Más filtros' }}
+      </button>
+
+      @if (hasFilters()) {
+        <button type="button" class="clear-filters-button" (click)="clearFilters()">
+          <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+          Limpiar filtros
+        </button>
+      }
+    </div>
+
+    @if (moreFiltersExpanded()) {
+      <div
+        id="payment-more-filters"
+        class="more-filters md:col-span-2 xl:col-span-4"
+        aria-label="Más filtros de cuotas"
+      >
+        <app-cuota-filter-select
+          filterId="payment-property"
+          label="Propiedad"
+          [options]="propertyOptions()"
+          [value]="filters().propiedad"
+          [placeholder]="propertyLoading() ? 'Cargando propiedades…' : 'Todas las propiedades'"
+          [disabled]="propertyLoading() || propertyError() !== null"
+          [loading]="propertyLoading()"
+          (selectionChange)="setProperty($event)"
+        />
+
+        <app-cuota-filter-select
+          filterId="payment-unit"
+          label="Unidad"
+          [options]="unitOptions()"
+          [value]="filters().unidad"
+          [placeholder]="unitPlaceholder()"
+          [disabled]="!filters().propiedad || unitLoading() || unitError() !== null"
+          [loading]="unitLoading()"
+          (selectionChange)="setUnit($event)"
+        />
+
+        <label class="review-filter" for="payment-review-filter">
+          <input
+            id="payment-review-filter"
+            type="checkbox"
+            [checked]="filters().pagoPendienteRevision"
+            (change)="setReviewFilter($event)"
+          />
+          <span>Con pago pendiente de revisión</span>
+        </label>
+      </div>
+    }
+  </section>
+
+  @if (tenantError(); as catalogError) {
+    <p class="catalog-message" role="status">{{ catalogError }}</p>
+  }
+  @if (propertyError(); as catalogError) {
+    <p class="catalog-message" role="status">{{ catalogError }}</p>
+  }
+  @if (unitError(); as catalogError) {
+    <p class="catalog-message" role="status">{{ catalogError }}</p>
+  }
+
+  @if (error(); as requestError) {
+    <div class="payments-error mt-5" role="alert">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <p>{{ requestError }}</p>
+    </div>
+  }
+
+  @if (notificationQuotaNotFound()) {
+    <section class="payments-empty mt-6" role="status" aria-live="polite">
+      <mat-icon aria-hidden="true">receipt_long</mat-icon>
+      <h2>No se encontró la cuota relacionada.</h2>
+    </section>
+  } @else if (loading() && page() === null) {
+    <div class="payments-loading mt-6" role="status" aria-busy="true">
+      <span class="payments-spinner" aria-hidden="true"></span>
+      <span>Cargando cuotas</span>
+    </div>
+  } @else if (page(); as result) {
+    @if (result.totalElements === 0) {
+      <section class="payments-empty mt-6" aria-live="polite">
+        <mat-icon aria-hidden="true">receipt_long</mat-icon>
+        @if (notificationQuotaRequested()) {
+          <h2>No se encontró la cuota relacionada.</h2>
+        } @else if (hasFilters()) {
+          <h2>No encontramos cuotas</h2>
+          <p>Prueba modificando o limpiando los filtros.</p>
+          <button type="button" class="clear-filters-button empty-clear" (click)="clearFilters()">
+            <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
+            Limpiar filtros
+          </button>
+        } @else {
+          <h2>No hay cuotas para mostrar</h2>
+          <p>Las cuotas de tus contratos aparecerán aquí.</p>
+        }
+      </section>
+    } @else {
+      <app-cuota-table
+        class="mt-6"
+        [cuotas]="result.content"
+        [pagosPendientesRevision]="pendingReviewPayments()"
+        [erroresRevision]="pendingReviewLookupErrors()"
+        [focusCodcuo]="notificationCodcuo()"
+        (registerPayment)="openPaymentModal($event)"
+        (reviewPayment)="openReviewPayment($event)"
+        (viewPaymentHistory)="openPaymentHistory($event)"
+      />
+
+      @if (!notificationQuotaRequested()) {
+        <nav
+          class="pagination-bar mt-5"
+          aria-label="Paginación de cuotas"
+          [attr.aria-busy]="loading()"
+        >
+          <div class="pagination-summary">
+            <span>{{ result.totalElements }} cuotas</span>
+            <span class="pagination-current" aria-live="polite">
+              Página {{ result.page + 1 }} de {{ result.totalPages }}
+            </span>
+          </div>
+          <div class="pagination-actions">
+            <button
+              type="button"
+              class="pagination-button"
+              [disabled]="result.first"
+              (click)="changePage(result.page - 1)"
+            >
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              Anterior
+            </button>
+            <button
+              type="button"
+              class="pagination-button"
+              [disabled]="result.last"
+              (click)="changePage(result.page + 1)"
+            >
+              Siguiente
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </div>
+        </nav>
+      }
+    }
+  }
+</section>
+
+@if (selectedQuota(); as quota) {
+  <app-registrar-pago-modal
+    [cuota]="quota"
+    (closed)="closePaymentModal()"
+    (registered)="handlePaymentRegistered()"
+  />
+}
+
+@if (selectedHistoryQuota(); as quota) {
+  <app-historial-pagos-modal
+    [cuota]="quota"
+    (closed)="closePaymentHistory()"
+    (paymentAnnulled)="handlePaymentAnnulled()"
+  />
+}
+
+@if (selectedReviewPayment(); as selection) {
+  <app-revisar-pago-modal
+    [cuota]="selection.cuota"
+    [codpag]="selection.pago.codpag"
+    (closed)="closeReviewPayment()"
+    (reviewed)="handlePaymentReviewed($event)"
+    (refreshRequested)="handleReviewRefreshRequested()"
+  />
+}

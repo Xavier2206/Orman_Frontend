@@ -1,0 +1,47 @@
+<div
+  class="filter-select"
+  [class.filter-select-expanded]="expanded()"
+  (focusout)="handleFocusOut()"
+>
+  <label [id]="filterId() + '-label'" [for]="filterId() + '-trigger'">{{ label() }}</label>
+  <button
+    [id]="filterId() + '-trigger'"
+    class="filter-select-trigger"
+    type="button"
+    [disabled]="disabled()"
+    [attr.aria-labelledby]="filterId() + '-label ' + filterId() + '-value'"
+    [attr.aria-controls]="expanded() ? filterId() + '-options' : null"
+    [attr.aria-haspopup]="'listbox'"
+    [attr.aria-expanded]="expanded()"
+    [attr.aria-busy]="loading()"
+    (click)="toggle()"
+    (keydown)="handleTriggerKeydown($event)"
+  >
+    <span [id]="filterId() + '-value'" class="filter-select-value">{{ selectedLabel() }}</span>
+    <mat-icon aria-hidden="true">{{ expanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+  </button>
+
+  @if (expanded()) {
+    <div
+      [id]="filterId() + '-options'"
+      class="filter-select-options"
+      role="listbox"
+      [attr.aria-labelledby]="filterId() + '-label'"
+    >
+      @for (option of options(); track option.value; let index = $index) {
+        <div
+          [id]="optionId(index)"
+          class="filter-select-option"
+          role="option"
+          tabindex="-1"
+          [attr.aria-selected]="option.value === value()"
+          [class.filter-select-option-selected]="option.value === value()"
+          (click)="selectOption(index)"
+          (keydown)="handleOptionKeydown($event, index)"
+        >
+          {{ option.label }}
+        </div>
+      }
+    </div>
+  }
+</div>

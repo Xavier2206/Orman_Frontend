@@ -1,0 +1,87 @@
+<section class="qr-current-card" aria-labelledby="qr-current-title">
+  <div class="qr-section-heading">
+    <div>
+      <p class="qr-section-kicker">Configuración</p>
+      <h2 id="qr-current-title">QR de cobro vigente</h2>
+    </div>
+    @if (currentQr(); as current) {
+      <span class="qr-status-badge" [class.qr-status-active]="current.estado === 'ACTIVO'">
+        <span class="qr-status-dot" aria-hidden="true"></span>
+        {{ stateLabel(current.estado) }}
+      </span>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="qr-state" role="status" aria-busy="true">
+      <span class="qr-spinner" aria-hidden="true"></span>
+      Consultando el QR vigente...
+    </div>
+  } @else if (error(); as message) {
+    <div class="qr-state qr-error-state" role="alert">
+      <mat-icon class="material-symbols-rounded" aria-hidden="true">error</mat-icon>
+      <span>{{ message }}</span>
+      <button class="qr-secondary-button" type="button" (click)="retryCurrent.emit()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (currentQr(); as current) {
+    <div class="qr-current-content">
+      <app-qr-cobro-image
+        [loading]="imageLoading()"
+        [error]="imageError()"
+        [imageUrl]="imageUrl()"
+        [hasImage]="current.tieneImagen"
+        (retry)="retryImage.emit()"
+        (imageLoadError)="imageLoadError.emit()"
+      />
+
+      <div class="qr-current-details">
+        <p class="qr-detail-intro">Este es el QR disponible para tus inquilinos.</p>
+        <dl class="qr-details-list">
+          <div>
+            <dt>Vigente desde</dt>
+            <dd>
+              <time [attr.datetime]="current.fechaInicio">{{
+                formatDate(current.fechaInicio)
+              }}</time>
+            </dd>
+          </div>
+          <div>
+            <dt>Vigente hasta</dt>
+            <dd>
+              <time [attr.datetime]="current.fechaFin">{{ formatDate(current.fechaFin) }}</time>
+            </dd>
+          </div>
+          <div>
+            <dt>Archivo</dt>
+            <dd>{{ current.nombreArchivo }}</dd>
+          </div>
+        </dl>
+        <button class="qr-primary-button" type="button" (click)="configure.emit()">
+          <mat-icon class="material-symbols-rounded" aria-hidden="true">sync</mat-icon>
+          Cambiar QR
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="qr-empty-state" role="status">
+      <span class="qr-empty-icon" aria-hidden="true">
+        <mat-icon class="material-symbols-rounded">qr_code_2</mat-icon>
+      </span>
+      <h3>No tienes un QR de cobro vigente.</h3>
+      <p>
+        @if (hasHistory()) {
+          Configura un nuevo QR para que tus inquilinos puedan utilizarlo al realizar sus pagos.
+        } @else {
+          Sube el QR proporcionado por tu banco para que tus inquilinos puedan utilizarlo al
+          realizar sus pagos.
+        }
+      </p>
+      <button class="qr-primary-button" type="button" (click)="configure.emit()">
+        <mat-icon class="material-symbols-rounded" aria-hidden="true">upload</mat-icon>
+        {{ hasHistory() ? 'Configurar nuevo QR' : 'Configurar QR' }}
+      </button>
+    </div>
+  }
+</section>

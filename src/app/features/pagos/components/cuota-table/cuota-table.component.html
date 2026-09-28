@@ -1,0 +1,139 @@
+<div
+  class="quota-table-scroll"
+  role="region"
+  tabindex="0"
+  aria-label="Listado de cuotas. Desplazamiento horizontal disponible en pantallas pequeñas."
+>
+  <table class="quota-table">
+    <caption class="sr-only">
+      Listado de cuotas de los contratos
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Inquilino</th>
+        <th class="quota-location-column" scope="col">Propiedad / unidad</th>
+        <th scope="col">Período</th>
+        <th scope="col">Estado</th>
+        <th class="amount-column" scope="col">Monto</th>
+        <th class="amount-column" scope="col">Pagado</th>
+        <th class="amount-column" scope="col">Saldo</th>
+        <th scope="col">Vencimiento</th>
+        <th scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (quota of cuotas(); track quota.codcuo) {
+        <tr
+          [attr.data-codcuo]="quota.codcuo"
+          [class.quota-row-highlight]="highlightedCodcuo() === quota.codcuo"
+        >
+          <td>
+            <span class="primary-cell-text">{{ quota.nombreCompleto }}</span>
+            <span class="secondary-cell-text">Contrato #{{ quota.codcon }}</span>
+          </td>
+          <td class="quota-location-column">
+            <span class="primary-cell-text">{{ quota.nombrePropiedad }}</span>
+            <span class="secondary-cell-text">{{ quota.nombreUnidad }}</span>
+          </td>
+          <td class="nowrap-cell">{{ formatPeriod(quota.periodo) }}</td>
+          <td>
+            <span class="status-badge" [class]="statusClass(quota.estado)">
+              {{ quota.estado }}
+            </span>
+            @if (quota.montoPendienteRevision > 0) {
+              <span class="review-indicator">
+                <mat-icon aria-hidden="true">visibility</mat-icon>
+                <span>
+                  Pago por revisar
+                  <strong>{{ formatMoney(quota.montoPendienteRevision) }}</strong>
+                </span>
+              </span>
+              @if (hasReviewLookupError(quota)) {
+                <span class="review-lookup-error" role="status">
+                  No se pudo comprobar el pago pendiente.
+                </span>
+              }
+            }
+          </td>
+          <td class="amount-cell">{{ formatMoney(quota.monto) }}</td>
+          <td class="amount-cell">{{ formatMoney(quota.montoConfirmado) }}</td>
+          <td class="amount-cell amount-cell-balance">{{ formatMoney(quota.saldo) }}</td>
+          <td class="nowrap-cell">
+            <time [attr.datetime]="quota.fechaVencimiento">
+              {{ formatDate(quota.fechaVencimiento) }}
+            </time>
+            @if (quota.situacionVencimiento !== 'SIN_SALDO') {
+              <span class="due-badge" [class]="dueClass(quota.situacionVencimiento)">
+                {{ dueLabel(quota.situacionVencimiento) }}
+              </span>
+            }
+          </td>
+          <td>
+            <div class="quota-actions">
+              @if (showRegisterAction(quota)) {
+                <span class="action-tooltip-trigger" title="Registrar pago">
+                  <button
+                    class="quota-action"
+                    type="button"
+                    [attr.aria-label]="'Registrar pago de la cuota ' + quota.codcuo"
+                    title="Registrar pago"
+                    (click)="registerPayment.emit(quota)"
+                  >
+                    <mat-icon aria-hidden="true">add_card</mat-icon>
+                  </button>
+                  <span
+                    [id]="'register-tooltip-' + quota.codcuo"
+                    class="action-tooltip"
+                    role="tooltip"
+                  >
+                    Registrar pago
+                  </span>
+                </span>
+              }
+              @for (payment of pendingReviewPayments(quota); track payment.codpag) {
+                <span class="action-tooltip-trigger" [title]="reviewActionLabel(quota, payment)">
+                  <button
+                    class="quota-action review-payment-action"
+                    type="button"
+                    [attr.aria-label]="reviewActionLabel(quota, payment)"
+                    [attr.aria-describedby]="'review-tooltip-' + payment.codpag"
+                    [title]="reviewActionLabel(quota, payment)"
+                    (click)="reviewPayment.emit({ cuota: quota, pago: payment })"
+                  >
+                    <mat-icon aria-hidden="true">visibility</mat-icon>
+                  </button>
+                  <span
+                    [id]="'review-tooltip-' + payment.codpag"
+                    class="action-tooltip"
+                    role="tooltip"
+                  >
+                    Revisar pago {{ formatMoney(payment.monto) }}
+                  </span>
+                </span>
+              }
+              <span class="action-tooltip-trigger" [title]="historyLabel(quota)">
+                <button
+                  class="quota-action"
+                  type="button"
+                  [attr.aria-label]="historyLabel(quota)"
+                  [attr.aria-describedby]="'history-tooltip-' + quota.codcuo"
+                  [title]="historyLabel(quota)"
+                  (click)="viewPaymentHistory.emit(quota)"
+                >
+                  <mat-icon aria-hidden="true">history</mat-icon>
+                </button>
+                <span
+                  [id]="'history-tooltip-' + quota.codcuo"
+                  class="action-tooltip"
+                  role="tooltip"
+                >
+                  {{ historyLabel(quota) }}
+                </span>
+              </span>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

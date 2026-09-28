@@ -31,9 +31,9 @@ describe('PrivateTopbarComponent', () => {
   });
 
   afterEach(() => {
-    http.verify();
-    auth.clearSession();
     fixture.destroy();
+    auth.clearSession();
+    http.verify();
   });
 
   function authenticate(): void {
@@ -54,6 +54,8 @@ describe('PrivateTopbarComponent', () => {
       roles: [{ codr: 1, nombre: 'PROPIETARIO', menus: [] }],
     });
     fixture.detectChanges();
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 0 });
+    fixture.detectChanges();
   }
 
   it('should render ORMAN branding, a Spanish date, themes, real role and profile action', () => {
@@ -68,11 +70,11 @@ describe('PrivateTopbarComponent', () => {
     );
     expect(element.querySelector('[aria-label="Seleccionar tema visual"]')).toBeTruthy();
     expect(element.querySelector('[aria-label="Rol principal"]')).toBeNull();
-    expect(element.querySelector('[aria-label="Notificaciones"]')).toBeNull();
+    expect(element.querySelector('[aria-label="Notificaciones"]')).toBeTruthy();
     expect(element.querySelector('[aria-label="Abrir perfil"]')).toBeTruthy();
     expect(
       [...element.querySelectorAll('mat-icon')].map((icon) => icon.textContent?.trim()),
-    ).toEqual(['person', 'expand_more']);
+    ).toEqual(['notifications', 'person', 'expand_more']);
   });
 
   it('should emit a sidebar request from the topbar hamburger when navigation is available', () => {

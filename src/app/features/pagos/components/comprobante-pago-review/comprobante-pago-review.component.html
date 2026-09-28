@@ -1,0 +1,44 @@
+<section class="receipt-section" aria-labelledby="review-receipt-title">
+  <div class="receipt-heading">
+    <div>
+      <h3 id="review-receipt-title">Comprobante</h3>
+      @if (metadata(); as receiptMetadata) {
+        <p class="receipt-metadata">
+          {{ receiptMetadata.nombreArchivo }} · {{ receiptMetadata.tipoContenido }} ·
+          {{ formatDateTime(receiptMetadata.fechaRegistro) }}
+        </p>
+      }
+    </div>
+    @if (receiptUrl()) {
+      <button
+        class="receipt-expand-button"
+        type="button"
+        [attr.aria-expanded]="previewExpanded()"
+        (click)="togglePreview()"
+      >
+        {{ previewExpanded() ? 'Reducir vista' : 'Ampliar vista' }}
+      </button>
+    }
+  </div>
+
+  <div class="receipt-frame" [class.receipt-frame-expanded]="previewExpanded()">
+    @if (loading()) {
+      <div class="receipt-skeleton" role="status" aria-busy="true">
+        <span class="receipt-skeleton-icon" aria-hidden="true"></span>
+        <span>Cargando comprobante...</span>
+      </div>
+    } @else if (receiptUrl(); as imageUrl) {
+      <img
+        class="receipt-image"
+        [src]="imageUrl"
+        alt="Comprobante del pago enviado por el inquilino"
+      />
+    } @else {
+      <div class="receipt-failure" role="alert">
+        <mat-icon aria-hidden="true">broken_image</mat-icon>
+        <span>{{ error() || 'No se pudo cargar el comprobante.' }}</span>
+        <button class="receipt-retry-button" type="button" (click)="retry()">Reintentar</button>
+      </div>
+    }
+  </div>
+</section>

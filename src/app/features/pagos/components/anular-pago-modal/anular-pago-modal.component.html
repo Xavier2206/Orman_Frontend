@@ -1,0 +1,103 @@
+<div class="annul-overlay">
+  <section
+    appPersonaModalFocus
+    class="annul-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="annul-payment-title"
+    [attr.aria-describedby]="
+      feedback()
+        ? 'annul-payment-question annul-payment-warning annul-payment-error'
+        : 'annul-payment-question annul-payment-warning'
+    "
+    [attr.aria-busy]="submitting()"
+    [initialFocusSelector]="'.annul-reason'"
+    (escapePressed)="close()"
+  >
+    <header class="annul-header">
+      <h2 id="annul-payment-title">Anular pago</h2>
+      <button
+        class="annul-close-button"
+        type="button"
+        aria-label="Cerrar anulación de pago"
+        title="Cerrar"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    <div class="annul-body">
+      <p id="annul-payment-question" class="annul-question">¿Desea anular este pago?</p>
+
+      <dl class="payment-details">
+        <div>
+          <dt>Monto</dt>
+          <dd>{{ formatMoney(payment().monto) }}</dd>
+        </div>
+        <div>
+          <dt>Método</dt>
+          <dd>{{ methodLabel(payment().metodo) }}</dd>
+        </div>
+        <div>
+          <dt>Fecha</dt>
+          <dd>
+            <time [attr.datetime]="payment().fechaPago">
+              {{ formatDateTime(payment().fechaPago) }}
+            </time>
+          </dd>
+        </div>
+      </dl>
+
+      <label class="reason-label" for="annul-reason">Motivo de anulación *</label>
+      <textarea
+        id="annul-reason"
+        class="annul-reason"
+        maxlength="500"
+        rows="3"
+        required
+        [value]="reason()"
+        [disabled]="submitting()"
+        [attr.aria-invalid]="reasonInvalid() ? 'true' : 'false'"
+        [attr.aria-describedby]="
+          feedback() ? 'annul-reason-counter annul-payment-error' : 'annul-reason-counter'
+        "
+        placeholder="Ej. Se registró el pago por error."
+        (input)="updateReason($event)"
+      ></textarea>
+      <div class="reason-meta">
+        <p id="annul-reason-counter" class="reason-counter" aria-live="polite">
+          {{ reasonLength() }} / 500
+        </p>
+        @if (feedback(); as message) {
+          <p id="annul-payment-error" class="annul-error" role="alert">{{ message }}</p>
+        }
+      </div>
+
+      <p id="annul-payment-warning" class="annul-warning">
+        Este pago dejará de contar como monto confirmado y el saldo de la cuota se recalculará
+        automáticamente.
+      </p>
+    </div>
+
+    <footer class="annul-footer">
+      <button class="cancel-button" type="button" [disabled]="submitting()" (click)="close()">
+        Cancelar
+      </button>
+      <button
+        class="confirm-annul-button"
+        type="button"
+        [disabled]="!canSubmit()"
+        (click)="submit()"
+      >
+        @if (submitting()) {
+          <span class="annul-spinner" aria-hidden="true"></span>
+        } @else {
+          <mat-icon aria-hidden="true">block</mat-icon>
+        }
+        <span aria-live="polite">{{ submitting() ? 'Anulando...' : 'Anular pago' }}</span>
+      </button>
+    </footer>
+  </section>
+</div>

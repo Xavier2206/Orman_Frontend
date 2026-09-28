@@ -1,0 +1,159 @@
+<div class="qr-config-overlay">
+  <section
+    appPersonaModalFocus
+    class="qr-config-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="qr-config-title"
+    aria-describedby="qr-config-description"
+    [attr.aria-busy]="submitting()"
+    [initialFocusSelector]="'#qr-start-date'"
+    (escapePressed)="close()"
+  >
+    <header class="qr-config-header">
+      <div>
+        <p class="qr-config-kicker">Gestión de pagos</p>
+        <h2 id="qr-config-title">{{ title() }}</h2>
+      </div>
+      <button
+        class="qr-config-close"
+        type="button"
+        aria-label="Cerrar configuración de QR"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        <mat-icon class="material-symbols-rounded" aria-hidden="true">close</mat-icon>
+      </button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="qr-config-body">
+        <p id="qr-config-description" class="qr-config-description">
+          Sube la imagen proporcionada por tu banco y define el período en que tus inquilinos podrán
+          utilizarla.
+        </p>
+
+        <div class="qr-form-field">
+          <label for="qr-image">Imagen QR <span aria-hidden="true">*</span></label>
+          <input
+            #imageInput
+            id="qr-image"
+            class="sr-only"
+            type="file"
+            required
+            accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+            aria-describedby="qr-image-help qr-image-error"
+            [disabled]="submitting()"
+            (change)="selectImage($event)"
+          />
+          <label class="qr-file-button" for="qr-image">
+            <mat-icon class="material-symbols-rounded" aria-hidden="true">upload</mat-icon>
+            Seleccionar imagen
+          </label>
+          <span id="qr-image-help" class="qr-field-help">PNG o JPG/JPEG · máximo 5 MiB</span>
+
+          @if (selectedImage(); as image) {
+            <div class="qr-selected-file">
+              <span class="qr-file-name">{{ image.name }} · {{ formatFileSize(image.size) }}</span>
+              <button
+                class="qr-text-button"
+                type="button"
+                [disabled]="submitting()"
+                (click)="removeImage(imageInput)"
+              >
+                Quitar
+              </button>
+            </div>
+            @if (previewUrl(); as preview) {
+              <div
+                class="grid aspect-square w-full max-w-[14rem] place-items-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--theme-border)] bg-[var(--theme-surface)] p-2"
+              >
+                <img
+                  class="block size-full object-contain"
+                  [src]="preview"
+                  alt="Vista previa del QR seleccionado"
+                />
+              </div>
+            }
+          }
+
+          <div id="qr-image-error" class="qr-field-error" aria-live="polite">
+            @if (imageError(); as message) {
+              {{ message }}
+            }
+          </div>
+        </div>
+
+        <div class="qr-date-fields">
+          <div class="qr-form-field">
+            <label for="qr-start-date">Fecha de inicio <span aria-hidden="true">*</span></label>
+            <input
+              id="qr-start-date"
+              class="qr-date-input"
+              type="date"
+              formControlName="fechaInicio"
+              required
+              aria-describedby="qr-start-date-error"
+              [attr.aria-invalid]="
+                showFieldError('fechaInicio', 'required') ||
+                showFieldError('fechaInicio', 'dateFormat')
+              "
+            />
+            <div id="qr-start-date-error" class="qr-field-error" aria-live="polite">
+              @if (showFieldError('fechaInicio', 'required')) {
+                Selecciona la fecha de inicio.
+              } @else if (showFieldError('fechaInicio', 'dateFormat')) {
+                Ingresa una fecha válida.
+              }
+            </div>
+          </div>
+
+          <div class="qr-form-field">
+            <label for="qr-end-date">Fecha de vencimiento <span aria-hidden="true">*</span></label>
+            <input
+              id="qr-end-date"
+              class="qr-date-input"
+              type="date"
+              formControlName="fechaFin"
+              required
+              aria-describedby="qr-end-date-error"
+              [attr.aria-invalid]="
+                showFieldError('fechaFin', 'required') ||
+                showFieldError('fechaFin', 'dateFormat') ||
+                form.hasError('dateRange')
+              "
+            />
+            <div id="qr-end-date-error" class="qr-field-error" aria-live="polite">
+              @if (showFieldError('fechaFin', 'required')) {
+                Selecciona la fecha de vencimiento.
+              } @else if (showFieldError('fechaFin', 'dateFormat')) {
+                Ingresa una fecha válida.
+              } @else if (form.hasError('dateRange')) {
+                La fecha de vencimiento no puede ser anterior a la fecha de inicio.
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (feedback(); as message) {
+          <p class="qr-save-error" role="alert">{{ message }}</p>
+        }
+      </div>
+
+      <footer class="qr-config-footer">
+        <button class="qr-cancel-button" type="button" [disabled]="submitting()" (click)="close()">
+          Cancelar
+        </button>
+        <button class="qr-save-button" type="submit" [disabled]="submitting()">
+          @if (submitting()) {
+            <span class="qr-spinner" aria-hidden="true"></span>
+            Guardando...
+          } @else {
+            <mat-icon class="material-symbols-rounded" aria-hidden="true">save</mat-icon>
+            {{ currentQr() ? 'Guardar nuevo QR' : 'Guardar QR' }}
+          }
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
