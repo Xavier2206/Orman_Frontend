@@ -1,20 +1,22 @@
-import { describe, expect, it, vi } from 'vitest';
-
-vi.mock('ngx-sonner', () => ({
-  toast: {
-    dismiss: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    success: vi.fn(),
-    warning: vi.fn(),
-  },
-}));
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { toast } from 'ngx-sonner';
 
 import { OrmanNotificationService } from './orman-notification.service';
 
 describe('OrmanNotificationService', () => {
+  beforeEach(() => {
+    vi.spyOn(toast, 'dismiss').mockImplementation(() => undefined);
+    vi.spyOn(toast, 'error').mockReturnValue('error-toast');
+    vi.spyOn(toast, 'info').mockReturnValue('info-toast');
+    vi.spyOn(toast, 'success').mockReturnValue('success-toast');
+    vi.spyOn(toast, 'warning').mockReturnValue('warning-toast');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('encapsulates success notifications with the ORMAN duration', () => {
     const notification = new OrmanNotificationService();
 

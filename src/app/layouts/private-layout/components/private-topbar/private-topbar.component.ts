@@ -18,6 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { AuthContextService } from '../../../../core/auth/auth-context.service';
 import { NotificacionesBellComponent } from '../../../../features/notificaciones/components/notificaciones-bell/notificaciones-bell.component';
+import { NotificacionRealtimeService } from '../../../../features/notificaciones/data/notificacion-realtime.service';
 import { ThemeSelectorComponent } from '../../../../shared/components/theme-selector/theme-selector.component';
 
 @Component({
@@ -29,6 +30,7 @@ import { ThemeSelectorComponent } from '../../../../shared/components/theme-sele
 export class PrivateTopbarComponent {
   private readonly auth = inject(AuthService);
   private readonly authContext = inject(AuthContextService);
+  private readonly notificacionRealtime = inject(NotificacionRealtimeService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -89,6 +91,7 @@ export class PrivateTopbarComponent {
 
     this.isLoggingOut.set(true);
     this.logoutError.set(null);
+    this.notificacionRealtime.endSession();
     this.auth
       .logout()
       .pipe(

@@ -2,9 +2,14 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { Subject } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { authInterceptor } from '../../../../core/auth/auth.interceptor';
+import {
+  NotificacionRealtimeEvent,
+  NotificacionRealtimeService,
+} from '../../data/notificacion-realtime.service';
 import { NotificacionResponse, NotificacionesPageResponse } from '../../models/notificacion.model';
 import { NotificacionesBellComponent } from './notificaciones-bell.component';
 
@@ -13,14 +18,28 @@ describe('NotificacionesBellComponent', () => {
   let auth: AuthService;
   let http: HttpTestingController;
   let originalVisibilityDescriptor: PropertyDescriptor | undefined;
+  let realtime: {
+    events$: Subject<NotificacionRealtimeEvent>;
+    connected$: Subject<void>;
+    syncWithSession: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
+    realtime = {
+      events$: new Subject<NotificacionRealtimeEvent>(),
+      connected$: new Subject<void>(),
+      syncWithSession: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
     await TestBed.configureTestingModule({
       imports: [NotificacionesBellComponent],
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         provideRouter([]),
+        { provide: NotificacionRealtimeService, useValue: realtime },
       ],
     }).compileComponents();
 
@@ -144,6 +163,43 @@ describe('NotificacionesBellComponent', () => {
     ).toBe('9+');
   });
 
+  it('starts the realtime session after login and after session restoration', () => {
+    authenticate(0);
+    expect(realtime.syncWithSession).toHaveBeenCalledWith('access-token');
+
+    auth.logout().subscribe();
+    http.expectOne('/api/v1/auth/logout').flush(null);
+    fixture.detectChanges();
+    realtime.syncWithSession.mockClear();
+
+    auth.restoreSession().subscribe();
+    http.expectOne('/api/v1/auth/refresh').flush({
+      status: 'AUTHENTICATED',
+      login: 'propietaria',
+      codper: 10,
+      accessToken: 'restored-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      sid: 'restored-session',
+    });
+    fixture.detectChanges();
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 0 });
+
+    expect(realtime.syncWithSession).toHaveBeenCalledWith('restored-token');
+  });
+
+  it('reconnects the badge through REST after STOMP reports a connection', () => {
+    authenticate(0);
+
+    realtime.connected$.next();
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 1 });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('.notification-count-badge')?.textContent?.trim(),
+    ).toBe('1');
+  });
+
   it('loads the first page and shows the empty state', () => {
     authenticate(0);
     openPanel();
@@ -154,6 +210,31 @@ describe('NotificacionesBellComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('No tienes notificaciones.');
+  });
+
+  it('refreshes the badge through REST when a STOMP event arrives', () => {
+    authenticate(1);
+
+    realtime.events$.next({ codnot: 73, tipo: 'COMPROBANTE_RECIBIDO' });
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 2 });
+    fixture.detectChanges();
+
+    expect(
+      fixture.nativeElement.querySelector('.notification-count-badge')?.textContent?.trim(),
+    ).toBe('2');
+  });
+
+  it('refreshes the open notification list from REST after a STOMP event', () => {
+    authenticate(0);
+    openPanel();
+    expectListRequest().flush(createPage([]));
+
+    realtime.events$.next({ codnot: 73, tipo: 'COMPROBANTE_RECIBIDO' });
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 1 });
+    expectListRequest().flush(createPage([createNotification()]));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Comprobante recibido');
   });
 
   it('shows a discreet loading state while the list request is pending', () => {
@@ -297,6 +378,25 @@ describe('NotificacionesBellComponent', () => {
     await vi.advanceTimersByTimeAsync(1);
     http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 2 });
     fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.notification-count-badge')?.textContent?.trim(),
+    ).toBe('2');
+  });
+
+  it('queues a realtime refresh behind an active poll without overlapping REST requests', async () => {
+    vi.useFakeTimers();
+    authenticate(1);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    const pollingRequest = http.expectOne('/api/v1/notificaciones/resumen');
+
+    realtime.events$.next({ codnot: 73, tipo: 'COMPROBANTE_RECIBIDO' });
+    expect(http.match('/api/v1/notificaciones/resumen')).toHaveLength(0);
+
+    pollingRequest.flush({ noLeidas: 1 });
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 2 });
+    fixture.detectChanges();
+
     expect(
       fixture.nativeElement.querySelector('.notification-count-badge')?.textContent?.trim(),
     ).toBe('2');

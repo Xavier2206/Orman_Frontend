@@ -19,7 +19,6 @@ import {
   Subscription,
   catchError,
   distinctUntilChanged,
-  exhaustMap,
   filter,
   finalize,
   from,
@@ -35,6 +34,7 @@ import {
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { OrmanNotificationService } from '../../../../core/notifications/orman-notification.service';
+import { NotificacionRealtimeService } from '../../data/notificacion-realtime.service';
 import { PagoApiService } from '../../../contratos/data/pago-api.service';
 import { NotificacionesApiService } from '../../data/notificaciones-api.service';
 import { NotificacionResponse } from '../../models/notificacion.model';
@@ -55,6 +55,7 @@ const PAGO_NOTIFICATION_TYPES = new Set([
 export class NotificacionesBellComponent {
   private readonly auth = inject(AuthService);
   private readonly api = inject(NotificacionesApiService);
+  private readonly realtime = inject(NotificacionRealtimeService);
   private readonly pagoApi = inject(PagoApiService);
   private readonly router = inject(Router);
   private readonly notification = inject(OrmanNotificationService);
@@ -88,6 +89,8 @@ export class NotificacionesBellComponent {
   protected readonly openingIds = signal<ReadonlySet<number>>(new Set());
 
   private listRequest: Subscription | null = null;
+  private summaryRefreshRequest: Subscription | null = null;
+  private pendingRealtimeRefresh = false;
 
   constructor() {
     effect(() => {
@@ -120,20 +123,26 @@ export class NotificacionesBellComponent {
           )
         : EMPTY;
 
-      const subscription = merge(visiblePolling$, focusRefresh$)
-        .pipe(
-          exhaustMap(() =>
-            this.api.getSummary().pipe(
-              map((summary) => {
-                this.unreadCount.set(summary.noLeidas);
-              }),
-              catchError(() => EMPTY),
-            ),
-          ),
-        )
-        .subscribe();
+      const pollingSubscription = merge(visiblePolling$, focusRefresh$).subscribe(() => {
+        this.requestSummaryRefresh(false);
+      });
+      const realtimeSubscription = merge(this.realtime.events$, this.realtime.connected$).subscribe(
+        () => this.requestSummaryRefresh(true),
+      );
 
-      onCleanup(() => subscription.unsubscribe());
+      onCleanup(() => {
+        pollingSubscription.unsubscribe();
+        realtimeSubscription.unsubscribe();
+        this.pendingRealtimeRefresh = false;
+        this.summaryRefreshRequest?.unsubscribe();
+        this.summaryRefreshRequest = null;
+      });
+    });
+
+    effect((onCleanup) => {
+      this.realtime.syncWithSession(this.auth.accessToken());
+
+      onCleanup(() => this.realtime.disconnect());
     });
   }
 
@@ -260,6 +269,52 @@ export class NotificacionesBellComponent {
         next: (page) => this.notifications.set(page.content),
         error: () => this.listError.set(true),
       });
+  }
+
+  private requestSummaryRefresh(isRealtime: boolean): void {
+    if (this.summaryRefreshRequest) {
+      if (isRealtime) {
+        this.pendingRealtimeRefresh = true;
+      }
+
+      return;
+    }
+
+    const refreshList = isRealtime && this.isPanelOpen();
+
+    if (refreshList) {
+      this.listRequest?.unsubscribe();
+      this.listRequest = null;
+    }
+
+    this.summaryRefreshRequest = this.api
+      .getSummary()
+      .pipe(
+        tap((summary) => this.unreadCount.set(summary.noLeidas)),
+        switchMap(() => {
+          if (!refreshList || !this.isPanelOpen()) {
+            return EMPTY;
+          }
+
+          return this.api.list(0, 20).pipe(
+            tap((page) => {
+              this.notifications.set(page.content);
+              this.listError.set(false);
+            }),
+            catchError(() => EMPTY),
+          );
+        }),
+        catchError(() => EMPTY),
+        finalize(() => {
+          this.summaryRefreshRequest = null;
+
+          if (this.pendingRealtimeRefresh) {
+            this.pendingRealtimeRefresh = false;
+            this.requestSummaryRefresh(true);
+          }
+        }),
+      )
+      .subscribe();
   }
 
   private markNotificationAsRead(notification: NotificacionResponse) {

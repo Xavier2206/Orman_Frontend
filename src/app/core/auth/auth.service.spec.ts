@@ -177,6 +177,23 @@ describe('AuthService and authInterceptor', () => {
     expect(auth.accessToken()).toBe('refreshed-token');
   });
 
+  it('should wait for an existing refresh before returning the current access token', () => {
+    authenticate();
+    let currentToken: string | null | undefined;
+    auth.refreshAccessToken().subscribe();
+    const refresh = http.expectOne('/api/v1/auth/refresh');
+
+    auth.getAccessTokenAfterPendingRefresh().subscribe((accessToken) => {
+      currentToken = accessToken;
+    });
+
+    expect(currentToken).toBeUndefined();
+    refresh.flush(refreshedResponse);
+
+    expect(currentToken).toBe('refreshed-token');
+    expect(http.match('/api/v1/auth/refresh')).toHaveLength(0);
+  });
+
   it('should restore the session during bootstrap when refresh succeeds', () => {
     auth.restoreSession().subscribe();
     http.expectOne('/api/v1/auth/refresh').flush(refreshedResponse);

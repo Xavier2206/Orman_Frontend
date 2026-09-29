@@ -2,10 +2,12 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { AuthContextService } from '../../../../core/auth/auth-context.service';
 import { authInterceptor } from '../../../../core/auth/auth.interceptor';
+import { NotificacionRealtimeService } from '../../../../features/notificaciones/data/notificacion-realtime.service';
 import { PrivateTopbarComponent } from './private-topbar.component';
 
 describe('PrivateTopbarComponent', () => {
@@ -13,14 +15,30 @@ describe('PrivateTopbarComponent', () => {
   let auth: AuthService;
   let context: AuthContextService;
   let http: HttpTestingController;
+  let realtime: {
+    events$: Subject<{ codnot: number; tipo: string }>;
+    connected$: Subject<void>;
+    syncWithSession: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+    endSession: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
+    realtime = {
+      events$: new Subject<{ codnot: number; tipo: string }>(),
+      connected$: new Subject<void>(),
+      syncWithSession: vi.fn(),
+      disconnect: vi.fn(),
+      endSession: vi.fn(),
+    };
+
     await TestBed.configureTestingModule({
       imports: [PrivateTopbarComponent],
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         provideRouter([]),
+        { provide: NotificacionRealtimeService, useValue: realtime },
       ],
     }).compileComponents();
     auth = TestBed.inject(AuthService);
@@ -244,6 +262,7 @@ describe('PrivateTopbarComponent', () => {
     ) as HTMLButtonElement;
     logoutButton.click();
 
+    expect(realtime.endSession).toHaveBeenCalledOnce();
     const request = http.expectOne('/api/v1/auth/logout');
     expect(request.request.headers.get('Authorization')).toBe('Bearer access-token');
     request.flush(null, { status: 204, statusText: 'No Content' });

@@ -115,6 +115,19 @@ export class AuthService {
     return this.refreshRequest$;
   }
 
+  getAccessTokenAfterPendingRefresh(): Observable<string | null> {
+    const pendingRefresh = this.refreshRequest$;
+
+    if (!pendingRefresh) {
+      return of(this.accessToken());
+    }
+
+    return pendingRefresh.pipe(
+      map(() => this.accessToken()),
+      catchError(() => of(null)),
+    );
+  }
+
   logout(): Observable<void> {
     return this.http.post<void>(`${AUTH_PATH}/logout`, null, { withCredentials: true }).pipe(
       tap(() => this.clearSession()),
