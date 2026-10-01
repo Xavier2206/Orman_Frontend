@@ -1,0 +1,8 @@
+{
+  "name": "orman-frontend",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist/orman-frontend/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
