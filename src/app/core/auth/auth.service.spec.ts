@@ -82,6 +82,7 @@ describe('AuthService and authInterceptor', () => {
 
     const request = http.expectOne('/api/v1/auth/login');
     expect(request.request.headers.has('Authorization')).toBe(false);
+    expect(request.request.withCredentials).toBe(true);
     expect(request.request.body).toMatchObject({
       login: 'usuario.demo',
       password: 'password-demo',
@@ -99,42 +100,6 @@ describe('AuthService and authInterceptor', () => {
     expect(auth.expiresIn()).toBe(900);
     expect(localStorage.getItem('accessToken')).toBeNull();
     expect(localStorage.getItem(DEVICE_ID_STORAGE_KEY)).toBeTruthy();
-  });
-
-  it('should retain OTP_REQUIRED only as temporary challenge state', () => {
-    auth.login('usuario.demo', 'password-demo').subscribe();
-    http.expectOne('/api/v1/auth/login').flush({
-      status: 'OTP_REQUIRED',
-      challengeId: 'challenge-id',
-      expiresIn: 300,
-    });
-
-    expect(auth.authenticated()).toBe(false);
-    expect(auth.otpChallenge()).toEqual({ challengeId: 'challenge-id', expiresIn: 300 });
-    expect(localStorage.getItem('challengeId')).toBeNull();
-  });
-
-  it('should verify and resend an OTP without Bearer', () => {
-    auth.login('usuario.demo', 'password-demo').subscribe();
-    http.expectOne('/api/v1/auth/login').flush({
-      status: 'OTP_REQUIRED',
-      challengeId: 'challenge-id',
-      expiresIn: 300,
-    });
-
-    auth.resendOtp().subscribe();
-    const resend = http.expectOne('/api/v1/auth/otp/resend');
-    expect(resend.request.headers.has('Authorization')).toBe(false);
-    resend.flush(null, { status: 204, statusText: 'No Content' });
-
-    auth.verifyOtp('123456').subscribe();
-    const verify = http.expectOne('/api/v1/auth/otp/verify');
-    expect(verify.request.headers.has('Authorization')).toBe(false);
-    expect(verify.request.body).toMatchObject({ challengeId: 'challenge-id', code: '123456' });
-    verify.flush(authenticatedResponse);
-
-    expect(auth.authenticated()).toBe(true);
-    expect(auth.otpChallenge()).toBeNull();
   });
 
   it('should add Bearer only to authenticated non-auth requests', () => {

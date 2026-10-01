@@ -9,9 +9,6 @@ import {
   AuthenticatedResponse,
   LoginRequest,
   LoginResponse,
-  OtpChallenge,
-  OtpResendRequest,
-  OtpVerifyRequest,
 } from './auth.model';
 import { DeviceService } from './device.service';
 
@@ -23,13 +20,11 @@ export class AuthService {
   private readonly device = inject(DeviceService);
   private readonly sessionState = signal<AuthSession | null>(null);
   private readonly authState = signal<AuthState>('checking');
-  private readonly otpChallengeState = signal<OtpChallenge | null>(null);
   private refreshRequest$: Observable<void> | null = null;
   private sessionClearHandler: (() => void) | null = null;
 
   readonly session = this.sessionState.asReadonly();
   readonly state = this.authState.asReadonly();
-  readonly otpChallenge = this.otpChallengeState.asReadonly();
   readonly authenticated = computed(() => this.sessionState() !== null);
   readonly accessToken = computed(() => this.sessionState()?.accessToken ?? null);
   readonly loginName = computed(() => this.sessionState()?.login ?? null);
@@ -48,7 +43,7 @@ export class AuthService {
 
     return this.http
       .post<LoginResponse>(`${AUTH_PATH}/login`, request, { withCredentials: true })
-      .pipe(tap((response) => this.handleLoginResponse(response)));
+      .pipe(tap((response) => this.completeAuthentication(response)));
   }
 
   restoreSession(): Observable<void> {
@@ -59,37 +54,6 @@ export class AuthService {
 
     this.authState.set('checking');
     return this.refreshAccessToken().pipe(catchError(() => of(undefined)));
-  }
-
-  verifyOtp(code: string): Observable<AuthenticatedResponse> {
-    const challenge = this.otpChallengeState();
-
-    if (!challenge) {
-      return throwError(() => new Error('No hay un desafío OTP activo.'));
-    }
-
-    const request: OtpVerifyRequest = {
-      challengeId: challenge.challengeId,
-      code,
-      deviceId: this.device.getDeviceId(),
-      deviceName: this.device.getDeviceName(),
-    };
-
-    return this.http
-      .post<AuthenticatedResponse>(`${AUTH_PATH}/otp/verify`, request, { withCredentials: true })
-      .pipe(tap((response) => this.completeAuthentication(response)));
-  }
-
-  resendOtp(): Observable<void> {
-    const challenge = this.otpChallengeState();
-
-    if (!challenge) {
-      return throwError(() => new Error('No hay un desafío OTP activo.'));
-    }
-
-    const request: OtpResendRequest = { challengeId: challenge.challengeId };
-
-    return this.http.post<void>(`${AUTH_PATH}/otp/resend`, request, { withCredentials: true });
   }
 
   refreshAccessToken(): Observable<void> {
@@ -148,10 +112,6 @@ export class AuthService {
     );
   }
 
-  clearOtpChallenge(): void {
-    this.otpChallengeState.set(null);
-  }
-
   registerSessionClearHandler(handler: () => void): void {
     this.sessionClearHandler = handler;
   }
@@ -159,21 +119,7 @@ export class AuthService {
   clearSession(): void {
     this.sessionState.set(null);
     this.authState.set('unauthenticated');
-    this.clearOtpChallenge();
     this.sessionClearHandler?.();
-  }
-
-  private handleLoginResponse(response: LoginResponse): void {
-    if (response.status === 'AUTHENTICATED') {
-      this.completeAuthentication(response);
-      return;
-    }
-
-    this.otpChallengeState.set({
-      challengeId: response.challengeId,
-      expiresIn: response.expiresIn,
-    });
-    this.authState.set('unauthenticated');
   }
 
   private completeAuthentication(response: AuthenticatedResponse): void {
@@ -185,6 +131,5 @@ export class AuthService {
       sid: response.sid,
     });
     this.authState.set('authenticated');
-    this.clearOtpChallenge();
   }
 }

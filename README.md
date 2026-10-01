@@ -1,356 +1,132 @@
-# ORMAN Frontend
+# ORMAN
 
-Frontend web del sistema **ORMAN**, desarrollado con Angular para la gestión inmobiliaria y la administración de personas, usuarios, roles, propiedades, unidades y contratos.
+> Trabajo Final · Diplomado en Desarrollo Web y Aplicaciones Móviles · UAJMS 2026<br>
+> Autor: `Xavier Ortega Mancilla` · Tutor: <Nombre del tutor>
 
-La aplicación proporciona una interfaz pública de presentación y un área privada protegida que se comunica con el backend ORMAN mediante una API REST.
+## 1. Descripción
 
-## Tecnologías
+ORMAN Frontend es la aplicación web desarrollada con Angular para administrar alquileres e interactuar con el Backend ORMAN. Incluye una landing pública y un área privada para gestionar personas, roles, menús, asignaciones, procesos, propiedades, unidades, contratos, cuotas y pagos. También ofrece comprobantes, documentos PDF, mapas, fotografías y notificaciones.
 
-* Angular 22.0.7
-* TypeScript 6.0.3
-* Angular Router
-* Angular HttpClient
-* Angular Signals
-* RxJS 7.8
-* Angular Material
-* Tailwind CSS 4.3.3
-* ngx-sonner
-* Leaflet
-* jsPDF
-* Vitest
-* jsdom
-* npm
+Este repositorio contiene únicamente el Frontend web. El Backend Spring Boot se mantiene en otro repositorio.
 
-La aplicación utiliza componentes standalone y carga diferida de funcionalidades mediante el router de Angular.
+**Sistema desplegado:** pendiente.
 
-## Funcionalidades principales
+## 2. Stack tecnológico
 
-Actualmente el frontend incluye:
+| Componente | Versión | Función |
+|---|---:|---|
+| Angular | 22.0.7 | Aplicación y componentes standalone |
+| TypeScript | 6.0.3 | Lenguaje y tipado |
+| Angular Router | 22.0.7 | Navegación y carga diferida de rutas |
+| Angular HttpClient | 22.0.7 | Comunicación HTTP con la API |
+| Angular Signals | 22.0.7 | Estado reactivo de la interfaz |
+| RxJS | 7.8.2 | Composición de operaciones asíncronas |
+| Angular Material | 22.0.7 | Iconos y componentes Material utilizados por la aplicación |
+| Tailwind CSS | 4.3.3 | Estilos de interfaz |
+| ngx-sonner | 3.1.0 | Notificaciones visuales |
+| Leaflet | 1.9.4 | Mapas |
+| jsPDF | 4.2.1 | Generación de documentos PDF |
+| Vitest | 4.1.10 | Pruebas unitarias |
+| jsdom | 28.1.0 | Entorno DOM para pruebas |
+| npm | 11.16.0 | Gestor de paquetes declarado por el proyecto |
 
-* landing pública;
-* navegación pública responsive;
-* sistema de temas;
-* autenticación de usuarios;
-* área privada protegida;
-* gestión de sesión;
-* renovación de autenticación mediante refresh token;
-* guards para protección de rutas;
-* interceptor HTTP;
-* gestión de personas;
-* gestión de roles;
-* asignación de roles;
-* gestión de menús;
-* asignación de menús y procesos;
-* gestión de propiedades;
-* gestión de unidades;
-* gestión de contratos;
-* visualización de detalles de contratos;
-* manejo de documentos PDF asociados a contratos;
-* notificaciones visuales;
-* integración con mapas y geocodificación.
+Las versiones de Angular, TypeScript y las dependencias corresponden a las resoluciones de `package-lock.json`; npm se declara mediante `packageManager` en `package.json`. Las funcionalidades se organizan en componentes standalone y rutas con carga diferida.
 
-El módulo de pagos todavía no forma parte de las funcionalidades publicadas de la aplicación.
+## 3. Requisitos previos
 
-## Arquitectura
+- Node.js compatible con Angular 22. El proyecto no define una versión mediante `engines`.
+- npm 11.16.0, indicado en `package.json`.
+- Git.
+- Backend ORMAN disponible para las funciones que consumen la API.
 
-El código principal se encuentra en:
+## 4. Instalación local
 
-```text
-src/app/
-├── core/
-├── features/
-├── layouts/
-└── shared/
-```
-
-### `core`
-
-Contiene elementos utilizados de manera transversal por la aplicación, como:
-
-* configuración de API;
-* autenticación;
-* guards;
-* interceptores;
-* servicios centrales.
-
-### `features`
-
-Contiene las funcionalidades organizadas por dominio, entre ellas:
-
-* autenticación;
-* personas;
-* roles;
-* menús;
-* asignaciones;
-* propiedades;
-* unidades;
-* contratos;
-* funcionalidades públicas.
-
-### `layouts`
-
-Contiene las estructuras principales de presentación para las áreas pública y privada.
-
-### `shared`
-
-Contiene componentes y elementos reutilizables entre distintas funcionalidades.
-
-## Requisitos
-
-Para ejecutar el proyecto se requiere:
-
-* Node.js compatible con Angular 22;
-* npm;
-* backend ORMAN disponible para las operaciones que requieren API.
-
-El proyecto utiliza npm como gestor de dependencias y conserva `package-lock.json` para mantener instalaciones reproducibles.
-
-## Instalación
-
-Clona el repositorio y entra en la carpeta del frontend.
-
-Instala las dependencias:
-
-```powershell
+```bash
+git clone <URL del repositorio frontend>
+cd Orman_Frontend
 npm install
-```
-
-## Ejecución en desarrollo
-
-Inicia el servidor de desarrollo:
-
-```powershell
 npm start
 ```
 
-La aplicación estará disponible normalmente en:
+La aplicación de desarrollo queda disponible normalmente en `http://localhost:4200`.
+
+El Backend local se espera en `http://localhost:9090`. Durante el desarrollo, `proxy.conf.json` redirige las solicitudes `/api` a ese servidor. Angular utiliza la API con el prefijo `/api/v1`.
+
+### Autenticación y comunicación
+
+El login web envía usuario y contraseña a `POST /api/v1/auth/login`. Tras recibir `AUTHENTICATED`, Angular conserva el JWT de acceso en memoria y consulta `GET /api/v1/auth/context` para cargar los datos de la cuenta y sus roles. Las rutas privadas están protegidas por un guard de autenticación.
+
+La renovación de sesión utiliza la cookie de refresh `HttpOnly` mediante solicitudes con `withCredentials`; Angular no lee esa cookie. La protección XSRF utiliza la cookie `XSRF-TOKEN` y el encabezado `X-XSRF-TOKEN`. El access token y el refresh token no se guardan en `localStorage`; allí se conservan preferencias de tema y un identificador auxiliar del dispositivo.
+
+### WebSocket y notificaciones
+
+El cliente usa WebSocket/STOMP en `ws://localhost:9090/ws` y se suscribe al canal privado `/user/queue/notificaciones`. Los avisos en tiempo real actualizan la interfaz; REST continúa siendo la fuente de verdad. La campana muestra el resumen y el listado de notificaciones y permite marcarlas como leídas.
+
+## 5. Variables de entorno
+
+El Frontend no requiere archivos `.env` ni variables de entorno para el desarrollo local. Las solicitudes usan rutas relativas y `proxy.conf.json` dirige `/api` al Backend local.
+
+| Variable | Obligatoria | Descripción |
+|---|---|---|
+| — | — | No se requieren variables de entorno para el flujo local documentado. |
+
+## 6. Estructura del repositorio
 
 ```text
-http://localhost:4200
-```
-
-## Conexión con el backend
-
-Las llamadas de negocio utilizan el prefijo:
-
-```text
-/api/v1
-```
-
-Durante el desarrollo local, `proxy.conf.json` redirige las solicitudes `/api` hacia:
-
-```text
-http://localhost:9090
-```
-
-Por lo tanto, el backend ORMAN debe estar disponible en el puerto `9090` para utilizar las funcionalidades que requieren comunicación con la API.
-
-La aplicación evita incorporar una URL absoluta del backend directamente en los componentes y servicios de negocio.
-
-## Autenticación
-
-El frontend implementa autenticación integrada con el backend ORMAN.
-
-La aplicación utiliza:
-
-* token de acceso;
-* refresh token mediante cookie HttpOnly;
-* interceptor HTTP;
-* protección de rutas mediante guard;
-* renovación de sesión;
-* contexto de usuario autenticado.
-
-El token de acceso se mantiene en memoria y no se almacena en `localStorage`.
-
-`localStorage` se utiliza únicamente para configuraciones locales de la interfaz, como preferencias de tema y datos auxiliares del dispositivo.
-
-## Área pública
-
-La aplicación dispone de una interfaz pública que incluye:
-
-* encabezado responsive;
-* landing principal;
-* logotipo ORMAN;
-* selector de tema;
-* navegación;
-* pie de página;
-* acceso al sistema.
-
-Los recursos públicos se encuentran principalmente en:
-
-```text
-public/
-```
-
-El logotipo principal se encuentra en:
-
-```text
-public/images/brand/orman-logo.svg
-```
-
-## Área privada
-
-Después de autenticarse, el usuario puede acceder a las funcionalidades habilitadas de acuerdo con su contexto y permisos.
-
-Las rutas privadas se cargan de manera diferida y están protegidas mediante el sistema de autenticación de la aplicación.
-
-Entre las áreas actualmente disponibles se encuentran:
-
-```text
-Personas
-Roles
-Menús
-Asignaciones
-Propiedades
-Unidades
-Contratos
-```
-
-## Propiedades y unidades
-
-El frontend permite trabajar con información relacionada con propiedades inmobiliarias y sus unidades.
-
-La interfaz incluye operaciones de consulta, formularios, vistas de detalle y acciones asociadas al estado de los recursos.
-
-También se integra funcionalidad de mapas y geocodificación mediante servicios públicos.
-
-## Contratos
-
-El módulo de contratos permite gestionar y consultar información contractual desde el frontend.
-
-Incluye funcionalidades relacionadas con:
-
-* listado de contratos;
-* creación;
-* visualización de detalles;
-* información relacionada con personas y unidades;
-* documentos asociados;
-* visualización y tratamiento de archivos PDF.
-
-## Assets
-
-Los recursos estáticos públicos se almacenan en:
-
-```text
-public/
-```
-
-Entre ellos se incluyen:
-
-```text
-public/favicon.ico
-public/images/brand/orman-logo.svg
-```
-
-Los archivos dentro de `public/` son copiados a la salida pública de Angular durante el proceso de construcción, por lo que esta carpeta debe contener únicamente recursos destinados a formar parte de la aplicación.
-
-## Comandos disponibles
-
-### Desarrollo
-
-```powershell
-npm start
-```
-
-### Build
-
-```powershell
-npm run build
-```
-
-### Pruebas
-
-```powershell
-npm test -- --watch=false
-```
-
-### Modo watch
-
-```powershell
-npm run watch
-```
-
-## Pruebas
-
-El proyecto utiliza Vitest para las pruebas unitarias.
-
-Para ejecutar las pruebas sin modo interactivo:
-
-```powershell
-npm test -- --watch=false
-```
-
-Los archivos de prueba se mantienen junto a las funcionalidades correspondientes mediante archivos `*.spec.ts`.
-
-Los datos utilizados en pruebas deben ser ficticios y no deben contener información personal real.
-
-## Build de producción
-
-Para generar la aplicación:
-
-```powershell
-npm run build
-```
-
-Angular genera la salida de compilación dentro de:
-
-```text
-dist/
-```
-
-La carpeta `dist/` es generada automáticamente y no forma parte del repositorio.
-
-## Archivos locales y generados
-
-El repositorio no incluye archivos locales o generados como:
-
-```text
-node_modules/
-dist/
-.angular/
-coverage/
-.env
-docs/
-AGENTS.md
-.vscode/
-.idea/
-.history/
-```
-
-Tampoco se incluyen documentación interna de desarrollo, archivos temporales, datos privados ni documentos utilizados únicamente durante el proceso de implementación.
-
-## Estructura general
-
-```text
-Orman_Frontend/
+.
 ├── public/
 │   ├── favicon.ico
-│   └── images/
-│       └── brand/
-│           └── orman-logo.svg
-│
+│   └── images/brand/orman-logo.svg
 ├── src/
 │   ├── app/
-│   │   ├── core/
-│   │   ├── features/
-│   │   ├── layouts/
-│   │   └── shared/
-│   ├── styles/
+│   │   ├── core/       # API, autenticación, temas y servicios globales
+│   │   ├── features/   # Funcionalidades organizadas por dominio
+│   │   ├── layouts/    # Composición pública y privada
+│   │   └── shared/     # Elementos reutilizables
+│   ├── styles.css
 │   ├── index.html
 │   └── main.ts
-│
 ├── angular.json
 ├── package.json
 ├── package-lock.json
 ├── proxy.conf.json
-├── tsconfig.json
-├── tsconfig.app.json
-├── tsconfig.spec.json
 └── README.md
 ```
 
-## Backend
+Las rutas funcionales incluyen personas, roles, menús, asignaciones, procesos, propiedades, unidades, contratos y pagos. El área de pagos contiene la gestión de cuotas y pagos y la configuración de QR de cobro. Propiedades y unidades incluyen formularios, fotografías y vistas de detalle; contratos incluyen documentos PDF.
 
-Este repositorio contiene únicamente el frontend web de ORMAN.
+## 7. Roles y credenciales de prueba
 
-La lógica de negocio, persistencia, autenticación del servidor y API REST pertenecen al proyecto backend ORMAN.
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| PROPIETARIO | Xavier_Ortega | 78699502 |
+
+Las credenciales de prueba se comunican a la coordinación por canal privado.
+
+El área privada conserva las funciones de administración de roles y menús, asignación de roles, asignación de menús y asignación de procesos. El acceso y la navegación se construyen a partir del contexto recibido del Backend.
+
+## 8. Pruebas
+
+El proyecto utiliza Vitest para validar componentes, servicios, autenticación, interceptor, renovación de sesión, contexto, guardas, WebSocket, notificaciones y módulos funcionales.
+
+```bash
+npm test -- --watch=false
+```
+
+Los tests se encuentran junto al código correspondiente en archivos `*.spec.ts`.
+
+## 9. Despliegue
+
+**Frontend público:** pendiente.
+
+Para generar los archivos estáticos de producción:
+
+```bash
+npm run build
+```
+
+Angular genera la salida en `dist/orman-frontend/`, dentro de `dist/`. Este proyecto todavía no declara una plataforma ni una URL pública de despliegue.
+
+## 10. Licencia
+
+Uso académico. Todos los derechos reservados por el autor.

@@ -6,12 +6,7 @@ import { isProblemDetail } from '../api/problem-detail.model';
 import { AuthService } from './auth.service';
 import { SKIP_AUTH_INTERCEPTOR } from './auth-http-context';
 
-const AUTH_ENDPOINTS_WITHOUT_BEARER = [
-  '/api/v1/auth/login',
-  '/api/v1/auth/otp/verify',
-  '/api/v1/auth/otp/resend',
-  '/api/v1/auth/refresh',
-] as const;
+const AUTH_ENDPOINTS_WITHOUT_BEARER = ['/api/v1/auth/login', '/api/v1/auth/refresh'] as const;
 
 const RETRIED_AFTER_REFRESH = new HttpContextToken<boolean>(() => false);
 
