@@ -2,7 +2,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, finalize, map, of, shareReplay, tap, throwError } from 'rxjs';
 
-import { apiPath } from '../api/api.constants';
+import { XSRF_HEADER_NAME, apiPath } from '../api/api.constants';
+import { CsrfTokenService } from '../api/csrf-token.service';
 import {
   AuthSession,
   AuthState,
@@ -18,6 +19,7 @@ const AUTH_PATH = apiPath('/auth');
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly device = inject(DeviceService);
+  private readonly csrf = inject(CsrfTokenService);
   private readonly sessionState = signal<AuthSession | null>(null);
   private readonly authState = signal<AuthState>('checking');
   private refreshRequest$: Observable<void> | null = null;
@@ -42,8 +44,20 @@ export class AuthService {
     };
 
     return this.http
-      .post<LoginResponse>(`${AUTH_PATH}/login`, request, { withCredentials: true })
-      .pipe(tap((response) => this.completeAuthentication(response)));
+      .post<LoginResponse>(`${AUTH_PATH}/login`, request, {
+        observe: 'response',
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response) => this.updateCsrfToken(response.headers.get(XSRF_HEADER_NAME))),
+        map((response) => {
+          if (!response.body) {
+            throw new Error('The login response body is missing.');
+          }
+          return response.body;
+        }),
+        tap((response) => this.completeAuthentication(response)),
+      );
   }
 
   restoreSession(): Observable<void> {
@@ -62,9 +76,18 @@ export class AuthService {
     }
 
     this.refreshRequest$ = this.http
-      .post<AuthenticatedResponse>(`${AUTH_PATH}/refresh`, null, { withCredentials: true })
+      .post<AuthenticatedResponse>(`${AUTH_PATH}/refresh`, null, {
+        observe: 'response',
+        withCredentials: true,
+      })
       .pipe(
-        tap((response) => this.completeAuthentication(response)),
+        tap((response) => this.updateCsrfToken(response.headers.get(XSRF_HEADER_NAME))),
+        map((response) => {
+          if (!response.body) {
+            throw new Error('The refresh response body is missing.');
+          }
+          this.completeAuthentication(response.body);
+        }),
         map(() => undefined),
         catchError((error: unknown) => {
           this.clearSession();
@@ -131,5 +154,11 @@ export class AuthService {
       sid: response.sid,
     });
     this.authState.set('authenticated');
+  }
+
+  private updateCsrfToken(token: string | null): void {
+    if (token) {
+      this.csrf.setToken(token);
+    }
   }
 }

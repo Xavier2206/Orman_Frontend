@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 
 import { apiPath } from '../api/api.constants';
+import { CsrfTokenService } from '../api/csrf-token.service';
 import { AuthContext, AuthContextRol } from './auth-context.model';
 import { AuthService } from './auth.service';
 
@@ -23,6 +24,7 @@ const CONTEXT_LOAD_ERROR = 'No fue posible recuperar el contexto de la cuenta.';
 export class AuthContextService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly csrf = inject(CsrfTokenService);
   private readonly contextState = signal<AuthContext | null>(null);
   private readonly loadingState = signal(false);
   private readonly loadedState = signal(false);
@@ -47,7 +49,16 @@ export class AuthContextService {
   }
 
   restoreContext(): Observable<void> {
-    return this.auth.restoreSession().pipe(
+    return this.csrf.bootstrap().pipe(
+      concatMap((csrfReady) => {
+        if (!csrfReady) {
+          this.auth.clearSession();
+          this.clearContext();
+          return of(undefined);
+        }
+
+        return this.auth.restoreSession();
+      }),
       concatMap(() => {
         if (!this.auth.authenticated()) {
           this.clearContext();

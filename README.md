@@ -44,13 +44,13 @@ Las versiones de Angular, TypeScript y las dependencias corresponden a las resol
 ```bash
 git clone <URL del repositorio frontend>
 cd Orman_Frontend
-npm install
+npm ci
 npm start
 ```
 
-La aplicación de desarrollo queda disponible normalmente en `http://localhost:4200`.
+La aplicación de desarrollo queda disponible en `http://localhost:4200`.
 
-El Backend local se espera en `http://localhost:9090`. Durante el desarrollo, `proxy.conf.json` redirige las solicitudes `/api` a ese servidor. Angular utiliza la API con el prefijo `/api/v1`.
+El Backend local se espera en `http://localhost:9090`. `npm start` ejecuta `ng serve` con la configuración `development`; Angular utiliza `/api/v1` y `proxy.conf.json` reenvía las solicitudes `/api` a `http://localhost:9090`. Así, el navegador llama al frontend en el mismo origen y no necesita conectarse directamente al backend.
 
 ### Autenticación y comunicación
 
@@ -62,13 +62,11 @@ La renovación de sesión utiliza la cookie de refresh `HttpOnly` mediante solic
 
 El cliente usa WebSocket/STOMP en `ws://localhost:9090/ws` y se suscribe al canal privado `/user/queue/notificaciones`. Los avisos en tiempo real actualizan la interfaz; REST continúa siendo la fuente de verdad. La campana muestra el resumen y el listado de notificaciones y permite marcarlas como leídas.
 
-## 5. Variables de entorno
+## 5. Entornos de Angular
 
-El Frontend no requiere archivos `.env` ni variables de entorno para el desarrollo local. Las solicitudes usan rutas relativas y `proxy.conf.json` dirige `/api` al Backend local.
+El Frontend no requiere archivos `.env` ni variables de entorno para el desarrollo local. `angular.json` reemplaza `environment.ts` por `environment.development.ts` al ejecutar `ng serve` o compilar con `development`.
 
-| Variable | Obligatoria | Descripción |
-|---|---|---|
-| — | — | No se requieren variables de entorno para el flujo local documentado. |
+`ng build` usa `production` por defecto y conserva `environment.ts`: REST utiliza HTTPS y WebSocket utiliza WSS del backend desplegado. Wrangler sirve los estáticos de `dist/orman-frontend/browser`; no agrega endpoints locales al build de producción.
 
 ## 6. Estructura del repositorio
 
@@ -95,13 +93,9 @@ El Frontend no requiere archivos `.env` ni variables de entorno para el desarrol
 
 Las rutas funcionales incluyen personas, roles, menús, asignaciones, procesos, propiedades, unidades, contratos y pagos. El área de pagos contiene la gestión de cuotas y pagos y la configuración de QR de cobro. Propiedades y unidades incluyen formularios, fotografías y vistas de detalle; contratos incluyen documentos PDF.
 
-## 7. Roles y credenciales de prueba
+## 7. Roles y credenciales
 
-| Rol | Usuario | Contraseña |
-|---|---|---|
-| PROPIETARIO | Xavier_Ortega | 78699502 |
-
-Las credenciales de prueba se comunican a la coordinación por canal privado.
+Este repositorio no incluye credenciales de acceso. Solicita credenciales de prueba por el canal autorizado.
 
 El área privada conserva las funciones de administración de roles y menús, asignación de roles, asignación de menús y asignación de procesos. El acceso y la navegación se construyen a partir del contexto recibido del Backend.
 

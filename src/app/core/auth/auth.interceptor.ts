@@ -10,10 +10,18 @@ const AUTH_ENDPOINTS_WITHOUT_BEARER = ['/api/v1/auth/login', '/api/v1/auth/refre
 
 const RETRIED_AFTER_REFRESH = new HttpContextToken<boolean>(() => false);
 
+function requestPathname(url: string): string {
+  try {
+    return new URL(url, 'http://orman.local').pathname;
+  } catch {
+    return url.split('?')[0];
+  }
+}
+
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
   const skipAuth = request.context.get(SKIP_AUTH_INTERCEPTOR);
-  const requestPath = request.url.split('?')[0];
+  const requestPath = requestPathname(request.url);
   const isAuthEndpointWithoutBearer = AUTH_ENDPOINTS_WITHOUT_BEARER.includes(
     requestPath as (typeof AUTH_ENDPOINTS_WITHOUT_BEARER)[number],
   );

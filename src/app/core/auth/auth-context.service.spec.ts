@@ -2,6 +2,9 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
+import { API_BASE_URL, XSRF_HEADER_NAME } from '../api/api.constants';
+import { CsrfTokenService } from '../api/csrf-token.service';
+import { ormanXsrfInterceptor } from '../api/xsrf.interceptor';
 import { authInterceptor } from './auth.interceptor';
 import { AuthContext } from './auth-context.model';
 import { AuthContextService } from './auth-context.service';
@@ -28,14 +31,20 @@ const contextWithNavigation: AuthContext = {
 
 describe('AuthContextService', () => {
   let auth: AuthService;
+  let csrf: CsrfTokenService;
   let context: AuthContextService;
   let http: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting()],
+      providers: [
+        { provide: API_BASE_URL, useValue: '/api/v1' },
+        provideHttpClient(withInterceptors([authInterceptor, ormanXsrfInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     auth = TestBed.inject(AuthService);
+    csrf = TestBed.inject(CsrfTokenService);
     context = TestBed.inject(AuthContextService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -43,6 +52,7 @@ describe('AuthContextService', () => {
   afterEach(() => {
     http.verify();
     auth.clearSession();
+    csrf.clear();
   });
 
   function authenticate(): void {
@@ -106,11 +116,30 @@ describe('AuthContextService', () => {
     expect(context.selectedRole()).toBeNull();
   });
 
-  it('should restore the session before loading context after a reload', () => {
+  it('should bootstrap CSRF, then restore the session and context after an F5 reload', () => {
+    expect(auth.authenticated()).toBe(false);
+    expect(csrf.getToken()).toBeNull();
     let completed = false;
     context.restoreContext().subscribe(() => (completed = true));
 
-    http.expectOne('/api/v1/auth/refresh').flush({
+    const csrfBootstrap = http.expectOne('/api/v1/auth/csrf');
+    expect(csrfBootstrap.request.method).toBe('GET');
+    expect(csrfBootstrap.request.withCredentials).toBe(true);
+    expect(csrfBootstrap.request.headers.has('Authorization')).toBe(false);
+    expect(http.match('/api/v1/auth/refresh')).toHaveLength(0);
+    csrfBootstrap.flush(null, {
+      status: 204,
+      statusText: 'No Content',
+      headers: { [XSRF_HEADER_NAME]: 'fresh-csrf-token' },
+    });
+    expect(csrf.getToken()).toBe('fresh-csrf-token');
+
+    const refresh = http.expectOne('/api/v1/auth/refresh');
+    expect(refresh.request.method).toBe('POST');
+    expect(refresh.request.withCredentials).toBe(true);
+    expect(refresh.request.headers.get(XSRF_HEADER_NAME)).toBe('fresh-csrf-token');
+    expect(refresh.request.headers.has('Authorization')).toBe(false);
+    refresh.flush({
       status: 'AUTHENTICATED',
       login: 'Xavier_Ortega',
       codper: 1,
@@ -126,6 +155,43 @@ describe('AuthContextService', () => {
     expect(completed).toBe(true);
     expect(context.loaded()).toBe(true);
     expect(context.selectedRoleId()).toBe(1);
+  });
+
+  it('should stay unauthenticated and avoid refresh when CSRF bootstrap fails', () => {
+    let completed = false;
+    context.restoreContext().subscribe(() => (completed = true));
+
+    http.expectOne('/api/v1/auth/csrf').flush(
+      { detail: 'CSRF unavailable' },
+      { status: 503, statusText: 'Service Unavailable' },
+    );
+
+    expect(completed).toBe(true);
+    expect(auth.state()).toBe('unauthenticated');
+    expect(auth.authenticated()).toBe(false);
+    expect(http.match('/api/v1/auth/refresh')).toHaveLength(0);
+    expect(http.match('/api/v1/auth/context')).toHaveLength(0);
+  });
+
+  it('should stay unauthenticated without recursion when refresh fails after CSRF bootstrap', () => {
+    context.restoreContext().subscribe();
+    http.expectOne('/api/v1/auth/csrf').flush(null, {
+      status: 204,
+      statusText: 'No Content',
+      headers: { [XSRF_HEADER_NAME]: 'fresh-csrf-token' },
+    });
+
+    const refresh = http.expectOne('/api/v1/auth/refresh');
+    expect(refresh.request.headers.get(XSRF_HEADER_NAME)).toBe('fresh-csrf-token');
+    refresh.flush(
+      { errorCode: 'SESSION_EXPIRED', detail: 'Expired' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
+
+    expect(auth.state()).toBe('unauthenticated');
+    expect(auth.authenticated()).toBe(false);
+    expect(http.match('/api/v1/auth/refresh')).toHaveLength(0);
+    expect(http.match('/api/v1/auth/context')).toHaveLength(0);
   });
 
   it('should clear context when logout clears the authenticated session', () => {
