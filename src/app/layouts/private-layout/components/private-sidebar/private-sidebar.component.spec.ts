@@ -84,6 +84,130 @@ describe('PrivateSidebarComponent', () => {
     ).toContain('group');
   });
 
+  it('should order authorized menus and processes without moving or inventing entries', () => {
+    renderContext([
+      {
+        codr: 1,
+        nombre: 'PROPIETARIO',
+        menus: [
+          {
+            codm: 10,
+            nombre: 'MENÚ ADICIONAL',
+            icono: 'apps',
+            procesos: [{ codp: 10, nombre: 'EXTRA', enlace: 'reportes/extra' }],
+          },
+          {
+            codm: 20,
+            nombre: 'GESTIÓN DE PAGOS',
+            icono: 'payments',
+            procesos: [
+              { codp: 21, nombre: 'QR DE COBRO', enlace: 'pagos/qr-cobro' },
+              { codp: 22, nombre: 'GESTIONAR PAGOS', enlace: 'pagos/listar' },
+            ],
+          },
+          {
+            codm: 30,
+            nombre: 'CONTROL DE ACCESO',
+            icono: 'admin_panel_settings',
+            procesos: [
+              { codp: 35, nombre: 'GESTIONAR ROLES', enlace: 'roles/listar' },
+              { codp: 34, nombre: 'GESTIONAR MENÚS', enlace: 'menus/listar' },
+              { codp: 33, nombre: 'ASIGNAR ROLES', enlace: 'asignar-roles/listar' },
+              { codp: 32, nombre: 'ASIGNAR PROCESOS', enlace: 'asignar-procesos/listar' },
+              { codp: 31, nombre: 'ASIGNAR MENÚS', enlace: 'asignar-menus/listar' },
+            ],
+          },
+          {
+            codm: 40,
+            nombre: 'DASHBOARD',
+            icono: 'dashboard',
+            procesos: [
+              {
+                codp: 41,
+                nombre: 'RESUMEN FINANCIERO',
+                enlace: 'dashboard/resumen-financiero',
+              },
+            ],
+          },
+          {
+            codm: 50,
+            nombre: 'GESTIÓN PROPIEDADES',
+            icono: 'apartment',
+            procesos: [
+              { codp: 52, nombre: 'UNIDADES', enlace: 'unidades/listar' },
+              { codp: 51, nombre: 'PROPIEDADES', enlace: 'propiedades/listar' },
+            ],
+          },
+          {
+            codm: 60,
+            nombre: 'GESTIÓN CONTRATOS',
+            icono: 'contract',
+            procesos: [{ codp: 61, nombre: 'CONTRATOS', enlace: 'contratos/listar' }],
+          },
+          {
+            codm: 70,
+            nombre: 'GESTIONAR PERSONAS',
+            icono: 'group',
+            procesos: [{ codp: 71, nombre: 'LISTAR PERSONAS', enlace: 'personas/listar' }],
+          },
+        ],
+      },
+    ]);
+
+    const menuNames = [...fixture.nativeElement.querySelectorAll('.sidebar-item-label')].map(
+      (element: Element) => element.textContent?.trim(),
+    );
+    const processNames = [...fixture.nativeElement.querySelectorAll('.sidebar-process')].map(
+      (element: Element) => element.textContent?.trim(),
+    );
+
+    expect(menuNames).toEqual([
+      'DASHBOARD',
+      'GESTIÓN PROPIEDADES',
+      'GESTIÓN CONTRATOS',
+      'GESTIÓN DE PAGOS',
+      'GESTIONAR PERSONAS',
+      'CONTROL DE ACCESO',
+      'MENÚ ADICIONAL',
+    ]);
+    expect(processNames).toEqual([
+      'RESUMEN FINANCIERO',
+      'PROPIEDADES',
+      'UNIDADES',
+      'CONTRATOS',
+      'GESTIONAR PAGOS',
+      'QR DE COBRO',
+      'LISTAR PERSONAS',
+      'ASIGNAR MENÚS',
+      'ASIGNAR PROCESOS',
+      'ASIGNAR ROLES',
+      'GESTIONAR MENÚS',
+      'GESTIONAR ROLES',
+      'EXTRA',
+    ]);
+  });
+
+  it('should not show the Dashboard menu without its authorized summary process', () => {
+    renderContext([
+      {
+        codr: 1,
+        nombre: 'INQUILINO',
+        menus: [
+          { codm: 1, nombre: 'DASHBOARD', icono: 'dashboard', procesos: [] },
+          {
+            codm: 2,
+            nombre: 'GESTIÓN PROPIEDADES',
+            icono: 'apartment',
+            procesos: [{ codp: 2, nombre: 'PROPIEDADES', enlace: 'propiedades/listar' }],
+          },
+        ],
+      },
+    ]);
+
+    expect(fixture.nativeElement.textContent).not.toContain('DASHBOARD');
+    expect(fixture.nativeElement.textContent).toContain('GESTIÓN PROPIEDADES');
+  });
+
   it('should use the generic Material icon only when a menu icon is null or blank', () => {
     renderContext([
       {

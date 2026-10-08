@@ -1,0 +1,119 @@
+<article class="chart-panel comparative-panel">
+  <header class="chart-panel-header">
+    <div>
+      <p class="chart-eyebrow">Comparativo</p>
+      <h2 class="chart-title">Inversión vs. ingresos</h2>
+      <p class="chart-subtitle">Montos acumulados · {{ scopeLabel() }}</p>
+    </div>
+    <span class="chart-header-icon" aria-hidden="true">
+      <span class="material-symbols-rounded">bar_chart</span>
+    </span>
+  </header>
+
+  <div class="chart-legend" aria-label="Leyenda del gráfico">
+    <span class="chart-legend-item">
+      <span class="chart-legend-swatch chart-legend-swatch-investment" aria-hidden="true"></span>
+      Inversión inicial
+    </span>
+    <span class="chart-legend-item">
+      <span class="chart-legend-swatch chart-legend-swatch-income" aria-hidden="true"></span>
+      Ingresos confirmados
+    </span>
+  </div>
+
+  @if (rows().length === 0) {
+    <p class="chart-empty-state">No hay propiedades para comparar.</p>
+  } @else {
+    <div
+      class="comparative-chart-scroll"
+      role="region"
+      aria-label="Gráfico desplazable de inversión e ingresos"
+    >
+      <svg
+        class="comparative-chart"
+        [attr.viewBox]="'0 0 ' + chartWidth() + ' 360'"
+        [style.min-width.px]="chartWidth()"
+        role="group"
+        [attr.aria-label]="
+          'Inversión inicial e ingresos confirmados por propiedad: ' + scopeLabel()
+        "
+      >
+        <g aria-hidden="true">
+          @for (tick of ticks(); track tick.y) {
+            <line
+              class="chart-grid-line"
+              [attr.x1]="96"
+              [attr.y1]="tick.y"
+              [attr.x2]="chartWidth() - 24"
+              [attr.y2]="tick.y"
+            />
+            <text class="chart-axis-label chart-y-axis-label" x="86" [attr.y]="tick.y + 4">
+              {{ formatAmount(tick.value) }}
+            </text>
+          }
+          <line
+            class="chart-axis-line"
+            x1="96"
+            [attr.y1]="plotBottom"
+            [attr.x2]="chartWidth() - 24"
+            [attr.y2]="plotBottom"
+          />
+        </g>
+
+        @for (row of rows(); track row.property.codprop) {
+          <g
+            class="comparison-bar-group"
+            role="button"
+            tabindex="0"
+            [attr.aria-label]="
+              'Ver ' +
+              row.property.nombre +
+              '. Inversión inicial: ' +
+              formatAmount(row.property.inversionInicial) +
+              '. Ingresos confirmados: ' +
+              formatAmount(row.property.ingresosConfirmadosAcumulados)
+            "
+            (click)="selectProperty(row.property.codprop)"
+            (keydown)="onBarGroupKeydown($event, row.property.codprop)"
+          >
+            <title>{{ row.property.nombre }}</title>
+            <rect
+              class="comparison-bar comparison-bar-investment"
+              [attr.x]="row.investmentX"
+              [attr.y]="row.investmentY"
+              width="38"
+              [attr.height]="row.investmentHeight"
+              rx="5"
+            >
+              <title>Inversión inicial: {{ formatAmount(row.property.inversionInicial) }}</title>
+            </rect>
+            <rect
+              class="comparison-bar comparison-bar-income"
+              [attr.x]="row.incomeX"
+              [attr.y]="row.incomeY"
+              width="38"
+              [attr.height]="row.incomeHeight"
+              rx="5"
+            >
+              <title>
+                Ingresos confirmados: {{ formatAmount(row.property.ingresosConfirmadosAcumulados) }}
+              </title>
+            </rect>
+            <text
+              class="chart-axis-label chart-property-label"
+              [attr.x]="row.centerX"
+              [attr.y]="plotBottom + 28"
+              text-anchor="middle"
+            >
+              @for (line of row.labelLines; track $index; let lineIndex = $index) {
+                <tspan [attr.x]="row.centerX" [attr.dy]="lineIndex === 0 ? 0 : 14">
+                  {{ line }}
+                </tspan>
+              }
+            </text>
+          </g>
+        }
+      </svg>
+    </div>
+  }
+</article>

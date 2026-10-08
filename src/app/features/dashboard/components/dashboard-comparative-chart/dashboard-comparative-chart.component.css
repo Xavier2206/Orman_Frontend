@@ -1,0 +1,176 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.chart-panel {
+  height: 100%;
+  min-width: 0;
+  border: 1px solid var(--theme-border);
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, var(--theme-card) 0%, var(--theme-surface) 100%);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.chart-panel-header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chart-eyebrow {
+  color: var(--theme-accent-text);
+  font-size: 0.63rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chart-title {
+  margin-top: 0.3rem;
+  color: var(--theme-text);
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.chart-subtitle {
+  overflow-wrap: anywhere;
+  margin-top: 0.25rem;
+  color: var(--theme-text-muted);
+  font-size: 0.75rem;
+}
+
+.chart-header-icon {
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--theme-border);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--theme-accent) 10%, var(--theme-card));
+  color: var(--theme-accent-text);
+  font-size: 1.35rem;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1.1rem;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--theme-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.chart-legend-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 0.2rem;
+}
+
+.chart-legend-swatch-investment,
+.comparison-bar-investment {
+  fill: var(--theme-accent);
+  background: var(--theme-accent);
+}
+
+.chart-legend-swatch-income,
+.comparison-bar-income {
+  fill: var(--theme-success);
+  background: var(--theme-success);
+}
+
+.comparative-chart-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: var(--theme-border) transparent;
+  scrollbar-width: thin;
+}
+
+.comparative-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.75rem;
+  overflow: visible;
+}
+
+.chart-grid-line {
+  stroke: var(--theme-border);
+  stroke-dasharray: 3 5;
+  stroke-opacity: 0.62;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-axis-line {
+  stroke: var(--theme-border);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-axis-label {
+  fill: var(--theme-text-muted);
+  font-family: inherit;
+  font-size: 10px;
+}
+
+.chart-y-axis-label {
+  text-anchor: end;
+}
+
+.chart-property-label {
+  fill: var(--theme-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.comparison-bar {
+  transition: opacity 160ms ease;
+}
+
+.comparison-bar-group:hover .comparison-bar,
+.comparison-bar-group:focus-visible .comparison-bar {
+  opacity: 0.82;
+}
+
+.comparison-bar-group:focus-visible {
+  outline: none;
+}
+
+.comparison-bar-group:focus-visible .comparison-bar {
+  filter: drop-shadow(0 0 3px var(--theme-focus));
+}
+
+.chart-empty-state {
+  margin-top: 1.25rem;
+  border-radius: 0.8rem;
+  background: var(--theme-surface);
+  padding: 1.5rem 1rem;
+  color: var(--theme-text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .chart-panel {
+    padding: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comparison-bar {
+    transition: none;
+  }
+}

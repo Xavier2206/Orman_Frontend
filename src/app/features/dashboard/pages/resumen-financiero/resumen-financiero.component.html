@@ -1,0 +1,277 @@
+<main class="mx-auto w-full max-w-screen-2xl space-y-6 p-5 max-sm:p-3">
+  <header class="dashboard-header rounded-2xl border border-theme-border p-5 sm:p-7">
+    <div class="flex items-start gap-4">
+      <span class="dashboard-heading-icon" aria-hidden="true">
+        <span class="material-symbols-rounded">monitoring</span>
+      </span>
+      <div class="min-w-0">
+        <p class="text-xs font-bold uppercase tracking-[0.18em] text-accent">Dashboard</p>
+        <h1 class="mt-1 text-2xl font-bold text-content sm:text-3xl">Resumen financiero</h1>
+        <p class="mt-2 text-sm text-muted">Indicadores financieros por propiedad</p>
+      </div>
+    </div>
+
+    @if (report(); as data) {
+      <div class="dashboard-controls mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div
+          class="inline-flex w-full max-w-full gap-1 rounded-xl border border-theme-border bg-surface p-1 sm:w-fit"
+          role="group"
+          aria-label="Modo de visualización"
+        >
+          <button
+            type="button"
+            class="min-h-11 flex-1 rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:flex-none"
+            [class.bg-card]="viewMode() === 'general'"
+            [class.border-theme-border]="viewMode() === 'general'"
+            [class.text-accent]="viewMode() === 'general'"
+            [class.shadow-sm]="viewMode() === 'general'"
+            [attr.aria-pressed]="viewMode() === 'general'"
+            (click)="selectViewMode('general')"
+          >
+            General
+          </button>
+          <button
+            type="button"
+            class="min-h-11 flex-1 rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:flex-none"
+            [class.bg-card]="viewMode() === 'propiedad'"
+            [class.border-theme-border]="viewMode() === 'propiedad'"
+            [class.text-accent]="viewMode() === 'propiedad'"
+            [class.shadow-sm]="viewMode() === 'propiedad'"
+            [attr.aria-pressed]="viewMode() === 'propiedad'"
+            (click)="selectViewMode('propiedad')"
+          >
+            Por propiedad
+          </button>
+        </div>
+
+        @if (viewMode() === 'propiedad') {
+          <label class="grid w-full max-w-md gap-2 text-xs font-bold text-muted sm:ml-auto">
+            <span>Propiedad</span>
+            <select
+              class="min-h-12 w-full rounded-xl border border-theme-border bg-field px-3 py-2 text-sm font-normal text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60"
+              [value]="selectedPropertyId() ?? ''"
+              [disabled]="data.propiedades.length === 0"
+              aria-label="Seleccionar propiedad para el resumen financiero"
+              (change)="selectPropertyFromControl($event)"
+            >
+              @for (property of data.propiedades; track property.codprop) {
+                <option [value]="property.codprop">{{ property.nombre }}</option>
+              }
+            </select>
+          </label>
+        }
+      </div>
+    }
+  </header>
+
+  @if (isLoading()) {
+    <section
+      class="flex min-h-60 flex-col items-center justify-center rounded-2xl border border-theme-border bg-card px-6 py-8 text-center"
+      role="status"
+    >
+      <span class="material-symbols-rounded mb-3 text-4xl text-accent" aria-hidden="true"
+        >progress_activity</span
+      >
+      <p class="font-semibold text-content">Cargando información financiera…</p>
+      <p class="mt-1 text-sm text-muted">Consultando tus propiedades e ingresos confirmados.</p>
+    </section>
+  } @else if (loadError(); as error) {
+    <section
+      class="flex min-h-60 flex-col items-center justify-center rounded-2xl border border-theme-border bg-card px-6 py-8 text-center"
+      aria-live="polite"
+    >
+      <span class="material-symbols-rounded mb-3 text-4xl text-accent" aria-hidden="true"
+        >cloud_off</span
+      >
+      @if (error === 'session') {
+        <h2 class="text-lg font-bold text-content">La sesión expiró</h2>
+        <p class="mt-2 text-sm text-muted">
+          Vuelve a iniciar sesión para consultar el resumen financiero.
+        </p>
+      } @else if (error === 'forbidden') {
+        <h2 class="text-lg font-bold text-content">Acceso denegado</h2>
+        <p class="mt-2 text-sm text-muted">
+          Este dashboard está disponible para el rol PROPIETARIO.
+        </p>
+      } @else {
+        <h2 class="text-lg font-bold text-content">No se pudo cargar el resumen financiero</h2>
+        <p class="mt-2 text-sm text-muted">Revisa tu conexión e inténtalo nuevamente.</p>
+      }
+      <button
+        type="button"
+        class="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-contrast transition-colors hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        (click)="loadDashboard()"
+      >
+        <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
+        Reintentar
+      </button>
+    </section>
+  } @else if (report(); as data) {
+    @if (noProperties()) {
+      <section
+        class="flex min-h-60 flex-col items-center justify-center rounded-2xl border border-theme-border bg-card px-6 py-8 text-center"
+      >
+        <span class="material-symbols-rounded mb-3 text-4xl text-accent" aria-hidden="true"
+          >apartment</span
+        >
+        <h2 class="text-lg font-bold text-content">Sin propiedades para mostrar</h2>
+        <p class="mx-auto mt-2 max-w-xl text-sm text-muted">
+          Cuando tengas propiedades vinculadas a tu cuenta, aquí aparecerán sus indicadores
+          financieros.
+        </p>
+      </section>
+    } @else {
+      <section class="grid gap-4 md:grid-cols-3" aria-label="Indicadores financieros">
+        <article class="metric-card metric-card-investment p-4 sm:p-5">
+          <div class="flex items-center gap-3">
+            <span class="metric-icon" aria-hidden="true">
+              <span class="material-symbols-rounded">account_balance_wallet</span>
+            </span>
+            <span class="metric-kicker">Capital comprometido</span>
+          </div>
+          <h2 class="metric-title">Total invertido</h2>
+          <p class="metric-value">{{ formatAmount(investmentAmount()) }}</p>
+          <p class="metric-description">Inversión inicial · {{ scopeLabel() }}</p>
+        </article>
+
+        <article class="metric-card metric-card-income p-4 sm:p-5">
+          <div class="flex items-center gap-3">
+            <span class="metric-icon" aria-hidden="true">
+              <span class="material-symbols-rounded">trending_up</span>
+            </span>
+            <span class="metric-kicker">Ingresos recibidos</span>
+          </div>
+          <h2 class="metric-title">Ingresos confirmados</h2>
+          <p class="metric-value">{{ formatAmount(confirmedIncomeAmount()) }}</p>
+          <p class="metric-description">Pagos confirmados acumulados</p>
+        </article>
+
+        <article class="metric-card metric-card-recovery p-4 sm:p-5">
+          <div class="flex items-center gap-3">
+            <span class="metric-icon" aria-hidden="true">
+              <span class="material-symbols-rounded">percent</span>
+            </span>
+            <span class="metric-kicker">Avance acumulado</span>
+          </div>
+          <h2 class="metric-title">Recuperación de inversión</h2>
+          <p class="metric-value">{{ formatPercent(recoveryPercentage()) }}</p>
+          <p class="metric-description">Porcentaje informado por el Backend</p>
+        </article>
+      </section>
+
+      @if (hasNoConfirmedIncome()) {
+        <p
+          class="dashboard-notice rounded-xl border border-info-border bg-info-bg px-4 py-3 text-sm text-info-text"
+          role="status"
+        >
+          Todavía no hay ingresos confirmados acumulados para {{ scopeLabel() }}.
+        </p>
+      }
+
+      <section
+        class="dashboard-chart-grid grid grid-cols-1 gap-5 xl:grid-cols-12"
+        aria-label="Gráficos financieros"
+      >
+        <app-dashboard-comparative-chart
+          class="xl:col-span-8"
+          [properties]="visibleProperties()"
+          [scopeLabel]="scopeLabel()"
+          (propertySelected)="showProperty($event)"
+        />
+        <app-dashboard-recovery-chart
+          class="xl:col-span-4"
+          [percentage]="recoveryPercentage()"
+          [scopeLabel]="scopeLabel()"
+          [investmentAmount]="investmentAmount()"
+          [confirmedIncomeAmount]="confirmedIncomeAmount()"
+        />
+        <app-dashboard-monthly-chart
+          class="xl:col-span-6"
+          [series]="monthlySeries()"
+          [scopeLabel]="scopeLabel()"
+        />
+        <app-dashboard-property-recovery-chart
+          class="xl:col-span-6"
+          [properties]="visibleProperties()"
+          (propertySelected)="showProperty($event)"
+        />
+      </section>
+
+      <section
+        class="dashboard-property-summary"
+        aria-labelledby="dashboard-property-summary-title"
+      >
+        <header class="mb-4 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.14em] text-accent">Detalle</p>
+            <h2 id="dashboard-property-summary-title" class="mt-1 text-lg font-bold text-content">
+              Resumen por propiedad
+            </h2>
+          </div>
+          <p class="text-sm text-muted">
+            {{ data.resumenGeneral.cantidadPropiedades }}
+            {{ data.resumenGeneral.cantidadPropiedades === 1 ? 'propiedad' : 'propiedades' }}
+          </p>
+        </header>
+
+        <div class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+          @for (property of data.propiedades; track property.codprop) {
+            <button
+              type="button"
+              class="property-summary-card block w-full min-w-0 rounded-xl border border-theme-border bg-card p-4 text-left text-content shadow-sm transition-colors hover:-translate-y-0.5 hover:border-accent hover:bg-card-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none motion-reduce:hover:transform-none"
+              [class.property-summary-card-selected]="isPropertySelected(property)"
+              [attr.aria-label]="'Ver resumen financiero de ' + property.nombre"
+              [attr.aria-pressed]="isPropertySelected(property)"
+              (click)="showProperty(property.codprop)"
+            >
+              <span class="flex min-w-0 items-center gap-3 border-b border-theme-border pb-3.5">
+                <span class="property-summary-icon" aria-hidden="true">
+                  <span class="material-symbols-rounded">apartment</span>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span
+                    class="block text-[0.65rem] font-bold uppercase tracking-[0.12em] text-muted"
+                    >Propiedad</span
+                  >
+                  <span class="property-summary-name">{{ property.nombre }}</span>
+                </span>
+                <span
+                  class="material-symbols-rounded shrink-0 text-lg text-muted"
+                  aria-hidden="true"
+                  >arrow_outward</span
+                >
+              </span>
+
+              <span class="grid gap-3 pt-4">
+                <span class="flex min-w-0 items-baseline justify-between gap-3 text-xs">
+                  <span class="text-muted">Inversión inicial</span>
+                  <strong class="break-words text-right text-content">{{
+                    formatAmount(property.inversionInicial)
+                  }}</strong>
+                </span>
+                <span class="flex min-w-0 items-baseline justify-between gap-3 text-xs">
+                  <span class="text-muted">Ingresos confirmados</span>
+                  <strong class="break-words text-right text-success-text">{{
+                    formatAmount(property.ingresosConfirmadosAcumulados)
+                  }}</strong>
+                </span>
+                <span class="flex min-w-0 items-baseline justify-between gap-3 text-xs">
+                  <span class="text-muted">Recuperación</span>
+                  <strong class="break-words text-right text-accent">{{
+                    formatPercent(property.porcentajeRecuperacion)
+                  }}</strong>
+                </span>
+              </span>
+
+              @if (property.ingresosConfirmadosAcumulados === 0) {
+                <span class="mt-3 block rounded-lg bg-surface px-3 py-2 text-xs text-muted"
+                  >Sin ingresos confirmados acumulados</span
+                >
+              }
+            </button>
+          }
+        </div>
+      </section>
+    }
+  }
+</main>

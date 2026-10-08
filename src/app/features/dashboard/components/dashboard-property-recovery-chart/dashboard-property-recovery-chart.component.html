@@ -1,0 +1,67 @@
+<article class="chart-panel property-recovery-panel">
+  <header class="chart-panel-header">
+    <div>
+      <p class="chart-eyebrow">Distribución</p>
+      <h2 class="chart-title">Recuperación por propiedad</h2>
+      <p class="chart-subtitle">Escala proporcional hasta {{ formatPercent(maxScale(), 1) }}</p>
+    </div>
+    <span class="chart-header-icon" aria-hidden="true">
+      <span class="material-symbols-rounded">analytics</span>
+    </span>
+  </header>
+
+  @if (rows().length === 0) {
+    <p class="chart-empty-state">No hay propiedades para comparar.</p>
+  } @else {
+    <div
+      class="recovery-property-list"
+      role="list"
+      aria-label="Porcentaje de recuperación por propiedad"
+    >
+      @for (row of rows(); track row.property.codprop) {
+        <section class="recovery-property-row" role="listitem">
+          <div class="recovery-property-heading">
+            <button
+              type="button"
+              class="recovery-property-name"
+              [attr.aria-label]="'Ver indicadores de ' + row.property.nombre"
+              (click)="selectProperty(row.property.codprop)"
+            >
+              {{ row.property.nombre }}
+            </button>
+            <strong class="recovery-property-percent">
+              {{
+                formatPercent(row.property.porcentajeRecuperacion, row.property.inversionInicial)
+              }}
+            </strong>
+          </div>
+
+          @if (row.isCalculable) {
+            <span
+              class="recovery-bar-track"
+              role="img"
+              [attr.aria-label]="
+                'Recuperación de ' +
+                row.property.nombre +
+                ': ' +
+                formatPercent(row.property.porcentajeRecuperacion, row.property.inversionInicial)
+              "
+            >
+              <span
+                class="recovery-bar"
+                [style.width.%]="row.barWidth"
+                [attr.title]="
+                  row.property.nombre +
+                  ': ' +
+                  formatPercent(row.property.porcentajeRecuperacion, row.property.inversionInicial)
+                "
+              ></span>
+            </span>
+          } @else {
+            <p class="recovery-property-not-calculable">Sin una base de inversión calculable</p>
+          }
+        </section>
+      }
+    </div>
+  }
+</article>

@@ -38,6 +38,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'dashboard/resumen-financiero',
+        loadComponent: () =>
+          import('./features/dashboard/pages/resumen-financiero/resumen-financiero.component').then(
+            (component) => component.ResumenFinancieroComponent,
+          ),
+      },
+      {
         path: 'personas/listar',
         loadComponent: () =>
           import('./features/personas/pages/personas-list/personas-list.component').then(

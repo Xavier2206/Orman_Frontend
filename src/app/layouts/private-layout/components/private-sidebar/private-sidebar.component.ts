@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
+  computed,
   effect,
   HostListener,
   inject,
@@ -12,12 +13,59 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+import { AuthContextMenu } from '../../../../core/auth/auth-context.model';
 import { AuthContextService } from '../../../../core/auth/auth-context.service';
 
 interface FlyoutPosition {
   readonly top: number;
   readonly left: number;
   readonly maxHeight: number;
+}
+
+const DASHBOARD_MENU_NAME = 'dashboard';
+const DASHBOARD_PROCESS_LINK = 'dashboard/resumen-financiero';
+
+const MENU_DISPLAY_ORDER = new Map(
+  [
+    'DASHBOARD',
+    'GESTIÓN PROPIEDADES',
+    'GESTIÓN CONTRATOS',
+    'GESTIÓN DE PAGOS',
+    'GESTIONAR PERSONAS',
+    'CONTROL DE ACCESO',
+  ].map((name, index): [string, number] => [normalizeMenuName(name), index]),
+);
+
+const PROCESS_DISPLAY_ORDER = new Map(
+  [
+    'dashboard/resumen-financiero',
+    'propiedades/listar',
+    'unidades/listar',
+    'contratos/listar',
+    'pagos/listar',
+    'pagos/qr-cobro',
+    'personas/listar',
+    'asignar-menus/listar',
+    'asignar-procesos/listar',
+    'asignar-roles/listar',
+    'menus/listar',
+    'roles/listar',
+  ].map((path, index): [string, number] => [normalizeProcessLink(path), index]),
+);
+
+function normalizeMenuName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLocaleLowerCase('es');
+}
+
+function normalizeProcessLink(link: string): string {
+  return link
+    .trim()
+    .replace(/^\/+|\/+$/g, '')
+    .toLocaleLowerCase('es');
 }
 
 @Component({
@@ -35,7 +83,9 @@ export class PrivateSidebarComponent implements OnDestroy {
 
   protected readonly context = this.authContext.context;
   protected readonly selectedRole = this.authContext.selectedRole;
-  protected readonly selectedMenus = this.authContext.selectedMenus;
+  protected readonly selectedMenus = computed(() =>
+    this.orderAuthorizedMenus(this.authContext.selectedMenus()),
+  );
   protected readonly isLoading = this.authContext.loading;
   protected readonly contextError = this.authContext.error;
   protected readonly isCollapsed = signal(false);
@@ -134,6 +184,48 @@ export class PrivateSidebarComponent implements OnDestroy {
   protected processCommands(enlace: string): readonly string[] {
     const normalized = enlace.trim().replace(/^\/+/, '');
     return ['/app', ...normalized.split('/')];
+  }
+
+  private orderAuthorizedMenus(menus: readonly AuthContextMenu[]): readonly AuthContextMenu[] {
+    return menus
+      .map((menu, originalIndex) => ({ menu, originalIndex }))
+      .filter(({ menu }) => {
+        if (normalizeMenuName(menu.nombre) !== DASHBOARD_MENU_NAME) {
+          return true;
+        }
+
+        return menu.procesos.some(
+          (process) => normalizeProcessLink(process.enlace) === DASHBOARD_PROCESS_LINK,
+        );
+      })
+      .map(({ menu, originalIndex }) => ({
+        menu: {
+          ...menu,
+          procesos: menu.procesos
+            .map((process, processIndex) => ({ process, processIndex }))
+            .sort((left, right) => {
+              const leftOrder =
+                PROCESS_DISPLAY_ORDER.get(normalizeProcessLink(left.process.enlace)) ??
+                Number.MAX_SAFE_INTEGER;
+              const rightOrder =
+                PROCESS_DISPLAY_ORDER.get(normalizeProcessLink(right.process.enlace)) ??
+                Number.MAX_SAFE_INTEGER;
+
+              return leftOrder - rightOrder || left.processIndex - right.processIndex;
+            })
+            .map(({ process }) => process),
+        },
+        originalIndex,
+      }))
+      .sort((left, right) => {
+        const leftOrder =
+          MENU_DISPLAY_ORDER.get(normalizeMenuName(left.menu.nombre)) ?? Number.MAX_SAFE_INTEGER;
+        const rightOrder =
+          MENU_DISPLAY_ORDER.get(normalizeMenuName(right.menu.nombre)) ?? Number.MAX_SAFE_INTEGER;
+
+        return leftOrder - rightOrder || left.originalIndex - right.originalIndex;
+      })
+      .map(({ menu }) => menu);
   }
 
   protected flyoutId(menuId: number): string {

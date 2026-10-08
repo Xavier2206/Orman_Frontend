@@ -1,0 +1,87 @@
+<article class="chart-panel recovery-panel">
+  <header class="chart-panel-header">
+    <div>
+      <p class="chart-eyebrow">Avance</p>
+      <h2 class="chart-title">Recuperación de inversión</h2>
+      <p class="chart-subtitle">Porcentaje informado por el Backend · {{ scopeLabel() }}</p>
+    </div>
+    <span class="chart-header-icon" aria-hidden="true">
+      <span class="material-symbols-rounded">donut_large</span>
+    </span>
+  </header>
+
+  <div class="recovery-chart-content">
+    <div class="recovery-donut-column">
+      @if (isCalculable()) {
+        <div class="recovery-donut-wrap">
+          <svg
+            class="recovery-ring"
+            viewBox="0 0 120 120"
+            role="img"
+            [attr.aria-label]="'Recuperación de inversión: ' + percentageText()"
+          >
+            <circle class="recovery-ring-track" cx="60" cy="60" r="48" />
+            <circle
+              class="recovery-ring-progress"
+              cx="60"
+              cy="60"
+              r="48"
+              [attr.stroke-dasharray]="circumference"
+              [attr.stroke-dashoffset]="dashOffset()"
+            />
+          </svg>
+          <div class="recovery-donut-center" aria-hidden="true">
+            <span class="recovery-center-label">Recuperación</span>
+            <strong>{{ percentageText() }}</strong>
+          </div>
+        </div>
+      } @else {
+        <div class="recovery-not-calculable" role="status">
+          <span class="material-symbols-rounded" aria-hidden="true">horizontal_rule</span>
+          <strong>No calculable</strong>
+        </div>
+      }
+    </div>
+
+    <div class="recovery-details">
+      @if (visualLimitMessage()) {
+        <p class="recovery-limit-note">
+          El anillo se completa visualmente al 100 %; el porcentaje real se conserva en el centro.
+        </p>
+      } @else if (!isCalculable()) {
+        <p class="recovery-limit-note">
+          No se dibuja una proporción cuando la inversión inicial es cero o no es calculable.
+        </p>
+      }
+
+      @if (isCalculable()) {
+        <div class="recovery-legend" aria-label="Proporción del anillo">
+          <span class="recovery-legend-row">
+            <span
+              class="recovery-legend-key recovery-legend-key-recovered"
+              aria-hidden="true"
+            ></span>
+            <span>Recuperado</span>
+            <strong>{{ formatPercent(visualPercentage()) }}</strong>
+          </span>
+          <span class="recovery-legend-row">
+            <span class="recovery-legend-key recovery-legend-key-pending" aria-hidden="true"></span>
+            <span>Por recuperar</span>
+            <strong>{{ formatPercent(remainingPercentage()) }}</strong>
+          </span>
+        </div>
+      }
+
+      <dl class="recovery-financial-details">
+        <div>
+          <dt>Inversión inicial</dt>
+          <dd>{{ formatAmount(investmentAmount()) }}</dd>
+        </div>
+        <div>
+          <dt>Ingresos confirmados</dt>
+          <dd class="recovery-income-amount">{{ formatAmount(confirmedIncomeAmount()) }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</article>

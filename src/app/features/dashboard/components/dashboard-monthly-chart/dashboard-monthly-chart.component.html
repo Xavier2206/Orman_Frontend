@@ -1,0 +1,95 @@
+<article class="chart-panel monthly-panel">
+  <header class="chart-panel-header">
+    <div>
+      <p class="chart-eyebrow">Tendencia</p>
+      <h2 class="chart-title">Ingresos confirmados mensuales</h2>
+      <p class="chart-subtitle">Últimos 12 meses · {{ scopeLabel() }}</p>
+    </div>
+    <span class="chart-header-icon chart-header-icon-income" aria-hidden="true">
+      <span class="material-symbols-rounded">show_chart</span>
+    </span>
+  </header>
+
+  @if (points().length === 0) {
+    <p class="chart-empty-state">No hay datos mensuales disponibles.</p>
+  } @else {
+    <figure class="monthly-figure">
+      <div
+        class="monthly-chart-scroll"
+        role="region"
+        aria-label="Gráfico desplazable de los últimos 12 meses"
+      >
+        <svg
+          class="monthly-chart"
+          viewBox="0 0 800 340"
+          role="img"
+          [attr.aria-label]="'Ingresos confirmados mensuales de ' + scopeLabel()"
+        >
+          <title>Ingresos confirmados por mes</title>
+          <defs>
+            <linearGradient id="monthly-income-area" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--theme-success)" stop-opacity="0.24" />
+              <stop offset="100%" stop-color="var(--theme-success)" stop-opacity="0.015" />
+            </linearGradient>
+          </defs>
+
+          @for (tick of ticks(); track tick.y) {
+            <line
+              class="monthly-chart-grid-line"
+              x1="84"
+              [attr.y1]="tick.y"
+              x2="782"
+              [attr.y2]="tick.y"
+            />
+            <text class="monthly-chart-axis-label" x="74" [attr.y]="tick.y + 4">
+              {{ formatAmount(tick.value) }}
+            </text>
+          }
+
+          <polygon class="monthly-chart-area" [attr.points]="areaPoints()" />
+          <line
+            class="monthly-chart-axis-line"
+            x1="84"
+            [attr.y1]="plotBottom"
+            x2="782"
+            [attr.y2]="plotBottom"
+          />
+
+          <polyline class="monthly-chart-line" [attr.points]="polylinePoints()" />
+          @for (point of points(); track point.periodo) {
+            <g>
+              <circle class="monthly-chart-point" [attr.cx]="point.x" [attr.cy]="point.y" r="4">
+                <title>{{ point.fullPeriodLabel }}: {{ formatAmount(point.monto) }}</title>
+              </circle>
+              <text
+                class="monthly-chart-month-label"
+                [attr.x]="point.x"
+                [attr.y]="plotBottom + 24"
+                text-anchor="middle"
+              >
+                {{ point.monthLabel }}
+              </text>
+            </g>
+          }
+        </svg>
+      </div>
+
+      <figcaption class="monthly-chart-legend">
+        <span class="monthly-chart-legend-mark" aria-hidden="true"></span>
+        Ingresos confirmados por fecha de revisión
+      </figcaption>
+    </figure>
+
+    @if (noMonthlyIncome()) {
+      <p class="mt-2 text-sm text-muted" role="status">
+        No hay ingresos confirmados en los 12 meses mostrados.
+      </p>
+    }
+
+    <ul class="sr-only" aria-label="Valores mensuales del gráfico">
+      @for (point of points(); track point.periodo) {
+        <li>{{ formatPeriod(point.periodo) }}: {{ formatAmount(point.monto) }}</li>
+      }
+    </ul>
+  }
+</article>
