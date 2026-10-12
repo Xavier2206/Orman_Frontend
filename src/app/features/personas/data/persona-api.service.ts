@@ -9,8 +9,9 @@ import {
   CrearUsuarioRequest,
   PageResponse,
   Persona,
+  PersonaCreateRequest,
   PersonaListFilters,
-  PersonaRequest,
+  PersonaUpdateRequest,
 } from '../models/persona.model';
 
 @Injectable({ providedIn: 'root' })
@@ -35,10 +36,10 @@ export class PersonaApiService {
   get(codper: number): Observable<Persona> {
     return this.http.get<Persona>(`${this.personasPath}/${codper}`);
   }
-  create(request: PersonaRequest): Observable<Persona> {
+  create(request: PersonaCreateRequest): Observable<Persona> {
     return this.http.post<Persona>(this.personasPath, request);
   }
-  update(codper: number, request: PersonaRequest): Observable<Persona> {
+  update(codper: number, request: PersonaUpdateRequest): Observable<Persona> {
     return this.http.put<Persona>(`${this.personasPath}/${codper}`, request);
   }
   desactivar(codper: number): Observable<Persona> {

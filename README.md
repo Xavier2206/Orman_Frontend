@@ -1,72 +1,91 @@
-# ORMAN
+# ORMAN Frontend
 
 > Trabajo Final · Diplomado en Desarrollo Web y Aplicaciones Móviles · UAJMS 2026<br>
 > Autor: `Xavier Ortega Mancilla` · Tutor: <Nombre del tutor>
 
 ## 1. Descripción
 
-ORMAN Frontend es la aplicación web desarrollada con Angular para administrar alquileres e interactuar con el Backend ORMAN. Incluye una landing pública y un área privada para gestionar personas, roles, menús, asignaciones, procesos, propiedades, unidades, contratos, cuotas y pagos. También ofrece comprobantes, documentos PDF, mapas, fotografías y notificaciones.
+ORMAN es una plataforma para la gestión de alquileres. Este repositorio contiene la aplicación web Angular, que funciona como interfaz del **Propietario**. La aplicación móvil de otro repositorio funciona como interfaz del **Inquilino**. El Frontend web incluye una landing pública y un área privada conectada al Backend ORMAN Spring Boot.
 
-Este repositorio contiene únicamente el Frontend web. El Backend Spring Boot se mantiene en otro repositorio.
+**Sistema desplegado:** [https://orman-frontend.ortegaxavier75.workers.dev/](https://orman-frontend.ortegaxavier75.workers.dev/)
 
-**Sistema desplegado:** pendiente.
+### Repositorios
+
+| Aplicación       | Repositorio                                                    | Interfaz principal |
+| ---------------- | -------------------------------------------------------------- | ------------------ |
+| Frontend web     | [Orman_Frontend](https://github.com/Xavier2206/Orman_Frontend) | Propietario        |
+| Backend          | [Orman_Backend](https://github.com/Xavier2206/Orman_Backend)   | API Spring Boot    |
+| Aplicación móvil | [Orman_Mobile](https://github.com/Xavier2206/Orman_Mobile)     | Inquilino          |
 
 ## 2. Stack tecnológico
 
-| Componente | Versión | Función |
-|---|---:|---|
-| Angular | 22.0.7 | Aplicación y componentes standalone |
-| TypeScript | 6.0.3 | Lenguaje y tipado |
-| Angular Router | 22.0.7 | Navegación y carga diferida de rutas |
-| Angular HttpClient | 22.0.7 | Comunicación HTTP con la API |
-| Angular Signals | 22.0.7 | Estado reactivo de la interfaz |
-| RxJS | 7.8.2 | Composición de operaciones asíncronas |
-| Angular Material | 22.0.7 | Iconos y componentes Material utilizados por la aplicación |
-| Tailwind CSS | 4.3.3 | Estilos de interfaz |
-| ngx-sonner | 3.1.0 | Notificaciones visuales |
-| Leaflet | 1.9.4 | Mapas |
-| jsPDF | 4.2.1 | Generación de documentos PDF |
-| Vitest | 4.1.10 | Pruebas unitarias |
-| jsdom | 28.1.0 | Entorno DOM para pruebas |
-| npm | 11.16.0 | Gestor de paquetes declarado por el proyecto |
+Las versiones resueltas corresponden a `package-lock.json`. Las restricciones declaradas en `package.json` son rangos, salvo `packageManager`, que declara una versión de npm.
 
-Las versiones de Angular, TypeScript y las dependencias corresponden a las resoluciones de `package-lock.json`; npm se declara mediante `packageManager` en `package.json`. Las funcionalidades se organizan en componentes standalone y rutas con carga diferida.
+| Componente                                            |               Restricción declarada | Versión resuelta | Función                                                      |
+| ----------------------------------------------------- | ----------------------------------: | ---------------: | ------------------------------------------------------------ |
+| Angular (core, common, router, Material, CLI y build) | `^22.0.0` / `^22.0.7` según paquete |           22.0.7 | Aplicación standalone, navegación, formularios y componentes |
+| TypeScript                                            |                            `~6.0.2` |            6.0.3 | Lenguaje y tipado                                            |
+| RxJS                                                  |                            `~7.8.0` |            7.8.2 | Operaciones asíncronas                                       |
+| Tailwind CSS y PostCSS                                |                            `^4.3.3` |            4.3.3 | Estilos de interfaz                                          |
+| ngx-sonner                                            |                            `^3.1.0` |            3.1.0 | Notificaciones visuales                                      |
+| Leaflet                                               |                            `^1.9.4` |            1.9.4 | Mapas                                                        |
+| jsPDF                                                 |                            `^4.2.1` |            4.2.1 | Generación de documentos PDF                                 |
+| Vitest                                                |                            `^4.0.8` |           4.1.10 | Pruebas unitarias                                            |
+| jsdom                                                 |                           `^28.0.0` |           28.1.0 | Entorno DOM para pruebas                                     |
+| npm                                                   |       `packageManager: npm@11.16.0` |        No aplica | Gestor de paquetes declarado por el proyecto                 |
+
+`package.json` no declara `engines` para Node.js y el repositorio no contiene `.nvmrc` ni `.node-version`. Angular 22.0.x admite Node.js `^22.22.3`, `^24.15.0` o `^26.0.0`, TypeScript `>=6.0.0 <6.1.0` y RxJS `^6.5.3` o `^7.4.0`, según la [tabla oficial de compatibilidad de Angular](https://angular.dev/reference/versions). El `package-lock.json` resuelve TypeScript 6.0.3 y RxJS 7.8.2, que están dentro de esos rangos. En el entorno local usado para preparar esta documentación se informaron Node.js `v24.21.0` y npm `11.19.0`; son versiones locales y no pines del repositorio. `package.json` declara npm `11.16.0` mediante `packageManager`.
 
 ## 3. Requisitos previos
 
-- Node.js compatible con Angular 22. El proyecto no define una versión mediante `engines`.
-- npm 11.16.0, indicado en `package.json`.
+- Una versión de Node.js compatible con Angular 22.0.x; ver la tabla oficial enlazada arriba.
+- npm, preferentemente la versión declarada en `package.json` (`11.16.0`).
 - Git.
 - Backend ORMAN disponible para las funciones que consumen la API.
 
 ## 4. Instalación local
 
 ```bash
-git clone <URL del repositorio frontend>
+git clone https://github.com/Xavier2206/Orman_Frontend.git
 cd Orman_Frontend
 npm ci
 npm start
 ```
 
-La aplicación de desarrollo queda disponible en `http://localhost:4200`.
+La aplicación se sirve en `http://localhost:4200`. `npm start` ejecuta `ng serve`, cuya configuración predeterminada es `development` en `angular.json`. `src/environments/environment.development.ts` define la base REST relativa `/api/v1` y el WebSocket `ws://localhost:9090/ws`.
 
-El Backend local se espera en `http://localhost:9090`. `npm start` ejecuta `ng serve` con la configuración `development`; Angular utiliza `/api/v1` y `proxy.conf.json` reenvía las solicitudes `/api` a `http://localhost:9090`. Así, el navegador llama al frontend en el mismo origen y no necesita conectarse directamente al backend.
+El Backend local debe estar disponible en `http://localhost:9090`. `proxy.conf.json`, conectado al servidor de desarrollo desde `angular.json`, reenvía las solicitudes cuya ruta comienza con `/api` a ese Backend. Así, las solicitudes REST desde el navegador usan el mismo origen del Frontend; la conexión STOMP/WebSocket usa directamente la dirección local definida en el archivo de entorno.
 
-### Autenticación y comunicación
+## 5. Entornos, autenticación y notificaciones
 
-El login web envía usuario y contraseña a `POST /api/v1/auth/login`. Tras recibir `AUTHENTICATED`, Angular conserva el JWT de acceso en memoria y consulta `GET /api/v1/auth/context` para cargar los datos de la cuenta y sus roles. Las rutas privadas están protegidas por un guard de autenticación.
+### Direcciones por entorno
 
-La renovación de sesión utiliza la cookie de refresh `HttpOnly` mediante solicitudes con `withCredentials`; Angular no lee esa cookie. La protección XSRF utiliza la cookie `XSRF-TOKEN` y el encabezado `X-XSRF-TOKEN`. El access token y el refresh token no se guardan en `localStorage`; allí se conservan preferencias de tema y un identificador auxiliar del dispositivo.
+| Entorno                      | Archivo que lo controla                       | Base REST                                                                   | WebSocket STOMP                            |
+| ---------------------------- | --------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------ |
+| Desarrollo (`npm start`)     | `src/environments/environment.development.ts` | `/api/v1` — el proxy de desarrollo reenvía `/api` a `http://localhost:9090` | `ws://localhost:9090/ws`                   |
+| Producción (`npm run build`) | `src/environments/environment.ts`             | `https://orman-backend-e09w.onrender.com/api/v1`                            | `wss://orman-backend-e09w.onrender.com/ws` |
 
-### WebSocket y notificaciones
+No se usan archivos `.env` para configurar Angular. `angular.json` reemplaza el archivo base por `environment.development.ts` en desarrollo. El build usa `production` por defecto y conserva `environment.ts`. El prefijo REST es `/api/v1`; la ruta WebSocket es `/ws`.
 
-El cliente usa WebSocket/STOMP en `ws://localhost:9090/ws` y se suscribe al canal privado `/user/queue/notificaciones`. Los avisos en tiempo real actualizan la interfaz; REST continúa siendo la fuente de verdad. La campana muestra el resumen y el listado de notificaciones y permite marcarlas como leídas.
+### Sesión y autorización
 
-## 5. Entornos de Angular
+El inicio de sesión usa `POST /api/v1/auth/login`. Angular mantiene el token de acceso en memoria y envía las solicitudes de sesión con `withCredentials` para que el navegador gestione la cookie HttpOnly de renovación definida por el contrato de autenticación; JavaScript no lee esa cookie. La protección CSRF usa el endpoint `GET /api/v1/auth/csrf`, la cookie `XSRF-TOKEN` y el encabezado `X-XSRF-TOKEN`. La aplicación no guarda los tokens en `localStorage`; allí puede conservar preferencias de interfaz y un identificador auxiliar del dispositivo.
 
-El Frontend no requiere archivos `.env` ni variables de entorno para el desarrollo local. `angular.json` reemplaza `environment.ts` por `environment.development.ts` al ejecutar `ng serve` o compilar con `development`.
+El contexto de autenticación recibido del Backend alimenta la navegación y las protecciones de rutas del Frontend. Esos controles determinan lo que la interfaz presenta, pero no sustituyen la autorización que debe aplicar el Backend en cada operación.
 
-`ng build` usa `production` por defecto y conserva `environment.ts`: REST utiliza HTTPS y WebSocket utiliza WSS del backend desplegado. Wrangler sirve los estáticos de `dist/orman-frontend/browser`; no agrega endpoints locales al build de producción.
+### Notificaciones en tiempo real
+
+El cliente se conecta por STOMP al WebSocket del entorno y envía el token de acceso como `Bearer` en el encabezado de conexión. Se suscribe a `/user/queue/notificaciones`. El cliente tiene reconexión exponencial, con espera inicial de un segundo y máximo de diez segundos. REST se usa para consultar el resumen y el listado de notificaciones; los eventos WebSocket actualizan la interfaz en tiempo real.
+
+### Requisitos del Backend para el acceso web en producción
+
+El código del Frontend confirma que las solicitudes de autenticación y CSRF usan credenciales y que la aplicación web de producción se sirve desde el origen `https://orman-frontend.ortegaxavier75.workers.dev`. La configuración efectiva de CORS, las cookies emitidas por el Backend y el permiso de origen del handshake WebSocket no se verifican desde este repositorio. Antes de evaluar el flujo en producción, el responsable del Backend debe confirmar que:
+
+- CORS autoriza exactamente el origen web publicado y admite solicitudes con credenciales.
+- La cookie de renovación y la cookie XSRF tienen atributos compatibles con el uso entre orígenes HTTPS, y el Backend permite el encabezado XSRF requerido.
+- El endpoint WebSocket acepta conexiones desde el origen web publicado y el mecanismo de autenticación STOMP configurado.
+
+Este README documenta las direcciones configuradas en el Frontend; no afirma que la disponibilidad pública ni estos ajustes del Backend hayan sido comprobados.
 
 ## 6. Estructura del repositorio
 
@@ -81,6 +100,7 @@ El Frontend no requiere archivos `.env` ni variables de entorno para el desarrol
 │   │   ├── features/   # Funcionalidades organizadas por dominio
 │   │   ├── layouts/    # Composición pública y privada
 │   │   └── shared/     # Elementos reutilizables
+│   ├── environments/   # Direcciones específicas de cada entorno Angular
 │   ├── styles.css
 │   ├── index.html
 │   └── main.ts
@@ -88,38 +108,52 @@ El Frontend no requiere archivos `.env` ni variables de entorno para el desarrol
 ├── package.json
 ├── package-lock.json
 ├── proxy.conf.json
+├── wrangler.jsonc
 └── README.md
 ```
 
-Las rutas funcionales incluyen personas, roles, menús, asignaciones, procesos, propiedades, unidades, contratos y pagos. El área de pagos contiene la gestión de cuotas y pagos y la configuración de QR de cobro. Propiedades y unidades incluyen formularios, fotografías y vistas de detalle; contratos incluyen documentos PDF.
+Las funcionalidades incluyen gestión de personas, roles, menús, asignaciones, procesos, propiedades, unidades, contratos, cuotas y pagos; consulta de comprobantes y documentos PDF; mapas y fotografías; reportes financieros y notificaciones.
 
-## 7. Roles y credenciales
+## 7. Roles y cuentas de evaluación
 
-Este repositorio no incluye credenciales de acceso. Solicita credenciales de prueba por el canal autorizado.
+La aplicación web es la interfaz del Propietario y la aplicación móvil es la interfaz del Inquilino. Las cuentas de prueba para la evaluación académica se proporcionan en el apartado A4.4 del documento entregado al tribunal.
 
-El área privada conserva las funciones de administración de roles y menús, asignación de roles, asignación de menús y asignación de procesos. El acceso y la navegación se construyen a partir del contexto recibido del Backend.
+El área privada incluye funciones de administración de roles y menús, asignación de roles, asignación de menús y asignación de procesos. La navegación se construye con la información recibida del Backend; la autorización efectiva corresponde al Backend.
 
 ## 8. Pruebas
 
-El proyecto utiliza Vitest para validar componentes, servicios, autenticación, interceptor, renovación de sesión, contexto, guardas, WebSocket, notificaciones y módulos funcionales.
+El proyecto utiliza Vitest para pruebas de componentes, servicios, autenticación, interceptores, renovación de sesión, contexto, guards, WebSocket, notificaciones y módulos funcionales. Los tests están junto al código correspondiente en archivos `*.spec.ts`.
 
 ```bash
 npm test -- --watch=false
 ```
 
-Los tests se encuentran junto al código correspondiente en archivos `*.spec.ts`.
+## 9. Despliegue en Cloudflare Workers
 
-## 9. Despliegue
+**Frontend público:** [https://orman-frontend.ortegaxavier75.workers.dev/](https://orman-frontend.ortegaxavier75.workers.dev/)
 
-**Frontend público:** pendiente.
-
-Para generar los archivos estáticos de producción:
+El proyecto se publica como activos estáticos en Cloudflare Workers. `angular.json` establece `production` como configuración predeterminada de build. `wrangler.jsonc` publica la carpeta `./dist/orman-frontend/browser`, que genera Angular con el builder de aplicación. Para preparar una publicación:
 
 ```bash
+npm ci
 npm run build
+npx wrangler login
+npx wrangler deploy
 ```
 
-Angular genera la salida en `dist/orman-frontend/`, dentro de `dist/`. Este proyecto todavía no declara una plataforma ni una URL pública de despliegue.
+`npx wrangler login` autoriza Wrangler con una cuenta Cloudflare mediante el flujo OAuth del navegador, según la [documentación oficial del comando](https://developers.cloudflare.com/workers/wrangler/commands/general/). `npx wrangler deploy` lee `wrangler.jsonc` y publica los archivos de la carpeta configurada. En automatización se puede usar un token de API de Cloudflare guardado como secreto del entorno; no se debe añadir al repositorio.
+
+La configuración `assets.not_found_handling: "single-page-application"` de `wrangler.jsonc` hace que las rutas de navegación que no correspondan a un archivo estático reciban `index.html`, permitiendo que Angular Router resuelva accesos directos a sus rutas. La carpeta de salida y el fallback SPA se documentan también en la [guía oficial de activos estáticos de Cloudflare](https://developers.cloudflare.com/workers/static-assets/).
+
+**Versión de Wrangler:** no está declarada en `package.json` ni resuelta en `package-lock.json`; por tanto, el repositorio no fija una versión. Si Wrangler no está instalado localmente, `npx wrangler` puede descargar la versión más reciente. Para registrar y reutilizar la versión concreta empleada, consulta `npx wrangler --version` y, en una actualización de dependencias, añádela como dependencia de desarrollo usando exactamente ese número, sin `latest`:
+
+```bash
+npm install --save-dev wrangler@X.Y.Z
+```
+
+En ese comando, sustituye `X.Y.Z` por el número exacto mostrado por `npx wrangler --version`.
+
+Al conservar `package.json` y `package-lock.json`, las siguientes instalaciones con `npm ci` reutilizarán esa versión local; se podrá invocar con `npm exec -- wrangler login` y `npm exec -- wrangler deploy`. Consulta la [documentación oficial de instalación y versionado de Wrangler](https://developers.cloudflare.com/workers/wrangler/install-and-update/).
 
 ## 10. Licencia
 

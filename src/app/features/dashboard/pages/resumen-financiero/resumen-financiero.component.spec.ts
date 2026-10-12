@@ -117,6 +117,9 @@ describe('ResumenFinancieroComponent', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'No hay ingresos confirmados en los 12 meses mostrados.',
     );
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Registre una inversión mayor que cero para calcular la recuperación.',
+    );
     http.expectNone('/api/v1/dashboard/resumen-financiero');
   });
 
@@ -141,10 +144,58 @@ describe('ResumenFinancieroComponent', () => {
     expect(progress.getAttribute('stroke-dashoffset')).toBe('0');
   });
 
-  it('shows no calculable and does not draw a recovery percentage for zero investment', () => {
+  it('shows investment guidance and no recovery percentage or proportion for zero investment', () => {
     loadReport(REPORT_WITH_ZERO_INVESTMENT);
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Registre una inversión mayor que cero para calcular la recuperación.',
+    );
 
-    expect(fixture.nativeElement.textContent).toContain('No calculable');
+    const propertyMode = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: Element) => button.textContent?.trim() === 'Por propiedad',
+    ) as HTMLButtonElement;
+    propertyMode.click();
+    fixture.detectChanges();
+
+    const recoveryMetric = fixture.nativeElement.querySelector(
+      '.metric-card-recovery .metric-value',
+    ) as HTMLElement;
+    expect(recoveryMetric.textContent).toContain('No calculable');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Registre una inversión mayor que cero para calcular la recuperación.',
+    );
+    expect(
+      fixture.nativeElement.querySelector('app-dashboard-recovery-chart .recovery-ring-progress'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-dashboard-property-recovery-chart .recovery-bar'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement
+        .querySelector('.property-summary-card-selected')
+        ?.textContent?.includes('No calculable'),
+    ).toBe(true);
+  });
+
+  it('shows guidance when the backend reports recovery as not calculable', () => {
+    loadReport({
+      ...REPORT_WITH_PROPERTIES,
+      propiedades: [
+        {
+          ...REPORT_WITH_PROPERTIES.propiedades[0],
+          ingresosConfirmadosAcumulados: 0,
+          porcentajeRecuperacion: null,
+        },
+      ],
+    });
+    const propertyMode = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: Element) => button.textContent?.trim() === 'Por propiedad',
+    ) as HTMLButtonElement;
+    propertyMode.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Registre una inversión mayor que cero para calcular la recuperación.',
+    );
     expect(
       fixture.nativeElement.querySelector('app-dashboard-recovery-chart .recovery-ring-progress'),
     ).toBeNull();

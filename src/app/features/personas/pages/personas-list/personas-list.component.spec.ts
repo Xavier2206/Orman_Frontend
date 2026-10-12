@@ -91,12 +91,14 @@ describe('PersonasListComponent', () => {
     http
       .expectOne('/api/v1/personas/resumen')
       .flush({ totalPersonas: 11, activas: 11, inactivas: 0, conUsuario: 0 });
-    http.expectOne((request) => request.url === '/api/v1/personas').flush({
-      ...page,
-      totalElements: 11,
-      totalPages: 2,
-      last: false,
-    });
+    http
+      .expectOne((request) => request.url === '/api/v1/personas')
+      .flush({
+        ...page,
+        totalElements: 11,
+        totalPages: 2,
+        last: false,
+      });
     fixture.detectChanges();
 
     const nextButton = Array.from(
@@ -119,6 +121,7 @@ describe('PersonasListComponent', () => {
     initial();
     const c = fixture.componentInstance as never as { submitPersona(v: unknown): void };
     c.submitPersona({
+      mode: 'create',
       request: {
         ci: '456',
         nombre: 'Bea',
@@ -148,6 +151,7 @@ describe('PersonasListComponent', () => {
     c.selected.set(persona);
 
     c.submitPersona({
+      mode: 'edit',
       request: {
         ci: persona.ci,
         nombre: persona.nombre,
@@ -170,6 +174,192 @@ describe('PersonasListComponent', () => {
     expect(notification.success).toHaveBeenCalledWith('Persona actualizada correctamente.');
     http.expectOne((request) => request.url === '/api/v1/personas').flush(page);
     http.expectNone('/api/v1/personas/resumen');
+  });
+
+  it('updates personal fields while retaining a private photo reference without deleting the photo', () => {
+    initial();
+    const privatePhoto = 'personas/7/64f7a0e5.jpg';
+    const currentPersona = { ...persona, foto: privatePhoto };
+    const c = fixture.componentInstance as never as {
+      selected: { set(value: unknown): void };
+      submitPersona(value: unknown): void;
+    };
+    c.selected.set(currentPersona);
+
+    c.submitPersona({
+      mode: 'edit',
+      request: {
+        ci: persona.ci,
+        nombre: 'Ana María',
+        ap: persona.ap,
+        am: persona.am,
+        genero: persona.genero,
+        correo: 'ana.maria@test.com',
+        telefono: '72222222',
+        tipoPersona: persona.tipoPersona,
+        foto: null,
+        estado: persona.estado,
+      },
+      photo: null,
+    });
+
+    const update = http.expectOne('/api/v1/personas/7');
+    expect(update.request.method).toBe('PUT');
+    expect(update.request.body).toMatchObject({
+      nombre: 'Ana María',
+      correo: 'ana.maria@test.com',
+      telefono: '72222222',
+      foto: null,
+    });
+    update.flush({
+      ...currentPersona,
+      nombre: 'Ana María',
+      correo: 'ana.maria@test.com',
+      telefono: '72222222',
+    });
+
+    const refreshedPage = http.expectOne((request) => request.url === '/api/v1/personas');
+    refreshedPage.flush({ ...page, content: [{ ...currentPersona, nombre: 'Ana María' }] });
+    http.expectOne('/api/v1/personas/7/foto').flush(new Blob(['image'], { type: 'image/jpeg' }));
+    http.expectNone(
+      (request) => request.url === '/api/v1/personas/7/foto' && request.method === 'DELETE',
+    );
+  });
+
+  it('replaces a private photo only after the JSON update and sends the image as multipart', () => {
+    initial();
+    const currentPersona = { ...persona, foto: 'personas/7/64f7a0e5.jpg' };
+    const photo = new File(['replacement'], 'replacement.jpg', { type: 'image/jpeg' });
+    const c = fixture.componentInstance as never as {
+      selected: { set(value: unknown): void };
+      submitPersona(value: unknown): void;
+    };
+    c.selected.set(currentPersona);
+
+    c.submitPersona({
+      mode: 'edit',
+      request: {
+        ci: persona.ci,
+        nombre: 'Ana actualizada',
+        ap: persona.ap,
+        am: persona.am,
+        genero: persona.genero,
+        correo: persona.correo,
+        telefono: persona.telefono,
+        tipoPersona: persona.tipoPersona,
+        foto: null,
+        estado: persona.estado,
+      },
+      photo,
+    });
+
+    const update = http.expectOne('/api/v1/personas/7');
+    expect(update.request.method).toBe('PUT');
+    expect(update.request.body.foto).toBeNull();
+    update.flush({ ...currentPersona, nombre: 'Ana actualizada' });
+
+    const upload = http.expectOne('/api/v1/personas/7/foto');
+    expect(upload.request.method).toBe('PUT');
+    expect(upload.request.body).toBeInstanceOf(FormData);
+    expect((upload.request.body as FormData).get('foto')).toBe(photo);
+    upload.flush({
+      ...currentPersona,
+      nombre: 'Ana actualizada',
+      foto: 'personas/7/new-photo.jpg',
+    });
+
+    const refreshedPage = http.expectOne((request) => request.url === '/api/v1/personas');
+    refreshedPage.flush({
+      ...page,
+      content: [{ ...currentPersona, nombre: 'Ana actualizada', foto: 'personas/7/new-photo.jpg' }],
+    });
+    http.expectOne('/api/v1/personas/7/foto').flush(new Blob(['image'], { type: 'image/jpeg' }));
+    http.expectNone(
+      (request) => request.url === '/api/v1/personas/7/foto' && request.method === 'DELETE',
+    );
+  });
+
+  it('reports a partial edit and refreshes the person when only the multipart photo upload fails', () => {
+    initial();
+    const currentPersona = { ...persona, foto: 'personas/7/64f7a0e5.jpg' };
+    const photo = new File(['replacement'], 'replacement.jpg', { type: 'image/jpeg' });
+    const c = fixture.componentInstance as never as {
+      selected: { (): typeof persona | null; set(value: unknown): void };
+      feedback: { (): string | null };
+      submitPersona(value: unknown): void;
+    };
+    c.selected.set(currentPersona);
+
+    c.submitPersona({
+      mode: 'edit',
+      request: {
+        ci: persona.ci,
+        nombre: 'Ana actualizada',
+        ap: persona.ap,
+        am: persona.am,
+        genero: persona.genero,
+        correo: persona.correo,
+        telefono: persona.telefono,
+        tipoPersona: persona.tipoPersona,
+        foto: null,
+        estado: persona.estado,
+      },
+      photo,
+    });
+
+    http.expectOne('/api/v1/personas/7').flush({ ...currentPersona, nombre: 'Ana actualizada' });
+    http
+      .expectOne('/api/v1/personas/7/foto')
+      .flush(
+        { detail: 'No se pudo guardar la foto.' },
+        { status: 500, statusText: 'Server Error' },
+      );
+
+    expect(c.feedback()).toContain('Los datos de la Persona se guardaron correctamente');
+    expect(c.selected()?.nombre).toBe('Ana actualizada');
+    expect(notification.success).not.toHaveBeenCalled();
+
+    const refreshedPage = http.expectOne((request) => request.url === '/api/v1/personas');
+    refreshedPage.flush({ ...page, content: [{ ...currentPersona, nombre: 'Ana actualizada' }] });
+    http.expectOne('/api/v1/personas/7/foto').flush(new Blob(['image'], { type: 'image/jpeg' }));
+    http.expectNone('/api/v1/personas/resumen');
+  });
+
+  it('keeps the API error when the JSON update fails before the multipart request', () => {
+    initial();
+    const currentPersona = { ...persona, foto: 'personas/7/64f7a0e5.jpg' };
+    const photo = new File(['replacement'], 'replacement.jpg', { type: 'image/jpeg' });
+    const c = fixture.componentInstance as never as {
+      selected: { set(value: unknown): void };
+      feedback: { (): string | null };
+      submitPersona(value: unknown): void;
+    };
+    c.selected.set(currentPersona);
+
+    c.submitPersona({
+      mode: 'edit',
+      request: {
+        ci: persona.ci,
+        nombre: 'Ana actualizada',
+        ap: persona.ap,
+        am: persona.am,
+        genero: persona.genero,
+        correo: persona.correo,
+        telefono: persona.telefono,
+        tipoPersona: persona.tipoPersona,
+        foto: null,
+        estado: persona.estado,
+      },
+      photo,
+    });
+
+    http
+      .expectOne('/api/v1/personas/7')
+      .flush({ detail: 'El correo no es válido.' }, { status: 400, statusText: 'Bad Request' });
+
+    expect(c.feedback()).toBe('El correo no es válido.');
+    http.expectNone('/api/v1/personas/7/foto');
+    http.expectNone((request) => request.url === '/api/v1/personas' && request.method === 'GET');
   });
 
   it('notifies after successfully deactivating a persona and refreshes the view', () => {
@@ -232,7 +422,11 @@ describe('PersonasListComponent', () => {
     };
     const errorCases = [
       { status: 404, statusText: 'Not Found', detail: 'La Persona no existe.' },
-      { status: 403, statusText: 'Forbidden', detail: 'No tiene permiso para realizar la operación.' },
+      {
+        status: 403,
+        statusText: 'Forbidden',
+        detail: 'No tiene permiso para realizar la operación.',
+      },
       { status: 409, statusText: 'Conflict', detail: 'Debe existir otro propietario.' },
     ];
 
@@ -241,10 +435,12 @@ describe('PersonasListComponent', () => {
       fixture.detectChanges();
       c.submitStatus();
 
-      http.expectOne('/api/v1/personas/7/desactivar').flush(
-        { detail: errorCase.detail, errorCode: 'STATUS_ERROR' },
-        { status: errorCase.status, statusText: errorCase.statusText },
-      );
+      http
+        .expectOne('/api/v1/personas/7/desactivar')
+        .flush(
+          { detail: errorCase.detail, errorCode: 'STATUS_ERROR' },
+          { status: errorCase.status, statusText: errorCase.statusText },
+        );
       fixture.detectChanges();
 
       const modal = fixture.nativeElement.querySelector(
@@ -272,6 +468,7 @@ describe('PersonasListComponent', () => {
     };
 
     c.submitPersona({
+      mode: 'create',
       request: {
         ci: '456',
         nombre: 'Bea',
@@ -307,6 +504,7 @@ describe('PersonasListComponent', () => {
     c.selected.set(persona);
 
     c.submitPersona({
+      mode: 'edit',
       request: {
         ci: persona.ci,
         nombre: persona.nombre,
@@ -339,6 +537,7 @@ describe('PersonasListComponent', () => {
       submitPersona(v: unknown): void;
     };
     const submission = {
+      mode: 'create',
       request: {
         ci: '456',
         nombre: 'Bea',
@@ -364,10 +563,17 @@ describe('PersonasListComponent', () => {
     http.expectOne((r) => r.url === '/api/v1/personas').flush(page);
 
     expect(c.selected()?.codper).toBe(8);
-    expect(c.feedback()).toContain('La Persona fue creada correctamente');
+    expect(c.feedback()).toContain('Los datos de la Persona se guardaron correctamente');
     expect(notification.success).not.toHaveBeenCalled();
 
-    c.submitPersona(submission);
+    c.submitPersona({
+      mode: 'edit',
+      request: {
+        ...submission.request,
+        estado: 1,
+      },
+      photo: submission.photo,
+    });
     const update = http.expectOne('/api/v1/personas/8');
     expect(update.request.method).toBe('PUT');
     update.flush({ ...persona, codper: 8 });
@@ -424,7 +630,7 @@ describe('PersonasListComponent', () => {
     http.expectOne('/api/v1/personas/7/foto').flush(new Blob(['photo'], { type: 'image/jpeg' }));
 
     const c = fixture.componentInstance as never as {
-      openDetail(persona: typeof photoPage.content[number]): void;
+      openDetail(persona: (typeof photoPage.content)[number]): void;
     };
     c.openDetail(photoPage.content[0]);
     fixture.detectChanges();

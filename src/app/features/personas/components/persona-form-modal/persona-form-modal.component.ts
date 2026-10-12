@@ -11,7 +11,12 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 
 import { PersonaFormSubmit } from '../../models/persona-modal.model';
-import { Persona, PersonaRequest } from '../../models/persona.model';
+import {
+  Persona,
+  PersonaCreateRequest,
+  PersonaRequestFields,
+  PersonaUpdateRequest,
+} from '../../models/persona.model';
 import { PersonaPhotoFieldComponent } from '../persona-photo-field/persona-photo-field.component';
 import { PersonaModalFocusDirective } from '../persona-modal-focus.directive';
 
@@ -40,6 +45,19 @@ const atLeastOneSurnameValidator: ValidatorFn = (
 
 const notBlankValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
   String(control.value ?? '').trim() ? null : { required: true };
+
+function compatiblePhotoUrl(photo: string | null): string | null {
+  if (!photo) {
+    return null;
+  }
+
+  try {
+    const protocol = new URL(photo).protocol;
+    return protocol === 'http:' || protocol === 'https:' ? photo : null;
+  } catch {
+    return null;
+  }
+}
 
 @Component({
   selector: 'app-persona-form-modal',
@@ -221,7 +239,7 @@ export class PersonaFormModalComponent implements OnInit {
 
     const raw = this.form.getRawValue();
     const current = this.persona();
-    const request: PersonaRequest = {
+    const requestFields: PersonaRequestFields = {
       ...raw,
       ci: raw.ci.trim(),
       nombre: raw.nombre.trim(),
@@ -231,10 +249,20 @@ export class PersonaFormModalComponent implements OnInit {
       correo: raw.correo.trim(),
       telefono: raw.telefono.trim(),
       tipoPersona: raw.tipoPersona as Persona['tipoPersona'],
-      foto: current?.foto ?? null,
-      ...(current ? { estado: current.estado } : {}),
     };
-    this.saved.emit({ request, photo: this.selectedPhoto });
+
+    if (current) {
+      const request: PersonaUpdateRequest = {
+        ...requestFields,
+        foto: compatiblePhotoUrl(current.foto),
+        estado: current.estado,
+      };
+      this.saved.emit({ mode: 'edit', request, photo: this.selectedPhoto });
+      return;
+    }
+
+    const request: PersonaCreateRequest = { ...requestFields, foto: null };
+    this.saved.emit({ mode: 'create', request, photo: this.selectedPhoto });
   }
 
   private shouldShowLocalError(control: AbstractControl): boolean {

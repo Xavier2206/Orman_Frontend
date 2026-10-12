@@ -1,9 +1,16 @@
-import { PersonaRequest } from './persona.model';
+import { PersonaCreateRequest, PersonaUpdateRequest } from './persona.model';
 
-export interface PersonaFormSubmit {
-  readonly request: PersonaRequest;
-  readonly photo: File | null;
-}
+export type PersonaFormSubmit =
+  | {
+      readonly mode: 'create';
+      readonly request: PersonaCreateRequest;
+      readonly photo: File | null;
+    }
+  | {
+      readonly mode: 'edit';
+      readonly request: PersonaUpdateRequest;
+      readonly photo: File | null;
+    };
 
 export interface PersonaUserCreateSubmit {
   readonly login: string;

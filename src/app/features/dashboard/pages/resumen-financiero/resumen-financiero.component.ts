@@ -20,6 +20,15 @@ import {
 type DashboardViewMode = 'general' | 'propiedad';
 type DashboardLoadError = 'session' | 'forbidden' | 'general';
 
+function isRecoveryCalculable(property: DashboardPropiedadFinanciera): boolean {
+  return (
+    Number.isFinite(property.inversionInicial) &&
+    property.inversionInicial > 0 &&
+    property.porcentajeRecuperacion !== null &&
+    Number.isFinite(property.porcentajeRecuperacion)
+  );
+}
+
 @Component({
   selector: 'app-resumen-financiero',
   imports: [
@@ -75,10 +84,19 @@ export class ResumenFinancieroComponent {
   });
   protected readonly recoveryPercentage = computed(() => {
     if (this.viewMode() === 'propiedad') {
-      return this.selectedProperty()?.porcentajeRecuperacion ?? null;
+      const property = this.selectedProperty();
+      return property && isRecoveryCalculable(property) ? property.porcentajeRecuperacion : null;
     }
 
     return this.report()?.resumenGeneral.porcentajeRecuperacion ?? null;
+  });
+  protected readonly showRecoveryInvestmentGuidance = computed(() => {
+    if (this.viewMode() !== 'propiedad') {
+      return false;
+    }
+
+    const property = this.selectedProperty();
+    return property !== null && !isRecoveryCalculable(property);
   });
   protected readonly scopeLabel = computed(() =>
     this.viewMode() === 'general'
@@ -139,6 +157,10 @@ export class ResumenFinancieroComponent {
 
   protected formatPercent(percent: number | null): string {
     return formatDashboardPercent(percent);
+  }
+
+  protected propertyRecoveryPercentage(property: DashboardPropiedadFinanciera): number | null {
+    return isRecoveryCalculable(property) ? property.porcentajeRecuperacion : null;
   }
 
   protected isPropertySelected(property: DashboardPropiedadFinanciera): boolean {

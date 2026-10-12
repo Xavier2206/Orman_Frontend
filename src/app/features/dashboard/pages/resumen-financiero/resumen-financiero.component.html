@@ -156,6 +156,14 @@
           <h2 class="metric-title">Recuperación de inversión</h2>
           <p class="metric-value">{{ formatPercent(recoveryPercentage()) }}</p>
           <p class="metric-description">Porcentaje informado por el Backend</p>
+          @if (showRecoveryInvestmentGuidance()) {
+            <p
+              class="dashboard-notice mt-3 block min-w-0 break-words rounded-xl border border-info-border bg-info-bg px-3 py-2 text-xs leading-5 text-info-text"
+              role="status"
+            >
+              Registre una inversión mayor que cero para calcular la recuperación.
+            </p>
+          }
         </article>
       </section>
 
@@ -258,7 +266,7 @@
                 <span class="flex min-w-0 items-baseline justify-between gap-3 text-xs">
                   <span class="text-muted">Recuperación</span>
                   <strong class="break-words text-right text-accent">{{
-                    formatPercent(property.porcentajeRecuperacion)
+                    formatPercent(propertyRecoveryPercentage(property))
                   }}</strong>
                 </span>
               </span>

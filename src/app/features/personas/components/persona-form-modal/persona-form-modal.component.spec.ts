@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { PersonaFormSubmit } from '../../models/persona-modal.model';
 import { PersonaFormModalComponent } from './persona-form-modal.component';
 
 type TestControl = {
@@ -34,7 +35,7 @@ type FormModalHarness = {
     }): void;
   };
   saved: {
-    subscribe(callback: (event: { request: { ap: string | null; estado?: number } }) => void): void;
+    subscribe(callback: (event: PersonaFormSubmit) => void): void;
   };
   submit(): void;
 };
@@ -218,18 +219,32 @@ describe('PersonaFormModalComponent', () => {
     expect(c.form.controls.ci.errors).toBeNull();
   });
 
-  it('emits a normalized valid create request', () => {
+  it('emits a normalized create request without a photo reference', () => {
     const c = component();
     setValidForm();
-    let paternalSurname: string | null = null;
-    c.saved.subscribe((event) => (paternalSurname = event.request.ap));
+    let submitted: PersonaFormSubmit | null = null;
+    c.saved.subscribe((event) => (submitted = event));
 
     c.submit();
 
-    expect(paternalSurname).toBe('Paz');
+    expect(submitted).toEqual({
+      mode: 'create',
+      request: {
+        ci: '123',
+        nombre: 'Ana',
+        ap: 'Paz',
+        am: null,
+        genero: 'F',
+        correo: 'ana@test.com',
+        telefono: '70000000',
+        tipoPersona: 'A',
+        foto: null,
+      },
+      photo: null,
+    });
   });
 
-  it('preloads edit mode and preserves estado in the complete request', () => {
+  it('preloads edit mode and omits a private photo reference while preserving the other request fields', () => {
     fixture.componentRef.setInput('persona', {
       codper: 7,
       ci: '123',
@@ -241,15 +256,15 @@ describe('PersonaFormModalComponent', () => {
       correo: 'ana@test.com',
       telefono: '70000000',
       tipoPersona: 'A',
-      foto: null,
+      foto: 'personas/7/64f7a0e5.jpg',
       fechaRegistro: '2026-01-01T00:00:00Z',
       usuario: null,
       acciones: {},
     });
     fixture.detectChanges();
     const c = component();
-    let estado: number | undefined;
-    c.saved.subscribe((event) => (estado = event.request.estado));
+    let submitted: PersonaFormSubmit | null = null;
+    c.saved.subscribe((event) => (submitted = event));
 
     c.submit();
 
@@ -257,7 +272,53 @@ describe('PersonaFormModalComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Guardar cambios');
     expect(c.form.controls.genero.value).toBe('F');
     expect(c.form.controls.tipoPersona.value).toBe('A');
-    expect(estado).toBe(0);
+    expect(submitted).toEqual({
+      mode: 'edit',
+      request: {
+        ci: '123',
+        nombre: 'Ana',
+        ap: 'Paz',
+        am: null,
+        genero: 'F',
+        correo: 'ana@test.com',
+        telefono: '70000000',
+        tipoPersona: 'A',
+        foto: null,
+        estado: 0,
+      },
+      photo: null,
+    });
+  });
+
+  it('preserves an existing external HTTP photo URL in the edit request', () => {
+    fixture.componentRef.setInput('persona', {
+      codper: 7,
+      ci: '123',
+      nombre: 'Ana',
+      ap: 'Paz',
+      am: null,
+      genero: 'F',
+      estado: 1,
+      correo: 'ana@test.com',
+      telefono: '70000000',
+      tipoPersona: 'A',
+      foto: 'https://cdn.example.test/personas/ana.jpg',
+      fechaRegistro: '2026-01-01T00:00:00Z',
+      usuario: null,
+      acciones: {},
+    });
+    fixture.detectChanges();
+    const c = component();
+    let photo: string | null = null;
+    c.saved.subscribe((event) => {
+      if (event.mode === 'edit') {
+        photo = event.request.foto;
+      }
+    });
+
+    c.submit();
+
+    expect(photo).toBe('https://cdn.example.test/personas/ana.jpg');
   });
 
   it('renders backend field errors inline, including the photograph', () => {

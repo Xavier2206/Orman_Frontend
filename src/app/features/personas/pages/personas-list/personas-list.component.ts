@@ -2,7 +2,15 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, debounceTime, distinctUntilChanged, finalize, of, switchMap } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  debounceTime,
+  distinctUntilChanged,
+  finalize,
+  of,
+  switchMap,
+} from 'rxjs';
 
 import { ProblemDetail, isProblemDetail } from '../../../../core/api/problem-detail.model';
 import { OrmanNotificationService } from '../../../../core/notifications/orman-notification.service';
@@ -226,15 +234,29 @@ export class PersonasListComponent {
   }
   protected submitPersona(event: PersonaFormSubmit): void {
     const current = this.selected();
-    const creating = current === null;
-    let persistedPersona: Persona | null = current;
+    const creating = event.mode === 'create';
+    let persistedPersona: Persona | null = null;
+    let request$: Observable<Persona>;
+
+    if (event.mode === 'edit') {
+      if (!current) {
+        this.feedback.set('No fue posible identificar a la Persona que deseas editar.');
+        return;
+      }
+
+      request$ = this.api.update(current.codper, event.request);
+    } else {
+      if (current) {
+        this.feedback.set('Cierra la edición actual antes de crear otra Persona.');
+        return;
+      }
+
+      request$ = this.api.create(event.request);
+    }
 
     this.submitting.set(true);
     this.feedback.set(null);
     this.fieldErrors.set({});
-    const request$ = current
-      ? this.api.update(current.codper, event.request)
-      : this.api.create(event.request);
 
     request$
       .pipe(
@@ -258,13 +280,15 @@ export class PersonasListComponent {
           );
         },
         error: (error: unknown) => {
-          if (creating && persistedPersona && event.photo) {
+          if (persistedPersona && event.photo) {
             this.feedback.set(
-              'La Persona fue creada correctamente, pero no se pudo guardar la fotografía.',
+              'Los datos de la Persona se guardaron correctamente, pero no se pudo guardar la fotografía. Puedes intentarlo nuevamente.',
             );
             this.fieldErrors.set({});
             this.load();
-            this.loadResumen();
+            if (creating) {
+              this.loadResumen();
+            }
             return;
           }
 

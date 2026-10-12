@@ -39,16 +39,23 @@ export interface PageResponse<T> {
   readonly last: boolean;
 }
 
-export interface PersonaRequest {
+export interface PersonaRequestFields {
   readonly ci: string;
   readonly nombre: string;
   readonly ap: string | null;
   readonly am: string | null;
   readonly genero: 'M' | 'F';
-  readonly estado?: 0 | 1;
   readonly correo: string;
   readonly telefono: string;
   readonly tipoPersona: 'A' | 'I';
+}
+
+export interface PersonaCreateRequest extends PersonaRequestFields {
+  readonly foto: string | null;
+}
+
+export interface PersonaUpdateRequest extends PersonaRequestFields {
+  readonly estado: Persona['estado'];
   readonly foto: string | null;
 }
 
