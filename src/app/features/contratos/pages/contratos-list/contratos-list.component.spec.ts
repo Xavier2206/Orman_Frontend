@@ -469,6 +469,8 @@ describe('ContratosListComponent', () => {
   });
 
   it('rescisión: abre el modal, carga cuotas y actualiza el listado después del PATCH', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 27, 12));
     flushInitialData();
 
     const rescindButton = fixture.nativeElement.querySelector('.action-rescind') as HTMLButtonElement;
@@ -476,7 +478,23 @@ describe('ContratosListComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-contrato-rescind-modal')).not.toBeNull();
-    http.expectOne('/api/v1/contratos/1/cuotas').flush(installments);
+    const paidThroughSeptember: CuotaResponse[] = Array.from({ length: 9 }, (_, index) => {
+      const month = String(index + 1).padStart(2, '0');
+      const period = `2026-${month}`;
+
+      return {
+        codcuo: 101 + index,
+        codcon: 1,
+        periodo: period,
+        fechaVencimiento: `${period}-01`,
+        monto: 1500,
+        montoConfirmado: 1500,
+        saldo: 0,
+        montoPendienteRevision: 0,
+        estado: 'PAGADA',
+      };
+    });
+    http.expectOne('/api/v1/contratos/1/cuotas').flush(paidThroughSeptember);
     fixture.detectChanges();
 
     const monthSelect = fixture.nativeElement.querySelector('#rescind-month') as HTMLSelectElement;
@@ -515,6 +533,118 @@ describe('ContratosListComponent', () => {
 
     expect(fixture.nativeElement.querySelector('app-contrato-rescind-modal')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Rescindido');
+  });
+
+  it('rescisión: ante BUSINESS_RULE_VIOLATION 422 muestra el detail y actualiza las cuotas sin repetir el PATCH', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 27, 12));
+    flushInitialData();
+
+    (fixture.nativeElement.querySelector('.action-rescind') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const paidThroughSeptember: CuotaResponse[] = Array.from({ length: 9 }, (_, index) => {
+      const month = String(index + 1).padStart(2, '0');
+      const period = `2026-${month}`;
+
+      return {
+        codcuo: 200 + index,
+        codcon: 1,
+        periodo: period,
+        fechaVencimiento: `${period}-01`,
+        monto: 1500,
+        montoConfirmado: 1500,
+        saldo: 0,
+        montoPendienteRevision: 0,
+        estado: 'PAGADA',
+      };
+    });
+
+    http.expectOne('/api/v1/contratos/1/cuotas').flush(paidThroughSeptember);
+    fixture.detectChanges();
+
+    const monthSelect = fixture.nativeElement.querySelector('#rescind-month') as HTMLSelectElement;
+    monthSelect.value = '2026-09';
+    monthSelect.dispatchEvent(new Event('change'));
+
+    const reason = fixture.nativeElement.querySelector('#rescind-reason') as HTMLTextAreaElement;
+    reason.value = 'Se conserva el motivo escrito';
+    reason.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector(
+      'app-contrato-rescind-modal .action-modal-submit',
+    ) as HTMLButtonElement).click();
+
+    const rescindRequest = http.expectOne('/api/v1/contratos/1/rescindir');
+    rescindRequest.flush(
+      {
+        type: 'about:blank',
+        title: 'Unprocessable Entity',
+        status: 422,
+        errorCode: 'BUSINESS_RULE_VIOLATION',
+        detail: 'Existe un pago confirmado en octubre de 2026.',
+      },
+      { status: 422, statusText: 'Unprocessable Entity' },
+    );
+    fixture.detectChanges();
+
+    const refreshedQuotas = http.expectOne('/api/v1/contratos/1/cuotas');
+    expect(refreshedQuotas.request.method).toBe('GET');
+    refreshedQuotas.flush([
+      ...paidThroughSeptember,
+      {
+        codcuo: 210,
+        codcon: 1,
+        periodo: '2026-10',
+        fechaVencimiento: '2026-10-01',
+        monto: 1500,
+        montoConfirmado: 500,
+        saldo: 1000,
+        montoPendienteRevision: 0,
+        estado: 'PARCIAL',
+      },
+    ] satisfies CuotaResponse[]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Existe un pago confirmado en octubre de 2026.',
+    );
+    expect(monthSelect.value).toBe('');
+    expect(Array.from(monthSelect.options).find((option) => option.value === '2026-09')?.disabled).toBe(
+      true,
+    );
+    expect(reason.value).toBe('Se conserva el motivo escrito');
+    http.expectNone('/api/v1/contratos/1/rescindir');
+  });
+
+  it('rescisión: permite reintentar la carga fallida y mantiene Confirmar deshabilitado', () => {
+    flushInitialData();
+
+    (fixture.nativeElement.querySelector('.action-rescind') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    http.expectOne('/api/v1/contratos/1/cuotas').flush(
+      { detail: 'Temporalmente no disponible' },
+      { status: 503, statusText: 'Service Unavailable' },
+    );
+    fixture.detectChanges();
+
+    let submit = fixture.nativeElement.querySelector(
+      'app-contrato-rescind-modal .action-modal-submit',
+    ) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+
+    (fixture.nativeElement.querySelector('.action-modal-load-error button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    http.expectOne('/api/v1/contratos/1/cuotas').flush(installments);
+    fixture.detectChanges();
+
+    submit = fixture.nativeElement.querySelector(
+      'app-contrato-rescind-modal .action-modal-submit',
+    ) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
   });
 
   it('finalización: bloquea la confirmación cuando existen cuotas pendientes', () => {

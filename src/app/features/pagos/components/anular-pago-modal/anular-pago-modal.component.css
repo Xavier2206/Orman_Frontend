@@ -203,6 +203,15 @@
   color: var(--theme-danger-text);
 }
 
+.confirm-annul-button .mat-icon {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
+}
+
 .annul-footer .confirm-annul-button:hover:not(:disabled) {
   border-color: var(--theme-danger-text);
 }

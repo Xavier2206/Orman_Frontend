@@ -473,7 +473,20 @@ export class ContratosListComponent {
       return;
     }
 
-    this.submitContractAction(() => this.api.rescind(contract.codcon, request));
+    this.submitContractAction(
+      () => this.api.rescind(contract.codcon, request),
+      (requestError) => this.handleRescindError(requestError, contract.codcon),
+    );
+  }
+
+  protected retryActionInstallments(): void {
+    const contract = this.actionContract();
+
+    if (!contract || this.actionSubmitting()) {
+      return;
+    }
+
+    this.loadActionInstallments(contract.codcon);
   }
 
   protected confirmFinalize(): void {
@@ -607,6 +620,9 @@ export class ContratosListComponent {
   private loadActionInstallments(codcon: number): void {
     const loadToken = ++this.actionLoadToken;
 
+    this.actionInstallmentsLoading.set(true);
+    this.actionInstallmentsError.set(null);
+
     this.cuotaApi
       .listByContract(codcon)
       .pipe(
@@ -633,7 +649,10 @@ export class ContratosListComponent {
       });
   }
 
-  private submitContractAction(action: () => Observable<Contrato>): void {
+  private submitContractAction(
+    action: () => Observable<Contrato>,
+    handleError?: (requestError: unknown) => void,
+  ): void {
     this.actionSubmitting.set(true);
     this.actionFeedback.set(null);
 
@@ -656,11 +675,36 @@ export class ContratosListComponent {
           }
         },
         error: (requestError: unknown) => {
-          this.actionFeedback.set(
-            this.errorMessage(requestError, 'No fue posible actualizar el contrato.'),
-          );
+          if (handleError) {
+            handleError(requestError);
+            return;
+          }
+
+          this.actionFeedback.set(this.errorMessage(requestError, 'No fue posible actualizar el contrato.'));
         },
       });
+  }
+
+  private handleRescindError(requestError: unknown, codcon: number): void {
+    const problem =
+      requestError instanceof HttpErrorResponse &&
+      requestError.status === 422 &&
+      isProblemDetail(requestError.error) &&
+      requestError.error.errorCode === 'BUSINESS_RULE_VIOLATION'
+        ? requestError.error
+        : null;
+
+    if (!problem) {
+      this.actionFeedback.set(
+        this.errorMessage(requestError, 'No fue posible rescindir el contrato.'),
+      );
+      return;
+    }
+
+    this.actionFeedback.set(
+      problem.detail ?? 'No se pudo rescindir el contrato porque no cumple una regla de negocio.',
+    );
+    this.loadActionInstallments(codcon);
   }
 
   private loadProperties(): void {

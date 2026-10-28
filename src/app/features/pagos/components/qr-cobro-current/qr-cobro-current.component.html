@@ -31,9 +31,13 @@
         [loading]="imageLoading()"
         [error]="imageError()"
         [imageUrl]="imageUrl()"
+        [imageBlob]="imageBlob()"
+        [loaded]="imageLoaded()"
+        [downloadFilename]="imageDownloadFilename()"
         [hasImage]="current.tieneImagen"
         (retry)="retryImage.emit()"
         (imageLoadError)="imageLoadError.emit()"
+        (imageLoaded)="imageLoadComplete.emit()"
       />
 
       <div class="qr-current-details">

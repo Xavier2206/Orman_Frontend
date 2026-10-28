@@ -5,7 +5,9 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="menu-form-title"
-    [attr.aria-describedby]="feedback() ? 'menu-form-description menu-form-feedback' : 'menu-form-description'"
+    [attr.aria-describedby]="
+      feedback() ? 'menu-form-description menu-form-feedback' : 'menu-form-description'
+    "
     [attr.aria-busy]="submitting()"
     [initialFocusSelector]="'#menu-name'"
     (escapePressed)="close()"
@@ -73,9 +75,14 @@
                 <span class="selected-icon-preview" aria-hidden="true">
                   <mat-icon>{{ iconName(form.controls.icono.value) }}</mat-icon>
                 </span>
-                <span class="selected-icon-label">{{
-                  form.controls.icono.value || 'Seleccionar un icono'
-                }}</span>
+                <span class="selected-icon-details">
+                  <span class="selected-icon-label">{{
+                    iconLabel(form.controls.icono.value)
+                  }}</span>
+                  @if (iconTechnicalName(form.controls.icono.value); as technicalName) {
+                    <span class="selected-icon-technical-name">{{ technicalName }}</span>
+                  }
+                </span>
                 <mat-icon class="trigger-chevron" aria-hidden="true">{{
                   iconPickerOpen() ? 'expand_less' : 'expand_more'
                 }}</mat-icon>
@@ -95,7 +102,18 @@
             </div>
 
             @if (iconPickerOpen()) {
-              <div id="menu-icon-picker" class="icon-picker-panel" role="dialog" aria-label="Selector visual de iconos">
+              <div
+                id="menu-icon-picker"
+                class="icon-picker-panel"
+                role="dialog"
+                aria-label="Selector visual de iconos"
+              >
+                @if (isIconOutsideCatalog(form.controls.icono.value)) {
+                  <p class="field-hint" role="status">
+                    El icono actual «{{ form.controls.icono.value }}» no está en este catálogo y se
+                    conservará si no eliges otro.
+                  </p>
+                }
                 <label for="menu-icon-search">Buscar icono</label>
                 <div class="icon-search-field">
                   <mat-icon aria-hidden="true">search</mat-icon>
@@ -130,11 +148,13 @@
                       role="option"
                       [attr.aria-selected]="form.controls.icono.value === icon.name"
                       [class.icon-option-selected]="form.controls.icono.value === icon.name"
-                      [attr.title]="icon.name"
+                      [attr.title]="icon.label + ' (' + icon.name + ')'"
+                      [attr.aria-label]="icon.label + ', nombre técnico ' + icon.name"
                       (click)="selectIcon(icon.name)"
                     >
                       <mat-icon aria-hidden="true">{{ icon.name }}</mat-icon>
-                      <span>{{ icon.name }}</span>
+                      <span class="icon-option-label">{{ icon.label }}</span>
+                      <span class="icon-option-technical-name">{{ icon.name }}</span>
                       @if (form.controls.icono.value === icon.name) {
                         <mat-icon class="selection-check" aria-hidden="true">check</mat-icon>
                       }
@@ -150,7 +170,11 @@
           @if (isCreate()) {
             <div class="form-field">
               <span id="menu-initial-state-label" class="field-label">Estado inicial</span>
-              <div class="state-options" role="radiogroup" aria-labelledby="menu-initial-state-label">
+              <div
+                class="state-options"
+                role="radiogroup"
+                aria-labelledby="menu-initial-state-label"
+              >
                 <button
                   type="button"
                   role="radio"
@@ -201,7 +225,13 @@
         </button>
         <button type="submit" class="primary-button" [disabled]="submitting()">
           <span aria-live="polite">{{
-            submitting() ? (isCreate() ? 'Creando...' : 'Guardando...') : (isCreate() ? 'Crear Menú' : 'Guardar cambios')
+            submitting()
+              ? isCreate()
+                ? 'Creando...'
+                : 'Guardando...'
+              : isCreate()
+                ? 'Crear Menú'
+                : 'Guardar cambios'
           }}</span>
         </button>
       </footer>

@@ -65,7 +65,7 @@ describe('App', () => {
     expect(router.url).toBe('/');
   });
 
-  it('should redirect /app to the authenticated private start', async () => {
+  it('should redirect /app to the authenticated financial dashboard', async () => {
     const fixture = TestBed.createComponent(App);
     const router = TestBed.inject(Router);
     const auth = TestBed.inject(AuthService);
@@ -85,12 +85,25 @@ describe('App', () => {
     await router.navigateByUrl('/app');
     await fixture.whenStable();
     fixture.detectChanges();
+
+    http.expectOne('/api/v1/dashboard/resumen-financiero').flush({
+      moneda: 'BOB',
+      resumenGeneral: {
+        cantidadPropiedades: 0,
+        inversionInicialTotal: 0,
+        ingresosConfirmadosAcumulados: 0,
+        porcentajeRecuperacion: null,
+      },
+      propiedades: [],
+      ingresosConfirmadosPorMes: [],
+    });
     http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 0 });
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(router.url).toBe('/app/inicio');
+    expect(router.url).toBe('/app/dashboard/resumen-financiero');
     expect(fixture.nativeElement.querySelector('app-private-layout')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-inicio')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-resumen-financiero')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).not.toContain('Contenido en construcción');
   });
 });

@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, OnChanges, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -8,6 +8,12 @@ import { Contrato, ContratoRescindRequest, CuotaResponse } from '../../models/co
 interface ContractMonth {
   readonly value: string;
   readonly label: string;
+}
+
+interface ConfirmedPeriod {
+  readonly value: string;
+  readonly monthIndex: number;
+  readonly amount: number;
 }
 
 interface RescissionSummary {
@@ -28,7 +34,7 @@ interface RescissionSummary {
     './contrato-rescind-modal.component.css',
   ],
 })
-export class ContratoRescindModalComponent {
+export class ContratoRescindModalComponent implements OnChanges {
   readonly contract = input.required<Contrato>();
   readonly installments = input<readonly CuotaResponse[]>([]);
   readonly installmentsLoading = input(false);
@@ -37,13 +43,38 @@ export class ContratoRescindModalComponent {
   readonly feedback = input<string | null>(null);
   readonly confirmed = output<ContratoRescindRequest>();
   readonly closed = output<void>();
+  readonly retryInstallments = output<void>();
 
   protected readonly reason = signal('');
   protected readonly selectedMonth = signal('');
+  protected readonly selectionNotice = signal<string | null>(null);
   protected readonly validMonths = computed(() => this.buildValidMonths(this.contract()));
+  protected readonly latestConfirmedPeriod = computed(() =>
+    this.buildLatestConfirmedPeriod(this.installments()),
+  );
+  protected readonly selectableMonths = computed(() =>
+    this.validMonths().filter((month) => !this.isMonthBlocked(month)),
+  );
+  protected readonly noSelectableMonthMessage = computed(() => {
+    if (this.selectableMonths().length > 0) {
+      return null;
+    }
+
+    if (this.validMonths().length === 0) {
+      return 'No hay ningún mes que cumpla el inicio del contrato, la fecha final exclusiva y el límite de no futuro.';
+    }
+
+    const latestConfirmed = this.latestConfirmedPeriod();
+
+    if (latestConfirmed) {
+      return `El último período con dinero confirmado es ${this.formatMonth(latestConfirmed.value)} (${this.formatMoney(latestConfirmed.amount)}). Está después de los meses permitidos por contrato y fecha actual, por lo que no existe un corte permitido.`;
+    }
+
+    return 'No hay meses que cumplan las fechas permitidas del contrato para rescindir.';
+  });
   protected readonly effectiveMonth = computed(() => {
     const selected = this.selectedMonth();
-    const available = this.validMonths();
+    const available = this.selectableMonths();
 
     return available.some((month) => month.value === selected) ? selected : '';
   });
@@ -60,18 +91,51 @@ export class ContratoRescindModalComponent {
       hasReason,
       allDemandedPaid: summary.pending === 0 && summary.demanded.length > 0,
       noPendingReview: !summary.pendingReview,
+      noLaterConfirmedPayment: this.hasNoLaterConfirmedPayment(),
     };
   });
+
+  ngOnChanges(): void {
+    this.reconcileSelectedMonth();
+  }
 
   protected canConfirm(): boolean {
     const validation = this.validation();
 
     return (
+      !this.submitting() &&
       !this.installmentsLoading() &&
       this.installmentsError() === null &&
       validation.hasMonth &&
-      validation.hasReason
+      validation.hasReason &&
+      validation.allDemandedPaid &&
+      validation.noPendingReview &&
+      validation.noLaterConfirmedPayment
     );
+  }
+
+  protected isMonthBlocked(month: ContractMonth): boolean {
+    const latestConfirmed = this.latestConfirmedPeriod();
+    const monthIndex = this.monthIndex(month.value);
+
+    return (
+      latestConfirmed !== null && monthIndex !== null && monthIndex < latestConfirmed.monthIndex
+    );
+  }
+
+  protected installmentStateLabel(state: CuotaResponse['estado']): string {
+    const labels: Record<CuotaResponse['estado'], string> = {
+      PENDIENTE: 'Pendiente',
+      PARCIAL: 'Parcial',
+      PAGADA: 'Pagada',
+      ANULADA: 'Anulada',
+    };
+
+    return labels[state];
+  }
+
+  protected retryLoad(): void {
+    this.retryInstallments.emit();
   }
 
   protected formalCloseDate(): string {
@@ -125,7 +189,12 @@ export class ContratoRescindModalComponent {
   }
 
   protected onMonthChange(event: Event): void {
-    this.selectedMonth.set((event.target as HTMLSelectElement).value);
+    const value = (event.target as HTMLSelectElement).value;
+
+    this.selectedMonth.set(
+      this.selectableMonths().some((month) => month.value === value) ? value : '',
+    );
+    this.selectionNotice.set(null);
   }
 
   protected onReasonInput(event: Event): void {
@@ -164,7 +233,7 @@ export class ContratoRescindModalComponent {
         paid: 0,
         pending: 0,
         balance: 0,
-        pendingReview: false,
+        pendingReview: installments.some((installment) => installment.montoPendienteRevision > 0),
       };
     }
 
@@ -183,16 +252,24 @@ export class ContratoRescindModalComponent {
       paid: demanded.filter((installment) => installment.estado === 'PAGADA').length,
       pending: demanded.filter((installment) => installment.estado !== 'PAGADA').length,
       balance: demanded.reduce((total, installment) => total + installment.saldo, 0),
-      pendingReview: demanded.some((installment) => installment.montoPendienteRevision > 0),
+      pendingReview: installments.some((installment) => installment.montoPendienteRevision > 0),
     };
   }
 
   private buildValidMonths(contract: Contrato): readonly ContractMonth[] {
-    const start = this.monthIndex(contract.fechaInicio);
-    const end = this.monthIndex(contract.fechaFin);
+    const startDate = contract.fechaInicio.slice(0, 10);
+    const endDate = contract.fechaFin.slice(0, 10);
+    const start = this.monthIndex(startDate);
+    const end = this.monthIndex(endDate);
     const current = this.monthIndex(this.currentMonthValue());
 
-    if (start === null || end === null || current === null) {
+    if (
+      start === null ||
+      end === null ||
+      current === null ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(endDate)
+    ) {
       return [];
     }
 
@@ -203,11 +280,84 @@ export class ContratoRescindModalComponent {
       const year = Math.floor((index - 1) / 12);
       const month = index - year * 12;
       const value = `${year}-${String(month).padStart(2, '0')}`;
+      const effectiveDate = `${value}-01`;
 
-      months.push({ value, label: this.formatMonth(value) });
+      if (effectiveDate >= startDate && effectiveDate < endDate) {
+        months.push({ value, label: this.formatMonth(value) });
+      }
     }
 
     return months;
+  }
+
+  private buildLatestConfirmedPeriod(
+    installments: readonly CuotaResponse[],
+  ): ConfirmedPeriod | null {
+    const confirmed = installments
+      .filter((installment) => installment.montoConfirmado > 0)
+      .map((installment) => ({
+        value: installment.periodo.slice(0, 7),
+        monthIndex: this.monthIndex(installment.periodo),
+        amount: installment.montoConfirmado,
+      }))
+      .filter((period): period is ConfirmedPeriod => period.monthIndex !== null);
+
+    if (confirmed.length === 0) {
+      return null;
+    }
+
+    const latestIndex = Math.max(...confirmed.map((period) => period.monthIndex));
+    const latestPeriods = confirmed.filter((period) => period.monthIndex === latestIndex);
+
+    return {
+      value: latestPeriods[0].value,
+      monthIndex: latestIndex,
+      amount: latestPeriods.reduce((total, period) => total + period.amount, 0),
+    };
+  }
+
+  private hasNoLaterConfirmedPayment(): boolean {
+    const cutoff = this.monthIndex(this.effectiveMonth());
+
+    return (
+      cutoff !== null &&
+      !this.installments().some((installment) => {
+        const period = this.monthIndex(installment.periodo);
+
+        return period !== null && period > cutoff && installment.montoConfirmado > 0;
+      })
+    );
+  }
+
+  private reconcileSelectedMonth(): void {
+    const selected = this.selectedMonth();
+
+    if (!selected) {
+      return;
+    }
+
+    const selectedIndex = this.monthIndex(selected);
+    const latestConfirmed = this.latestConfirmedPeriod();
+
+    if (
+      selectedIndex === null ||
+      this.selectableMonths().some((month) => month.value === selected)
+    ) {
+      return;
+    }
+
+    this.selectedMonth.set('');
+
+    if (latestConfirmed && selectedIndex < latestConfirmed.monthIndex) {
+      this.selectionNotice.set(
+        `Se limpió el último mes a cobrar porque hay dinero confirmado en ${this.formatMonth(latestConfirmed.value)} por ${this.formatMoney(latestConfirmed.amount)}.`,
+      );
+      return;
+    }
+
+    this.selectionNotice.set(
+      'Se limpió el último mes a cobrar porque ya no cumple las fechas permitidas del contrato.',
+    );
   }
 
   private currentMonthValue(): string {

@@ -80,6 +80,11 @@ describe('PrivateTopbarComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('img[alt="ORMAN"]')).toBeTruthy();
+    expect(
+      element
+        .querySelector('a[href="/app/dashboard/resumen-financiero"]')
+        ?.getAttribute('aria-label'),
+    ).toBe('Ir al panel financiero de ORMAN');
     expect(element.textContent).toContain('ORMAN');
     expect(element.textContent).toContain('GESTIÓN DE PROPIEDADES');
     expect(element.querySelector('[aria-label="Fecha actual"]')?.textContent).toMatch(/de/);

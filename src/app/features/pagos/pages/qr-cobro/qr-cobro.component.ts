@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { finalize } from 'rxjs';
@@ -10,6 +10,7 @@ import { QrCobroCurrentComponent } from '../../components/qr-cobro-current/qr-co
 import { QrCobroHistoryComponent } from '../../components/qr-cobro-history/qr-cobro-history.component';
 import { QrCobroConfigModalComponent } from '../../components/qr-cobro-config-modal/qr-cobro-config-modal.component';
 import { QrCobroApiService } from '../../data/qr-cobro-api.service';
+import { qrCobroDownloadFilename } from '../../models/qr-cobro-display';
 import { QrCobroResponse } from '../../models/qr-cobro.model';
 
 @Component({
@@ -31,6 +32,7 @@ export class QrCobroComponent implements OnInit, OnDestroy {
   private historyRequestId = 0;
   private imageRequestId = 0;
   private currentImageUrl: string | null = null;
+  protected readonly currentImageBlob = signal<Blob | null>(null);
 
   protected readonly currentQr = signal<QrCobroResponse | null>(null);
   protected readonly history = signal<readonly QrCobroResponse[]>([]);
@@ -41,6 +43,20 @@ export class QrCobroComponent implements OnInit, OnDestroy {
   protected readonly historyError = signal<string | null>(null);
   protected readonly imageError = signal<string | null>(null);
   protected readonly imageUrl = signal<string | null>(null);
+  protected readonly imageLoaded = signal(false);
+  protected readonly imageDownloadFilename = computed(() => {
+    const current = this.currentQr();
+    const image = this.currentImageBlob();
+
+    return current && image
+      ? qrCobroDownloadFilename(
+          current.codqr,
+          image.type,
+          current.tipoContenido,
+          current.nombreArchivo,
+        )
+      : null;
+  });
   protected readonly configModalOpen = signal(false);
 
   ngOnInit(): void {
@@ -94,6 +110,12 @@ export class QrCobroComponent implements OnInit, OnDestroy {
   protected handleImageError(): void {
     this.imageError.set('No fue posible cargar la imagen del QR.');
     this.clearImageUrl();
+  }
+
+  protected handleImageLoaded(): void {
+    if (this.currentImageBlob() && this.imageUrl()) {
+      this.imageLoaded.set(true);
+    }
   }
 
   private loadCurrentQr(): void {
@@ -186,6 +208,8 @@ export class QrCobroComponent implements OnInit, OnDestroy {
     const requestId = ++this.imageRequestId;
     this.imageLoading.set(true);
     this.imageError.set(null);
+    this.imageLoaded.set(false);
+    this.currentImageBlob.set(null);
 
     this.qrApi
       .getImage(codqr)
@@ -204,7 +228,7 @@ export class QrCobroComponent implements OnInit, OnDestroy {
           }
 
           try {
-            this.replaceImageUrl(URL.createObjectURL(image));
+            this.replaceImageUrl(URL.createObjectURL(image), image);
           } catch {
             this.imageError.set('No fue posible cargar la imagen del QR.');
             this.clearImageUrl();
@@ -223,13 +247,15 @@ export class QrCobroComponent implements OnInit, OnDestroy {
       });
   }
 
-  private replaceImageUrl(nextUrl: string): void {
+  private replaceImageUrl(nextUrl: string, image: Blob): void {
     if (this.currentImageUrl) {
       URL.revokeObjectURL(this.currentImageUrl);
     }
 
     this.currentImageUrl = nextUrl;
+    this.currentImageBlob.set(image);
     this.imageUrl.set(nextUrl);
+    this.imageLoaded.set(false);
   }
 
   private clearImageUrl(): void {
@@ -241,6 +267,8 @@ export class QrCobroComponent implements OnInit, OnDestroy {
     }
 
     this.imageUrl.set(null);
+    this.currentImageBlob.set(null);
+    this.imageLoaded.set(false);
     this.imageLoading.set(false);
   }
 

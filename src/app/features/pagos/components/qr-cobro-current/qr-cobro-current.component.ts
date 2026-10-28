@@ -18,12 +18,16 @@ export class QrCobroCurrentComponent {
   readonly imageLoading = input(false);
   readonly imageError = input<string | null>(null);
   readonly imageUrl = input<string | null>(null);
+  readonly imageBlob = input<Blob | null>(null);
+  readonly imageLoaded = input(false);
+  readonly imageDownloadFilename = input<string | null>(null);
   readonly hasHistory = input(false);
 
   readonly retryCurrent = output<void>();
   readonly retryImage = output<void>();
   readonly configure = output<void>();
   readonly imageLoadError = output<void>();
+  readonly imageLoadComplete = output<void>();
 
   protected formatDate = formatQrCobroDate;
   protected stateLabel = qrCobroStateLabel;

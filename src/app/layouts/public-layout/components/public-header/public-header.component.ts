@@ -1,5 +1,5 @@
 import { Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 
@@ -10,7 +10,7 @@ import { ThemeSelectorComponent } from '../../../../shared/components/theme-sele
 
 @Component({
   selector: 'app-public-header',
-  imports: [ThemeSelectorComponent, QuickMenuComponent, LoginModalComponent],
+  imports: [RouterLink, ThemeSelectorComponent, QuickMenuComponent, LoginModalComponent],
   templateUrl: './public-header.component.html',
   styleUrl: './public-header.component.css',
 })
@@ -73,7 +73,7 @@ export class PublicHeaderComponent {
 
   handleAuthenticated(): void {
     this.isLoginModalOpen.set(false);
-    void this.router.navigateByUrl('/app/inicio');
+    void this.router.navigateByUrl('/app/dashboard/resumen-financiero');
   }
 
   protected logout(): void {

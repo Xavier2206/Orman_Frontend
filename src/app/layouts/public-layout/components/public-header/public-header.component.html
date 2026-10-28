@@ -58,9 +58,18 @@
     <div class="hidden items-center gap-2 lg:flex">
       <app-theme-selector />
       @if (auth.authenticated()) {
-        <span class="max-w-48 truncate rounded-lg border border-theme-border bg-surface px-3 py-2 text-sm font-medium text-content" aria-live="polite">
+        <span
+          class="max-w-48 truncate rounded-lg border border-theme-border bg-surface px-3 py-2 text-sm font-medium text-content"
+          aria-live="polite"
+        >
           Sesión activa: {{ auth.loginName() }}
         </span>
+        <a
+          routerLink="/app/dashboard/resumen-financiero"
+          class="inline-flex min-h-11 items-center justify-center rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+        >
+          Ir al panel
+        </a>
         <button
           type="button"
           data-logout-trigger
@@ -71,24 +80,24 @@
           {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
         </button>
       } @else {
-      <div class="relative" data-quick-menu-anchor>
-        <button
-          type="button"
-          data-login-trigger="desktop"
-          class="min-h-11 rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-          aria-label="Abrir inicio de sesión"
-          aria-controls="orman-quick-menu"
-          aria-haspopup="dialog"
-          [attr.aria-expanded]="isQuickMenuOpen() && loginOrigin() === 'desktop'"
-          (click)="toggleQuickMenu($event)"
-        >
-          Iniciar sesión
-        </button>
+        <div class="relative" data-quick-menu-anchor>
+          <button
+            type="button"
+            data-login-trigger="desktop"
+            class="min-h-11 rounded-lg border border-accent px-3 py-2 text-sm font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            aria-label="Abrir inicio de sesión"
+            aria-controls="orman-quick-menu"
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="isQuickMenuOpen() && loginOrigin() === 'desktop'"
+            (click)="toggleQuickMenu($event)"
+          >
+            Iniciar sesión
+          </button>
 
-        @if (isQuickMenuOpen() && loginOrigin() === 'desktop') {
-          <app-quick-menu (close)="closeQuickMenu()" (connect)="openLoginModal()" />
-        }
-      </div>
+          @if (isQuickMenuOpen() && loginOrigin() === 'desktop') {
+            <app-quick-menu (close)="closeQuickMenu()" (connect)="openLoginModal()" />
+          }
+        </div>
       }
     </div>
 
@@ -160,9 +169,16 @@
         </ul>
       </nav>
 
-      <div class="mt-4 grid gap-3 border-t border-theme-border pt-4 sm:grid-cols-[1fr_auto]">
+      <div class="mt-4 grid gap-3 border-t border-theme-border pt-4 sm:grid-cols-[1fr_auto_auto]">
         <app-theme-selector />
         @if (auth.authenticated()) {
+          <a
+            routerLink="/app/dashboard/resumen-financiero"
+            class="inline-flex min-h-11 items-center justify-center rounded-lg border border-accent px-4 py-2 font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            (click)="closeMenu()"
+          >
+            Ir al panel
+          </a>
           <button
             type="button"
             data-logout-trigger
@@ -173,18 +189,18 @@
             {{ isLoggingOut() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
           </button>
         } @else {
-        <button
-          type="button"
-          data-login-trigger="mobile"
-          class="min-h-11 rounded-lg border border-accent px-4 py-2 font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
-          aria-label="Abrir inicio de sesión"
-          aria-controls="orman-quick-menu"
-          aria-haspopup="dialog"
-          [attr.aria-expanded]="isQuickMenuOpen() && loginOrigin() === 'mobile'"
-          (click)="toggleQuickMenu($event, true)"
-        >
-          Iniciar sesión
-        </button>
+          <button
+            type="button"
+            data-login-trigger="mobile"
+            class="min-h-11 rounded-lg border border-accent px-4 py-2 font-semibold text-accent-text transition-colors duration-200 hover:bg-accent hover:text-accent-contrast focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
+            aria-label="Abrir inicio de sesión"
+            aria-controls="orman-quick-menu"
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="isQuickMenuOpen() && loginOrigin() === 'mobile'"
+            (click)="toggleQuickMenu($event, true)"
+          >
+            Iniciar sesión
+          </button>
         }
       </div>
     </div>
@@ -192,11 +208,7 @@
 </header>
 
 @if (isQuickMenuOpen() && loginOrigin() === 'mobile') {
-  <app-quick-menu
-    origin="mobile"
-    (close)="closeQuickMenu()"
-    (connect)="openLoginModal()"
-  />
+  <app-quick-menu origin="mobile" (close)="closeQuickMenu()" (connect)="openLoginModal()" />
 }
 
 @if (isLoginModalOpen()) {

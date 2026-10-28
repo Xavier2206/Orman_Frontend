@@ -28,6 +28,11 @@
   position: relative;
 }
 
+.sidebar-menu-trigger[aria-expanded='true'] {
+  background: var(--theme-card-hover);
+  color: var(--theme-text);
+}
+
 .sidebar-menu-has-active-process .sidebar-menu-trigger {
   color: var(--theme-accent-text);
 }
@@ -95,6 +100,12 @@
   .private-sidebar.sidebar-collapsed {
     width: 4.5rem;
     padding-inline: 0.75rem;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sidebar-menu-button:hover {
+    background: var(--theme-card-hover);
   }
 }
 

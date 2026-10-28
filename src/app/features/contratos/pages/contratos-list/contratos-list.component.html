@@ -510,6 +510,7 @@
       [submitting]="actionSubmitting()"
       [feedback]="actionFeedback()"
       (confirmed)="confirmRescind($event)"
+      (retryInstallments)="retryActionInstallments()"
       (closed)="closeActionModal()"
     />
   }

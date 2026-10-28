@@ -29,13 +29,11 @@ export const routes: Routes = [
         (component) => component.PrivateLayoutComponent,
       ),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard/resumen-financiero' },
       {
         path: 'inicio',
-        loadComponent: () =>
-          import('./features/inicio/inicio.component').then(
-            (component) => component.InicioComponent,
-          ),
+        pathMatch: 'full',
+        redirectTo: 'dashboard/resumen-financiero',
       },
       {
         path: 'dashboard/resumen-financiero',

@@ -54,6 +54,28 @@ describe('NotificacionesApiService', () => {
     });
   });
 
+  it('forwards the requested page and size to the existing pagination parameters', () => {
+    service.list(3, 4).subscribe();
+
+    const request = http.expectOne(
+      (candidate) =>
+        candidate.url === '/api/v1/notificaciones' &&
+        candidate.params.get('page') === '3' &&
+        candidate.params.get('size') === '4',
+    );
+
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      content: [],
+      page: 3,
+      size: 4,
+      totalElements: 13,
+      totalPages: 4,
+      first: false,
+      last: true,
+    });
+  });
+
   it('marks one notification as read with a bodyless PATCH', () => {
     service.markAsRead(14).subscribe();
 

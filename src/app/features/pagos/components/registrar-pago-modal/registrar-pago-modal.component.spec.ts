@@ -53,11 +53,13 @@ describe('RegistrarPagoModalComponent', () => {
     ).not.toBeNull();
   });
 
-  it('shows only EFECTIVO and QR and hides QR fields for cash', () => {
+  it('shows a fixed cash method without QR controls', () => {
     createModal();
 
-    expect(fixture.nativeElement.querySelector('#payment-method-cash')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('#payment-method-qr')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.payment-method').textContent).toContain(
+      'Método: Efectivo',
+    );
+    expect(fixture.nativeElement.querySelectorAll('input[type=radio]')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).not.toContain('TRANSFERENCIA');
     expect(fixture.nativeElement.textContent).not.toContain('Cuenta de pago');
     expect(fixture.nativeElement.textContent).not.toContain('Referencia');
@@ -155,157 +157,6 @@ describe('RegistrarPagoModalComponent', () => {
     setInput('#payment-amount', '2500.01');
     expect(balancePreview().textContent).not.toContain('Saldo después del pago');
     expect(submitButton().disabled).toBe(true);
-  });
-
-  it('requires date and time for QR and sends a LocalDateTime without codqr', async () => {
-    createModal();
-    chooseMethod('QR');
-
-    expect(fixture.nativeElement.querySelector('#payment-date')?.required).toBe(true);
-    expect(fixture.nativeElement.querySelector('#payment-time')?.required).toBe(true);
-    expect(fixture.nativeElement.querySelector('#payment-proof')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.qr-fields')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.date-time-fields')).not.toBeNull();
-    expect(submitButton().disabled).toBe(true);
-
-    setInput('#payment-amount', '75');
-    setValidQrDateTime();
-    expect(submitButton().disabled).toBe(false);
-    submit();
-
-    const request = http.expectOne('/api/v1/cuotas/101/pagos');
-    const formData = request.request.body as FormData;
-    const payment = (await readPagoPart(formData)) as Record<string, unknown>;
-    expect(payment).toMatchObject({
-      monto: 75,
-      metodo: 'QR',
-      fechaPago: previousDate(dateInput().max) + 'T08:45:00',
-      idempotencyKey: expect.any(String),
-    });
-    expect(payment).not.toHaveProperty('codqr');
-    expect(payment).not.toHaveProperty('codcta');
-    expect(payment).not.toHaveProperty('referenciaExterna');
-    expect([...formData.keys()]).toEqual(['pago']);
-    request.flush(paymentResponse({ codqr: 12, metodo: 'QR' }), {
-      status: 201,
-      statusText: 'Created',
-    });
-  });
-
-  it('rejects future QR dates and times before sending', () => {
-    createModal();
-    chooseMethod('QR');
-    setInput('#payment-amount', '100');
-    setInput('#payment-date', nextDate(dateInput().max));
-    setInput('#payment-time', '10:00');
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.textContent).toContain('No se permiten fechas u horas futuras.');
-    expect(submitButton().disabled).toBe(true);
-    expect(http.match('/api/v1/cuotas/101/pagos')).toHaveLength(0);
-  });
-
-  it.each([
-    { name: 'comprobante.png', type: 'image/png' },
-    { name: 'comprobante.jpg', type: 'image/jpeg' },
-    { name: 'comprobante.jpeg', type: 'image/jpeg' },
-  ])('accepts a $type comprobante and keeps it local until submit', ({ name, type }) => {
-    createModal();
-    chooseMethod('QR');
-    const selected = new File(['image data'], name, { type });
-    selectFile(selected);
-
-    expect(fixture.nativeElement.textContent).toContain(name);
-    expect(fixture.nativeElement.textContent).toContain('KB');
-    expect(http.match('/api/v1/cuotas/101/pagos')).toHaveLength(0);
-    const fileInput = fixture.nativeElement.querySelector('#payment-proof') as HTMLInputElement;
-    expect(fileInput.accept).toBe('image/png,image/jpeg');
-    expect(fileInput.multiple).toBe(false);
-  });
-
-  it('sends a selected QR comprobante only after submit', async () => {
-    createModal();
-    chooseMethod('QR');
-    setInput('#payment-amount', '75');
-    setValidQrDateTime();
-    selectFile(new File(['image bytes'], 'pago.png', { type: 'image/png' }));
-    expect(http.match('/api/v1/cuotas/101/pagos')).toHaveLength(0);
-
-    submit();
-    const request = http.expectOne('/api/v1/cuotas/101/pagos');
-    const formData = request.request.body as FormData;
-    expect([...formData.keys()]).toEqual(['pago', 'comprobante']);
-    const receipt = formData.get('comprobante') as File;
-    expect(receipt.name).toBe('pago.png');
-    expect(receipt.type).toBe('image/png');
-    request.flush(paymentResponse({ codqr: 12, metodo: 'QR' }), {
-      status: 201,
-      statusText: 'Created',
-    });
-  });
-
-  it('accepts a comprobante at the 5 MB limit', () => {
-    createModal();
-    chooseMethod('QR');
-    selectFile(new File([new Uint8Array(5 * 1024 * 1024)], 'limit.png', { type: 'image/png' }));
-
-    expect(fixture.nativeElement.textContent).toContain('limit.png');
-    expect(fixture.nativeElement.textContent).toContain('5 MB');
-    expect(fixture.nativeElement.textContent).not.toContain('debe pesar como máximo 5 MB');
-  });
-
-  it.each([
-    { name: 'comprobante.pdf', type: 'application/pdf' },
-    { name: 'mismatch.png', type: 'image/jpeg' },
-  ])('rejects unsupported or mismatched comprobante formats inline', ({ name, type }) => {
-    createModal();
-    chooseMethod('QR');
-    selectFile(new File(['file content'], name, { type }));
-
-    expect(fixture.nativeElement.textContent).toContain('Selecciona una imagen PNG o JPEG.');
-    expect(fixture.nativeElement.querySelector('.selected-file')).toBeNull();
-    expect(submitButton().disabled).toBe(true);
-    expect(http.match('/api/v1/cuotas/101/pagos')).toHaveLength(0);
-  });
-
-  it('rejects comprobantes larger than 5 MB and allows removing a valid file', () => {
-    createModal();
-    chooseMethod('QR');
-    const oversized = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.png', {
-      type: 'image/png',
-    });
-    selectFile(oversized);
-
-    expect(fixture.nativeElement.textContent).toContain('debe pesar como máximo 5 MB');
-    expect(fixture.nativeElement.querySelector('.selected-file')).toBeNull();
-
-    selectFile(new File(['image'], 'small.png', { type: 'image/png' }));
-    (
-      fixture.nativeElement.querySelector('.selected-file .text-button') as HTMLButtonElement
-    ).click();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.textContent).not.toContain('small.png');
-    expect(fixture.nativeElement.querySelector('.selected-file')).toBeNull();
-  });
-
-  it('clears QR date, time, and comprobante when switching to EFECTIVO', () => {
-    createModal();
-    chooseMethod('QR');
-    setInput('#payment-date', previousDate(dateInput().max));
-    setInput('#payment-time', '08:45');
-    selectFile(new File(['image'], 'proof.jpg', { type: 'image/jpeg' }));
-
-    chooseMethod('EFECTIVO');
-    expect(fixture.nativeElement.querySelector('#payment-date')).toBeNull();
-    expect(fixture.nativeElement.querySelector('#payment-time')).toBeNull();
-    expect(fixture.nativeElement.querySelector('#payment-proof')).toBeNull();
-    expect(fixture.nativeElement.textContent).not.toContain('proof.jpg');
-
-    chooseMethod('QR');
-    expect(dateInput().value).toBe('');
-    expect(timeInput().value).toBe('');
-    expect(fixture.nativeElement.textContent).not.toContain('proof.jpg');
   });
 
   it('keeps the same idempotency key on retry and displays safe ProblemDetail feedback', async () => {
@@ -419,33 +270,12 @@ describe('RegistrarPagoModalComponent', () => {
     fixture.detectChanges();
   }
 
-  function chooseMethod(method: 'EFECTIVO' | 'QR'): void {
-    const id = method === 'QR' ? '#payment-method-qr' : '#payment-method-cash';
-    (fixture.nativeElement.querySelector(id) as HTMLInputElement).click();
-    fixture.detectChanges();
-  }
-
-  function selectFile(file: File): void {
-    const input = fixture.nativeElement.querySelector('#payment-proof') as HTMLInputElement;
-    Object.defineProperty(input, 'files', {
-      configurable: true,
-      value: { 0: file, length: 1 },
-    });
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-    fixture.detectChanges();
-  }
-
   function setInput(selector: string, value: string): void {
     const input = fixture.nativeElement.querySelector(selector) as HTMLInputElement;
     input.value = value;
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
-  }
-
-  function setValidQrDateTime(): void {
-    setInput('#payment-date', previousDate(dateInput().max));
-    setInput('#payment-time', '08:45');
   }
 
   function submit(): void {
@@ -459,14 +289,6 @@ describe('RegistrarPagoModalComponent', () => {
 
   function amountInput(): HTMLInputElement {
     return fixture.nativeElement.querySelector('#payment-amount');
-  }
-
-  function dateInput(): HTMLInputElement {
-    return fixture.nativeElement.querySelector('#payment-date');
-  }
-
-  function timeInput(): HTMLInputElement {
-    return fixture.nativeElement.querySelector('#payment-time');
   }
 
   function balancePreview(): HTMLElement {
@@ -503,18 +325,6 @@ function quota(overrides: Partial<CuotaListado> = {}): CuotaListado {
     situacionVencimiento: 'VENCIDA',
     ...overrides,
   };
-}
-
-function previousDate(date: string): string {
-  const yesterday = new Date(date + 'T00:00:00Z');
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  return yesterday.toISOString().slice(0, 10);
-}
-
-function nextDate(date: string): string {
-  const tomorrow = new Date(date + 'T00:00:00Z');
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-  return tomorrow.toISOString().slice(0, 10);
 }
 
 function paymentResponse(overrides: Partial<Record<string, unknown>> = {}) {

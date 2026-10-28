@@ -205,8 +205,10 @@ describe('NotificacionesBellComponent navigation', () => {
   }
 
   function clickNotification(): void {
-    const button = fixture.nativeElement.querySelector(
-      'button[aria-label="Abrir notificación: Comprobante recibido"]',
+    const button = [
+      ...fixture.nativeElement.querySelectorAll('button[aria-label^="Abrir notificación"]'),
+    ].find((candidate: HTMLButtonElement) =>
+      candidate.getAttribute('aria-label')?.includes('Comprobante recibido'),
     ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();

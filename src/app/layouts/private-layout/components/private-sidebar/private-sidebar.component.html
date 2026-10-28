@@ -57,8 +57,7 @@
           @for (menu of selectedMenus(); track menu.codm) {
             <li
               class="sidebar-menu mb-4 last:mb-0"
-              routerLinkActive="sidebar-menu-has-active-process"
-              [routerLinkActiveOptions]="{ exact: true }"
+              [class.sidebar-menu-has-active-process]="isMenuActive(menu)"
             >
               @if (isCollapsed()) {
                 <button
@@ -68,10 +67,11 @@
                   [attr.aria-label]="menu.nombre"
                   [attr.aria-controls]="flyoutId(menu.codm)"
                   [attr.aria-expanded]="activeFlyoutMenuId() === menu.codm"
-                  (mouseenter)="openFlyout(menu.codm, menuTrigger)"
-                  (mouseleave)="scheduleFlyoutClose()"
+                  (mouseenter)="handleFlyoutTriggerPointerEnter(menu.codm, menuTrigger)"
+                  (mouseleave)="handleFlyoutPointerLeave()"
                   (focus)="openFlyoutFromFocus(menu.codm, menuTrigger)"
                   (focusout)="handleFlyoutFocusOut()"
+                  (keydown)="handleFlyoutTriggerKeydown($event, menu.codm)"
                   (click)="openFlyout(menu.codm, menuTrigger)"
                 >
                   <mat-icon
@@ -81,21 +81,36 @@
                   >
                 </button>
               } @else {
-                <div
-                  class="sidebar-item flex min-h-10 w-full items-center gap-3 rounded-lg px-2 text-sm font-medium text-content"
-                >
-                  <span
-                    class="sidebar-item-icon grid size-5 shrink-0 place-items-center text-muted"
-                    aria-hidden="true"
-                  >
-                    <mat-icon class="material-symbols-rounded size-5 leading-none">{{
-                      menu.icono?.trim() || 'apps'
-                    }}</mat-icon>
-                  </span>
-                  <span class="sidebar-item-label truncate">{{ menu.nombre }}</span>
-                </div>
                 @if (menu.procesos.length > 0) {
-                  <ul class="sidebar-processes ml-7 mt-1 space-y-1">
+                  <button
+                    type="button"
+                    class="sidebar-item sidebar-menu-button flex min-h-10 w-full items-center gap-3 rounded-lg px-2 text-sm font-medium text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    [attr.aria-expanded]="expandedMenuId() === menu.codm"
+                    [attr.aria-controls]="processesId(menu.codm)"
+                    (click)="toggleExpandedMenu(menu.codm)"
+                  >
+                    <span
+                      class="sidebar-item-icon grid size-5 shrink-0 place-items-center text-muted"
+                      aria-hidden="true"
+                    >
+                      <mat-icon class="material-symbols-rounded size-5 leading-none">{{
+                        menu.icono?.trim() || 'apps'
+                      }}</mat-icon>
+                    </span>
+                    <span class="sidebar-item-label truncate">{{ menu.nombre }}</span>
+                    <mat-icon
+                      class="material-symbols-rounded ml-auto size-5 shrink-0 leading-none text-muted"
+                      aria-hidden="true"
+                      >{{
+                        expandedMenuId() === menu.codm ? 'expand_more' : 'chevron_right'
+                      }}</mat-icon
+                    >
+                  </button>
+                  <ul
+                    class="sidebar-processes ml-7 mt-1 space-y-1"
+                    [id]="processesId(menu.codm)"
+                    [hidden]="expandedMenuId() !== menu.codm"
+                  >
                     @for (process of menu.procesos; track process.codp) {
                       <li>
                         @if (process.enlace?.trim()) {
@@ -120,6 +135,20 @@
                       </li>
                     }
                   </ul>
+                } @else {
+                  <div
+                    class="sidebar-item flex min-h-10 w-full items-center gap-3 rounded-lg px-2 text-sm font-medium text-content"
+                  >
+                    <span
+                      class="sidebar-item-icon grid size-5 shrink-0 place-items-center text-muted"
+                      aria-hidden="true"
+                    >
+                      <mat-icon class="material-symbols-rounded size-5 leading-none">{{
+                        menu.icono?.trim() || 'apps'
+                      }}</mat-icon>
+                    </span>
+                    <span class="sidebar-item-label truncate">{{ menu.nombre }}</span>
+                  </div>
                 }
               }
             </li>
@@ -139,8 +168,8 @@
           [style.top.px]="position.top"
           [style.max-height.px]="position.maxHeight"
           [attr.aria-label]="menu.nombre"
-          (mouseenter)="cancelScheduledFlyoutClose()"
-          (mouseleave)="scheduleFlyoutClose()"
+          (mouseenter)="handleFlyoutPanelPointerEnter()"
+          (mouseleave)="handleFlyoutPointerLeave()"
           (focusout)="handleFlyoutFocusOut()"
         >
           <h3 class="px-2 py-1 text-sm font-semibold uppercase tracking-[0.12em] text-content">
@@ -152,6 +181,7 @@
                 <li>
                   @if (process.enlace?.trim()) {
                     <a
+                      #processLink
                       class="sidebar-process flex w-full items-center truncate rounded-md px-3 text-left text-[13px] font-medium text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none"
                       [routerLink]="processCommands(process.enlace)"
                       routerLinkActive="sidebar-process-active"
@@ -159,6 +189,7 @@
                       ariaCurrentWhenActive="page"
                       [title]="process.enlace"
                       (click)="closeAfterNavigation()"
+                      (keydown)="handleFlyoutProcessKeydown($event, menu.codm, processLink)"
                     >
                       {{ process.nombre }}
                     </a>

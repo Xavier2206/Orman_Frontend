@@ -22,11 +22,15 @@
     [imageLoading]="imageLoading()"
     [imageError]="imageError()"
     [imageUrl]="imageUrl()"
+    [imageBlob]="currentImageBlob()"
+    [imageLoaded]="imageLoaded()"
+    [imageDownloadFilename]="imageDownloadFilename()"
     [hasHistory]="history().length > 0"
     (retryCurrent)="retryCurrent()"
     (retryImage)="retryImage()"
     (configure)="openConfigModal()"
     (imageLoadError)="handleImageError()"
+    (imageLoadComplete)="handleImageLoaded()"
   />
 
   <app-qr-cobro-history

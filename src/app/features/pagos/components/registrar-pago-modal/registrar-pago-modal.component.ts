@@ -14,25 +14,13 @@ import { finalize } from 'rxjs';
 
 import { isProblemDetail } from '../../../../core/api/problem-detail.model';
 import { PagoApiService } from '../../../contratos/data/pago-api.service';
-import { MetodoPago, PagoCreateRequest } from '../../../contratos/models/contrato.model';
+import { PagoCreateRequest } from '../../../contratos/models/contrato.model';
 import { PersonaModalFocusDirective } from '../../../personas/components/persona-modal-focus.directive';
 import { CuotaListado } from '../../models/cuota-listado.model';
 
 type RegistrarPagoForm = FormGroup<{
   monto: FormControl<string>;
-  metodo: FormControl<MetodoPago>;
-  fecha: FormControl<string>;
-  hora: FormControl<string>;
 }>;
-
-interface BusinessTime {
-  readonly date: string;
-  readonly time: string;
-}
-
-const BUSINESS_TIME_ZONE = 'America/La_Paz';
-const MAX_RECEIPT_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_RECEIPT_TYPES = ['image/png', 'image/jpeg'];
 
 @Component({
   selector: 'app-registrar-pago-modal',
@@ -51,20 +39,11 @@ export class RegistrarPagoModalComponent {
 
   protected readonly submitting = signal(false);
   protected readonly feedback = signal<string | null>(null);
-  protected readonly comprobante = signal<File | null>(null);
-  protected readonly comprobanteError = signal<string | null>(null);
-  private readonly selectedMethod = signal<MetodoPago>('EFECTIVO');
-  protected readonly isQr = computed(() => this.selectedMethod() === 'QR');
-  protected readonly businessDate = this.getBusinessTime().date;
-  protected readonly businessTime = this.getBusinessTime().time;
   protected readonly form: RegistrarPagoForm = new FormGroup({
     monto: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, this.validateAmount()],
     }),
-    metodo: new FormControl<MetodoPago>('EFECTIVO', { nonNullable: true }),
-    fecha: new FormControl('', { nonNullable: true }),
-    hora: new FormControl('', { nonNullable: true }),
   });
   private readonly amountValue = toSignal(this.form.controls.monto.valueChanges, {
     initialValue: this.form.controls.monto.value,
@@ -79,21 +58,6 @@ export class RegistrarPagoModalComponent {
 
     return this.formatMoney((availableBalanceCents - amountCents) / 100);
   });
-
-  constructor() {
-    this.form.addValidators(this.validatePaymentDateTime());
-    this.updateMethodValidators('EFECTIVO');
-    this.form.controls.metodo.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((method) => {
-        this.updateMethodValidators(method);
-        this.feedback.set(null);
-
-        if (method === 'EFECTIVO') {
-          this.clearQrFields();
-        }
-      });
-  }
 
   protected formatMoney(amount: number): string {
     return (
@@ -124,50 +88,9 @@ export class RegistrarPagoModalComponent {
     return formatted.charAt(0).toLocaleUpperCase('es-BO') + formatted.slice(1);
   }
 
-  protected maxTimeForDate(): string | null {
-    return this.form.controls.fecha.value === this.businessDate ? this.businessTime : null;
-  }
-
   protected showAmountError(errorName: string): boolean {
     const amountControl = this.form.controls.monto;
     return (amountControl.touched || amountControl.dirty) && amountControl.hasError(errorName);
-  }
-
-  protected selectComprobante(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-    this.comprobanteError.set(null);
-
-    if (!file) {
-      this.comprobante.set(null);
-      return;
-    }
-
-    if (!this.isAllowedReceipt(file)) {
-      this.rejectComprobante(input, 'Selecciona una imagen PNG o JPEG.');
-      return;
-    }
-
-    if (file.size > MAX_RECEIPT_SIZE_BYTES) {
-      this.rejectComprobante(input, 'El comprobante debe pesar como máximo 5 MB.');
-      return;
-    }
-
-    this.comprobante.set(file);
-  }
-
-  protected removeComprobante(input: HTMLInputElement): void {
-    input.value = '';
-    this.comprobante.set(null);
-    this.comprobanteError.set(null);
-  }
-
-  protected formatFileSize(bytes: number): string {
-    if (bytes >= 1024 * 1024) {
-      return (bytes / (1024 * 1024)).toLocaleString('es-BO', { maximumFractionDigits: 1 }) + ' MB';
-    }
-
-    return (bytes / 1024).toLocaleString('es-BO', { maximumFractionDigits: 1 }) + ' KB';
   }
 
   protected close(): void {
@@ -187,12 +110,13 @@ export class RegistrarPagoModalComponent {
     this.form.markAllAsTouched();
     this.form.updateValueAndValidity();
 
-    if (this.form.invalid || this.comprobanteError()) {
+    if (this.form.invalid) {
       return;
     }
 
     const request: PagoCreateRequest = {
-      ...this.createRequestFields(),
+      monto: Number(this.form.controls.monto.value.trim().replace(',', '.')),
+      metodo: 'EFECTIVO',
       idempotencyKey: this.idempotencyKey,
     };
 
@@ -200,7 +124,7 @@ export class RegistrarPagoModalComponent {
     this.form.disable({ emitEvent: false });
     this.submitting.set(true);
     this.pagoApi
-      .create(this.cuota().codcuo, request, this.comprobante() ?? undefined)
+      .create(this.cuota().codcuo, request)
       .pipe(
         finalize(() => {
           this.form.enable({ emitEvent: false });
@@ -217,60 +141,6 @@ export class RegistrarPagoModalComponent {
           this.feedback.set(this.errorMessage(requestError));
         },
       });
-  }
-
-  private updateMethodValidators(method: MetodoPago): void {
-    this.selectedMethod.set(method);
-    const requiredValidators = method === 'QR' ? [Validators.required] : [];
-
-    this.form.controls.fecha.setValidators(requiredValidators);
-    this.form.controls.hora.setValidators(requiredValidators);
-    this.form.controls.fecha.updateValueAndValidity({ emitEvent: false });
-    this.form.controls.hora.updateValueAndValidity({ emitEvent: false });
-    this.form.updateValueAndValidity({ emitEvent: false });
-  }
-
-  private clearQrFields(): void {
-    this.form.controls.fecha.setValue('', { emitEvent: false });
-    this.form.controls.hora.setValue('', { emitEvent: false });
-    this.form.controls.fecha.markAsPristine();
-    this.form.controls.fecha.markAsUntouched();
-    this.form.controls.hora.markAsPristine();
-    this.form.controls.hora.markAsUntouched();
-    this.comprobante.set(null);
-    this.comprobanteError.set(null);
-  }
-
-  private rejectComprobante(input: HTMLInputElement, message: string): void {
-    input.value = '';
-    this.comprobante.set(null);
-    this.comprobanteError.set(message);
-  }
-
-  private isAllowedReceipt(file: File): boolean {
-    const filename = file.name.toLocaleLowerCase('en-US');
-    const allowedExtensions =
-      file.type === 'image/png' ? ['.png'] : file.type === 'image/jpeg' ? ['.jpg', '.jpeg'] : [];
-
-    return (
-      ALLOWED_RECEIPT_TYPES.includes(file.type) &&
-      allowedExtensions.some((extension) => filename.endsWith(extension))
-    );
-  }
-
-  private createRequestFields(): Omit<PagoCreateRequest, 'idempotencyKey'> {
-    const monto = Number(this.form.controls.monto.value.trim().replace(',', '.'));
-    const metodo = this.form.controls.metodo.value;
-
-    if (metodo === 'EFECTIVO') {
-      return { monto, metodo };
-    }
-
-    return {
-      monto,
-      metodo,
-      fechaPago: this.form.controls.fecha.value + 'T' + this.form.controls.hora.value + ':00',
-    };
   }
 
   private validateAmount(): ValidatorFn {
@@ -316,46 +186,6 @@ export class RegistrarPagoModalComponent {
 
   private toMoneyCents(amount: number): number {
     return Math.round(amount * 100);
-  }
-
-  private validatePaymentDateTime(): ValidatorFn {
-    return (): ValidationErrors | null => {
-      if (this.form.controls.metodo.value !== 'QR') {
-        return null;
-      }
-
-      const date = this.form.controls.fecha.value;
-      const time = this.form.controls.hora.value;
-
-      if (!date || !time) {
-        return null;
-      }
-
-      const current = this.getBusinessTime();
-      const selectedDateTime = date + 'T' + time;
-      const currentDateTime = current.date + 'T' + current.time;
-
-      return selectedDateTime > currentDateTime ? { futureDateTime: true } : null;
-    };
-  }
-
-  private getBusinessTime(): BusinessTime {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: BUSINESS_TIME_ZONE,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hourCycle: 'h23',
-    }).formatToParts(new Date());
-    const partValue = (partType: Intl.DateTimeFormatPartTypes): string =>
-      parts.find((part) => part.type === partType)?.value ?? '';
-
-    return {
-      date: partValue('year') + '-' + partValue('month') + '-' + partValue('day'),
-      time: partValue('hour') + ':' + partValue('minute'),
-    };
   }
 
   private errorMessage(error: unknown): string {

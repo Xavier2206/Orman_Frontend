@@ -37,7 +37,7 @@ import { OrmanNotificationService } from '../../../../core/notifications/orman-n
 import { NotificacionRealtimeService } from '../../data/notificacion-realtime.service';
 import { PagoApiService } from '../../../contratos/data/pago-api.service';
 import { NotificacionesApiService } from '../../data/notificaciones-api.service';
-import { NotificacionResponse } from '../../models/notificacion.model';
+import { NotificacionResponse, NotificacionesPageResponse } from '../../models/notificacion.model';
 
 const CUOTA_NOTIFICATION_TYPES = new Set(['CUOTA_PROXIMA_VENCER', 'CUOTA_VENCIDA']);
 const PAGO_NOTIFICATION_TYPES = new Set([
@@ -45,6 +45,49 @@ const PAGO_NOTIFICATION_TYPES = new Set([
   'PAGO_CONFIRMADO',
   'PAGO_RECHAZADO',
 ]);
+
+const NOTIFICATIONS_PAGE_SIZE = 4;
+
+type NotificationPageMetadata = Pick<
+  NotificacionesPageResponse,
+  'page' | 'totalPages' | 'first' | 'last'
+>;
+
+type NotificationTone = 'warning' | 'danger' | 'info' | 'success' | 'neutral';
+
+interface NotificationPresentation {
+  readonly label: string;
+  readonly icon: string;
+  readonly tone: NotificationTone;
+}
+
+const NOTIFICATION_PRESENTATIONS: Readonly<Record<string, NotificationPresentation>> = {
+  CUOTA_PROXIMA_VENCER: {
+    label: 'Cuota próxima a vencer',
+    icon: 'event_upcoming',
+    tone: 'warning',
+  },
+  CUOTA_VENCIDA: {
+    label: 'Cuota vencida',
+    icon: 'event_busy',
+    tone: 'danger',
+  },
+  COMPROBANTE_RECIBIDO: {
+    label: 'Comprobante recibido',
+    icon: 'receipt_long',
+    tone: 'info',
+  },
+  PAGO_CONFIRMADO: {
+    label: 'Pago confirmado',
+    icon: 'task_alt',
+    tone: 'success',
+  },
+  PAGO_RECHAZADO: {
+    label: 'Pago rechazado',
+    icon: 'cancel',
+    tone: 'danger',
+  },
+};
 
 @Component({
   selector: 'app-notificaciones-bell',
@@ -86,11 +129,49 @@ export class NotificacionesBellComponent {
   protected readonly notifications = signal<readonly NotificacionResponse[]>([]);
   protected readonly isListLoading = signal(false);
   protected readonly listError = signal(false);
+  protected readonly pageMetadata = signal<NotificationPageMetadata | null>(null);
+  protected readonly pageIndicator = computed(() => {
+    const metadata = this.pageMetadata();
+
+    if (!metadata || !this.hasValidPageNumber(metadata)) {
+      return null;
+    }
+
+    return {
+      text: `${metadata.page + 1} / ${metadata.totalPages}`,
+      label: `Página ${metadata.page + 1} de ${metadata.totalPages}`,
+    };
+  });
+  protected readonly isPreviousPageDisabled = computed(() => {
+    const metadata = this.pageMetadata();
+
+    return (
+      this.isListLoading() ||
+      !metadata ||
+      !this.hasValidPageNumber(metadata) ||
+      metadata.page === 0 ||
+      metadata.first
+    );
+  });
+  protected readonly isNextPageDisabled = computed(() => {
+    const metadata = this.pageMetadata();
+
+    return (
+      this.isListLoading() ||
+      !metadata ||
+      !this.hasValidPageNumber(metadata) ||
+      metadata.page >= metadata.totalPages - 1 ||
+      metadata.last
+    );
+  });
   protected readonly openingIds = signal<ReadonlySet<number>>(new Set());
 
   private listRequest: Subscription | null = null;
   private summaryRefreshRequest: Subscription | null = null;
   private pendingRealtimeRefresh = false;
+  private readonly currentPage = signal(0);
+  private readonly requestedPage = signal(0);
+  private readonly failedPage = signal<number | null>(null);
 
   constructor() {
     effect(() => {
@@ -154,7 +235,7 @@ export class NotificacionesBellComponent {
 
     this.isPanelOpen.set(true);
     this.opened.emit();
-    this.loadNotifications();
+    this.loadNotifications(this.currentPage());
   }
 
   protected closePanel(restoreFocus = true): void {
@@ -172,7 +253,37 @@ export class NotificacionesBellComponent {
   }
 
   protected retryList(): void {
-    this.loadNotifications();
+    this.loadNotifications(this.failedPage() ?? this.currentPage());
+  }
+
+  protected goToPreviousPage(): void {
+    const metadata = this.pageMetadata();
+
+    if (this.isPreviousPageDisabled() || !metadata) {
+      return;
+    }
+
+    this.loadNotifications(metadata.page - 1);
+  }
+
+  protected goToNextPage(): void {
+    const metadata = this.pageMetadata();
+
+    if (this.isNextPageDisabled() || !metadata) {
+      return;
+    }
+
+    this.loadNotifications(metadata.page + 1);
+  }
+
+  protected presentationFor(tipo: string): NotificationPresentation {
+    return (
+      NOTIFICATION_PRESENTATIONS[tipo] ?? {
+        label: tipo,
+        icon: 'notifications',
+        tone: 'neutral',
+      }
+    );
   }
 
   protected canOpenNotification(notification: NotificacionResponse): boolean {
@@ -251,13 +362,15 @@ export class NotificacionesBellComponent {
     }
   }
 
-  private loadNotifications(): void {
+  private loadNotifications(pageIndex: number): void {
     this.listRequest?.unsubscribe();
+    this.requestedPage.set(pageIndex);
+    this.failedPage.set(null);
     this.listError.set(false);
     this.isListLoading.set(true);
 
     this.listRequest = this.api
-      .list(0, 20)
+      .list(pageIndex, NOTIFICATIONS_PAGE_SIZE)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -266,8 +379,11 @@ export class NotificacionesBellComponent {
         }),
       )
       .subscribe({
-        next: (page) => this.notifications.set(page.content),
-        error: () => this.listError.set(true),
+        next: (page) => this.applyPage(page),
+        error: () => {
+          this.failedPage.set(pageIndex);
+          this.listError.set(true);
+        },
       });
   }
 
@@ -282,11 +398,6 @@ export class NotificacionesBellComponent {
 
     const refreshList = isRealtime && this.isPanelOpen();
 
-    if (refreshList) {
-      this.listRequest?.unsubscribe();
-      this.listRequest = null;
-    }
-
     this.summaryRefreshRequest = this.api
       .getSummary()
       .pipe(
@@ -296,13 +407,8 @@ export class NotificacionesBellComponent {
             return EMPTY;
           }
 
-          return this.api.list(0, 20).pipe(
-            tap((page) => {
-              this.notifications.set(page.content);
-              this.listError.set(false);
-            }),
-            catchError(() => EMPTY),
-          );
+          this.loadNotifications(this.requestedPage());
+          return EMPTY;
         }),
         catchError(() => EMPTY),
         finalize(() => {
@@ -315,6 +421,33 @@ export class NotificacionesBellComponent {
         }),
       )
       .subscribe();
+  }
+
+  private applyPage(page: NotificacionesPageResponse): void {
+    this.notifications.set(page.content);
+    this.failedPage.set(null);
+    this.pageMetadata.set({
+      page: page.page,
+      totalPages: page.totalPages,
+      first: page.first,
+      last: page.last,
+    });
+
+    if (Number.isSafeInteger(page.page) && page.page >= 0) {
+      this.currentPage.set(page.page);
+      this.requestedPage.set(page.page);
+    }
+  }
+
+  private hasValidPageNumber(metadata: NotificationPageMetadata | null): boolean {
+    return (
+      metadata !== null &&
+      Number.isSafeInteger(metadata.page) &&
+      metadata.page >= 0 &&
+      Number.isSafeInteger(metadata.totalPages) &&
+      metadata.totalPages > 0 &&
+      metadata.page < metadata.totalPages
+    );
   }
 
   private markNotificationAsRead(notification: NotificacionResponse) {

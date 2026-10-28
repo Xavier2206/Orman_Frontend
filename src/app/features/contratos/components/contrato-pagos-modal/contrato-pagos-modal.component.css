@@ -74,6 +74,22 @@
   flex: none;
 }
 
+.payments-close-button .mat-icon {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Material Symbols Rounded' !important;
+  font-feature-settings: 'liga';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 24;
+  line-height: 1;
+}
+
 .payments-close-action {
   min-width: 6rem;
   padding: 0.45rem 0.9rem;

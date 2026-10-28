@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth.service';
 import { authInterceptor } from '../../../../core/auth/auth.interceptor';
+import { ThemeService } from '../../../../core/theme/theme.service';
 import {
   NotificacionRealtimeEvent,
   NotificacionRealtimeService,
@@ -90,12 +91,12 @@ describe('NotificacionesBellComponent', () => {
     fixture.detectChanges();
   }
 
-  function expectListRequest(): ReturnType<HttpTestingController['expectOne']> {
+  function expectListRequest(page = 0): ReturnType<HttpTestingController['expectOne']> {
     return http.expectOne(
       (request) =>
         request.url === '/api/v1/notificaciones' &&
-        request.params.get('page') === '0' &&
-        request.params.get('size') === '20',
+        request.params.get('page') === String(page) &&
+        request.params.get('size') === '4',
     );
   }
 
@@ -114,15 +115,20 @@ describe('NotificacionesBellComponent', () => {
     };
   }
 
-  function createPage(content: readonly NotificacionResponse[]): NotificacionesPageResponse {
+  function createPage(
+    content: readonly NotificacionResponse[],
+    page = 0,
+    totalPages = content.length > 0 ? 1 : 0,
+  ): NotificacionesPageResponse {
     return {
       content,
-      page: 0,
-      size: 20,
-      totalElements: content.length,
-      totalPages: content.length > 0 ? 1 : 0,
-      first: true,
-      last: true,
+      page,
+      size: 4,
+      totalElements:
+        totalPages === 0 ? 0 : totalPages === 1 ? content.length : (totalPages - 1) * 4 + 1,
+      totalPages,
+      first: page === 0,
+      last: totalPages === 0 || page === totalPages - 1,
     };
   }
 
@@ -212,6 +218,90 @@ describe('NotificacionesBellComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('No tienes notificaciones.');
   });
 
+  it('pages through four notifications, replaces the list, and disables controls at the ends', () => {
+    authenticate(7);
+    openPanel();
+
+    const firstPageNotifications = Array.from({ length: 4 }, (_, index) =>
+      createNotification({
+        codnot: 100 + index,
+        titulo: `Aviso página uno ${index + 1}`,
+      }),
+    );
+    expectListRequest(0).flush(createPage(firstPageNotifications, 0, 2));
+    fixture.detectChanges();
+
+    const previousButton = fixture.nativeElement.querySelector(
+      '.notification-previous-button',
+    ) as HTMLButtonElement;
+    const nextButton = fixture.nativeElement.querySelector(
+      '.notification-next-button',
+    ) as HTMLButtonElement;
+    expect(previousButton.disabled).toBe(true);
+    expect(nextButton.disabled).toBe(false);
+    expect(
+      fixture.nativeElement.querySelector('.notification-page-indicator')?.textContent?.trim(),
+    ).toBe('1 / 2');
+    expect(fixture.nativeElement.querySelectorAll('.notification-item').length).toBe(4);
+    expect(
+      [...fixture.nativeElement.querySelectorAll('.notification-title')].map((title: Element) =>
+        title.textContent?.trim(),
+      ),
+    ).toEqual([
+      'Aviso página uno 1',
+      'Aviso página uno 2',
+      'Aviso página uno 3',
+      'Aviso página uno 4',
+    ]);
+
+    nextButton.click();
+    fixture.detectChanges();
+    expect(nextButton.disabled).toBe(true);
+
+    const secondPageNotification = createNotification({
+      codnot: 104,
+      titulo: 'Aviso página dos',
+    });
+    expectListRequest(1).flush(createPage([secondPageNotification], 1, 2));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Aviso página dos');
+    expect(fixture.nativeElement.textContent).not.toContain('Aviso página uno');
+    expect(fixture.nativeElement.querySelectorAll('.notification-item').length).toBe(1);
+    expect(
+      fixture.nativeElement.querySelector('.notification-page-indicator')?.textContent?.trim(),
+    ).toBe('2 / 2');
+    expect(previousButton.disabled).toBe(false);
+    expect(nextButton.disabled).toBe(true);
+    expect(
+      fixture.nativeElement.querySelector('.notification-count-badge')?.textContent?.trim(),
+    ).toBe('7');
+
+    previousButton.click();
+    fixture.detectChanges();
+    expectListRequest(0).flush(createPage(firstPageNotifications, 0, 2));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Aviso página uno 1');
+    expect(fixture.nativeElement.textContent).not.toContain('Aviso página dos');
+  });
+
+  it('does not show a page number when the API reports no pages', () => {
+    authenticate(0);
+    openPanel();
+    expectListRequest().flush(createPage([]));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.notification-page-indicator')).toBeNull();
+    expect(
+      (fixture.nativeElement.querySelector('.notification-previous-button') as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (fixture.nativeElement.querySelector('.notification-next-button') as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+
   it('refreshes the badge through REST when a STOMP event arrives', () => {
     authenticate(1);
 
@@ -237,6 +327,89 @@ describe('NotificacionesBellComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Comprobante recibido');
   });
 
+  it('refreshes the active page after STOMP without changing the global unread count', () => {
+    authenticate(6);
+    openPanel();
+    expectListRequest(0).flush(
+      createPage(
+        Array.from({ length: 4 }, (_, index) =>
+          createNotification({ codnot: 200 + index, titulo: `Primera ${index + 1}` }),
+        ),
+        0,
+        2,
+      ),
+    );
+    fixture.detectChanges();
+
+    const nextButton = fixture.nativeElement.querySelector(
+      '.notification-next-button',
+    ) as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+    expectListRequest(1).flush(
+      createPage([createNotification({ codnot: 204, titulo: 'Segunda antes del evento' })], 1, 2),
+    );
+    fixture.detectChanges();
+
+    realtime.events$.next({ codnot: 300, tipo: 'COMPROBANTE_RECIBIDO' });
+    http.expectOne('/api/v1/notificaciones/resumen').flush({ noLeidas: 7 });
+    expectListRequest(1).flush(
+      createPage([createNotification({ codnot: 301, titulo: 'Segunda después del evento' })], 1, 2),
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Segunda después del evento');
+    expect(fixture.nativeElement.textContent).not.toContain('Primera 1');
+    expect(
+      fixture.nativeElement.querySelector('.notification-page-indicator')?.textContent?.trim(),
+    ).toBe('2 / 2');
+    expect(
+      fixture.nativeElement.querySelector('.notification-count-badge')?.textContent?.trim(),
+    ).toBe('7');
+  });
+
+  it('retries a failed page request at that page and replaces the old content on success', () => {
+    authenticate(0);
+    openPanel();
+    const firstPage = Array.from({ length: 4 }, (_, index) =>
+      createNotification({ codnot: 400 + index, titulo: `Página uno ${index + 1}` }),
+    );
+    expectListRequest(0).flush(createPage(firstPage, 0, 2));
+    fixture.detectChanges();
+
+    const nextButton = fixture.nativeElement.querySelector(
+      '.notification-next-button',
+    ) as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+    expectListRequest(1).flush(
+      { detail: 'Service Unavailable' },
+      { status: 503, statusText: 'Service Unavailable' },
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'No se pudieron cargar las notificaciones.',
+    );
+    expect(fixture.nativeElement.textContent).toContain('Página uno 1');
+    const retryButton = fixture.nativeElement.querySelector(
+      '.notification-retry-button',
+    ) as HTMLButtonElement;
+    retryButton.click();
+    fixture.detectChanges();
+
+    expectListRequest(1).flush(
+      createPage([createNotification({ codnot: 404, titulo: 'Página dos recuperada' })], 1, 2),
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Página dos recuperada');
+    expect(fixture.nativeElement.textContent).not.toContain('Página uno 1');
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'No se pudieron cargar las notificaciones.',
+    );
+  });
+
   it('shows a discreet loading state while the list request is pending', () => {
     authenticate(0);
     openPanel();
@@ -248,7 +421,7 @@ describe('NotificacionesBellComponent', () => {
     fixture.detectChanges();
   });
 
-  it('shows new notifications with multiple unread signals and read notifications as secondary', () => {
+  it('renders localized categories, matching icons, and the response read state', () => {
     authenticate(1);
     openPanel();
 
@@ -273,34 +446,133 @@ describe('NotificacionesBellComponent', () => {
       }),
     );
 
-    expectListRequest().flush(createPage(notificationList));
+    expectListRequest(0).flush(createPage(notificationList.slice(0, 4), 0, 2));
     fixture.detectChanges();
 
-    const renderedTypes = [...fixture.nativeElement.querySelectorAll('li')].map(
-      (element: Element) => element.querySelector('.uppercase')?.textContent?.trim(),
+    const renderedCategories = [
+      ...fixture.nativeElement.querySelectorAll('.notification-category'),
+    ].map((element: Element) => element.textContent?.trim());
+    const renderedIcons = [...fixture.nativeElement.querySelectorAll('.notification-icon')].map(
+      (element: Element) => element.textContent?.trim(),
     );
     const unreadButton = fixture.nativeElement.querySelector(
-      'button[aria-label^="Abrir notificación"]',
+      'button[aria-label^="Abrir notificación no leída"]',
     ) as HTMLButtonElement;
     const receiptNotificationButton = [
       ...fixture.nativeElement.querySelectorAll('button[aria-label^="Abrir notificación"]'),
     ].find((button: HTMLButtonElement) =>
-      button.textContent?.includes('COMPROBANTE_RECIBIDO'),
+      button.textContent?.includes('Comprobante recibido'),
     ) as HTMLButtonElement;
-    const readItem = fixture.nativeElement.querySelector(
-      'button[aria-label="Abrir notificación: Notificación 2"]',
+    const readItem = [
+      ...fixture.nativeElement.querySelectorAll('button[aria-label^="Abrir notificación leída"]'),
+    ].find((button: HTMLButtonElement) =>
+      button.getAttribute('aria-label')?.includes('Pago confirmado'),
     ) as HTMLElement;
 
-    expect(renderedTypes).toEqual(notificationTypes);
-    expect(unreadButton.textContent).toContain('CUOTA_PROXIMA_VENCER');
-    expect(unreadButton.textContent).toContain('Nueva');
-    expect(unreadButton.querySelector('.font-semibold')).toBeTruthy();
+    expect(notificationList.map((item) => item.tipo)).toEqual(notificationTypes);
+    expect(renderedCategories).toEqual([
+      'Cuota próxima a vencer',
+      'Cuota vencida',
+      'Comprobante recibido',
+      'Pago confirmado',
+    ]);
+    expect(renderedIcons).toEqual(['event_upcoming', 'event_busy', 'receipt_long', 'task_alt']);
+    expect(unreadButton.textContent).toContain('No leída');
+    expect(unreadButton.textContent).not.toContain('Nueva');
+    expect(unreadButton.querySelector('.notification-title--unread')).toBeTruthy();
     expect(unreadButton.textContent).toContain('Mensaje de prueba para CUOTA_PROXIMA_VENCER.');
-    expect(receiptNotificationButton.textContent).toContain('Nueva');
-    expect(receiptNotificationButton.querySelector('.size-2.rounded-full.bg-accent')).toBeTruthy();
-    expect(receiptNotificationButton.getAttribute('aria-label')).toContain('Abrir notificación');
+    expect(receiptNotificationButton.textContent).toContain('No leída');
+    expect(
+      receiptNotificationButton.querySelector('.notification-read-status--unread'),
+    ).toBeTruthy();
+    expect(receiptNotificationButton.getAttribute('aria-label')).toContain('no leída');
     expect(readItem.textContent).toContain('Leída');
-    expect(readItem.classList).toContain('text-muted');
+    expect(readItem.classList).toContain('notification-item--read');
+
+    const nextButton = fixture.nativeElement.querySelector(
+      '.notification-next-button',
+    ) as HTMLButtonElement;
+    nextButton.click();
+    fixture.detectChanges();
+    expectListRequest(1).flush(createPage(notificationList.slice(4), 1, 2));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.notification-category')?.textContent?.trim()).toBe(
+      'Pago rechazado',
+    );
+    expect(fixture.nativeElement.querySelector('.notification-icon')?.textContent?.trim()).toBe(
+      'cancel',
+    );
+  });
+
+  it.each([
+    {
+      leida: false,
+      visibleState: 'No leída',
+      accessibleState: 'no leída',
+      itemStateClass: 'notification-item--unread',
+    },
+    {
+      leida: true,
+      visibleState: 'Leída',
+      accessibleState: 'leída',
+      itemStateClass: 'notification-item--read',
+    },
+  ])(
+    'uses the real leida value for a notification without a navigation action',
+    ({ leida, visibleState, accessibleState, itemStateClass }) => {
+      authenticate(leida ? 0 : 1);
+      openPanel();
+
+      expectListRequest().flush(
+        createPage([
+          createNotification({
+            tipo: 'AVISO_FUTURO',
+            referenciaTipo: 'OTRO',
+            leida,
+          }),
+        ]),
+      );
+      fixture.detectChanges();
+
+      const staticNotification = fixture.nativeElement.querySelector(
+        'article.notification-item',
+      ) as HTMLElement;
+
+      expect(staticNotification.textContent).toContain(visibleState);
+      expect(staticNotification.getAttribute('aria-label')).toContain(accessibleState);
+      expect(staticNotification.classList).toContain(itemStateClass);
+      expect(staticNotification.querySelector('button')).toBeNull();
+      expect(staticNotification.textContent).not.toContain('Nueva');
+      http.expectNone('/api/v1/notificaciones/41/leer');
+    },
+  );
+
+  it('updates the active theme attribute while keeping the panel open', () => {
+    const themeService = TestBed.inject(ThemeService);
+    authenticate(0);
+    openPanel();
+    expectListRequest().flush(createPage([createNotification()]));
+    fixture.detectChanges();
+
+    const panel = fixture.nativeElement.querySelector(
+      '#private-notifications-panel',
+    ) as HTMLElement;
+
+    themeService.setTheme('light');
+    fixture.detectChanges();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(fixture.nativeElement.querySelector('#private-notifications-panel')).toBe(panel);
+    expect(panel.classList).toContain('bg-card');
+
+    themeService.setTheme('dark');
+    fixture.detectChanges();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(fixture.nativeElement.querySelector('#private-notifications-panel')).toBe(panel);
+
+    themeService.setTheme('orman');
+    fixture.detectChanges();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('orman');
   });
 
   it('shows a retry action when the list fails and recovers after retry', () => {

@@ -88,6 +88,10 @@ describe('PublicHeaderComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Sesión activa: usuario.demo');
     expect(fixture.nativeElement.textContent).toContain('Cerrar sesión');
+    expect(
+      fixture.nativeElement.querySelector('a[href="/app/dashboard/resumen-financiero"]')
+        ?.textContent,
+    ).toContain('Ir al panel');
     expect(fixture.nativeElement.textContent).not.toContain('ADMINISTRADOR');
   });
 
@@ -97,7 +101,33 @@ describe('PublicHeaderComponent', () => {
 
     fixture.componentInstance.handleAuthenticated();
 
-    expect(navigate).toHaveBeenCalledWith('/app/inicio');
+    expect(navigate).toHaveBeenCalledWith('/app/dashboard/resumen-financiero');
+  });
+
+  it('should show the panel link in the authenticated mobile navigation', () => {
+    auth.login('usuario.demo', 'password-demo').subscribe();
+    http.expectOne('/api/v1/auth/login').flush({
+      status: 'AUTHENTICATED',
+      login: 'usuario.demo',
+      codper: 10,
+      accessToken: 'access-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      sid: 'session-id',
+    });
+    fixture.detectChanges();
+
+    const menuButton = fixture.nativeElement.querySelector(
+      '[aria-controls="mobile-navigation"]',
+    ) as HTMLButtonElement;
+    menuButton.click();
+    fixture.detectChanges();
+
+    const panelLink = fixture.nativeElement.querySelector(
+      '#mobile-navigation a[href="/app/dashboard/resumen-financiero"]',
+    ) as HTMLAnchorElement | null;
+
+    expect(panelLink?.textContent).toContain('Ir al panel');
   });
 
   it('should open only QuickMenu from the desktop action', () => {

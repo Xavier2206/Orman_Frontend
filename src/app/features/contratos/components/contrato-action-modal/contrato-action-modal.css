@@ -191,6 +191,11 @@
   min-height: 2.75rem;
 }
 
+.action-modal-field select option {
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
 .action-modal-field textarea {
   min-height: 6rem;
   resize: vertical;
@@ -292,6 +297,15 @@
   color: var(--theme-text);
   font-size: 0.78rem;
   font-weight: 700;
+}
+
+.action-modal-footer button .mat-icon {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
 }
 
 .action-modal-cancel {

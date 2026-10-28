@@ -273,7 +273,7 @@ describe('PrivateSidebarComponent', () => {
     const peopleTrigger = fixture.nativeElement.querySelector(
       '[aria-label=\"GESTIONAR PERSONAS\"]',
     ) as HTMLButtonElement;
-    peopleTrigger.dispatchEvent(new FocusEvent('focus'));
+    peopleTrigger.focus();
     fixture.detectChanges();
 
     expect(peopleTrigger.getAttribute('aria-expanded')).toBe('true');
@@ -286,7 +286,12 @@ describe('PrivateSidebarComponent', () => {
     settingsTrigger.dispatchEvent(new MouseEvent('mouseenter'));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('#sidebar-flyout-1')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#sidebar-flyout-1')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('#sidebar-flyout-2')).toBeNull();
+
+    settingsTrigger.focus();
+    fixture.detectChanges();
+
     expect(fixture.nativeElement.querySelector('#sidebar-flyout-2')).toBeTruthy();
   });
 
@@ -388,11 +393,32 @@ describe('PrivateSidebarComponent', () => {
     expect(router.url).toBe('/app/personas/listar');
     const activeProcess = fixture.nativeElement.querySelector(
       '.sidebar-process-active',
-    ) as HTMLButtonElement;
+    ) as HTMLAnchorElement;
     expect(activeProcess.textContent?.trim()).toBe('LISTAR PERSONAS');
     expect(activeProcess.getAttribute('aria-current')).toBe('page');
     expect(fixture.nativeElement.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     expect(fixture.nativeElement.querySelector('.sidebar-menu-has-active-process')).toBeTruthy();
+    expect(
+      (fixture.nativeElement.querySelector('#sidebar-processes-1') as HTMLUListElement).hidden,
+    ).toBe(true);
+    expect(
+      (
+        fixture.nativeElement.querySelector(
+          '[aria-controls="sidebar-processes-1"]',
+        ) as HTMLButtonElement
+      ).getAttribute('aria-expanded'),
+    ).toBe('false');
+
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-controls="sidebar-processes-1"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement.querySelector('#sidebar-processes-1') as HTMLUListElement).hidden,
+    ).toBe(false);
+    expect(fixture.nativeElement.querySelector('.sidebar-process-active')).toBe(activeProcess);
   });
 
   it('should navigate through the selected process link', async () => {
@@ -411,7 +437,13 @@ describe('PrivateSidebarComponent', () => {
       },
     ]);
 
-    (fixture.nativeElement.querySelector('.sidebar-process') as HTMLButtonElement).click();
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-controls="sidebar-processes-1"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.sidebar-process') as HTMLAnchorElement).click();
     await fixture.whenStable();
     fixture.detectChanges();
 

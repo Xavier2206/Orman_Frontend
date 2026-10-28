@@ -13,6 +13,66 @@
       }
     </div>
   } @else if (imageUrl(); as url) {
-    <img [src]="url" alt="QR de cobro vigente" (error)="imageLoadError.emit()" />
+    <img
+      [src]="url"
+      alt="QR de cobro vigente"
+      (load)="imageLoaded.emit()"
+      (error)="handleImageLoadError()"
+    />
   }
 </div>
+
+@if (loaded()) {
+  @if (imageUrl(); as url) {
+    <div class="qr-image-actions" role="group" aria-label="Acciones de la imagen QR">
+      <button class="qr-image-action" type="button" (click)="openPreview()">
+        <mat-icon class="material-symbols-rounded" aria-hidden="true">zoom_in</mat-icon>
+        Ampliar
+      </button>
+      @if (downloadFilename()) {
+        <button class="qr-image-action" type="button" (click)="downloadOriginal()">
+          <mat-icon class="material-symbols-rounded" aria-hidden="true">download</mat-icon>
+          Descargar
+        </button>
+      } @else {
+        <span class="qr-image-download-error" role="status">
+          No se pudo identificar el formato del archivo para descargarlo.
+        </span>
+      }
+    </div>
+    @if (downloadError(); as failure) {
+      @if (failure.image === imageBlob()) {
+        <p class="qr-image-download-error" role="alert">{{ failure.message }}</p>
+      }
+    }
+
+    @if (previewOpen()) {
+      <div class="qr-image-preview-overlay">
+        <section
+          appPersonaModalFocus
+          class="qr-image-preview-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-image-preview-title"
+          [initialFocusSelector]="'.qr-image-preview-close'"
+          (escapePressed)="closePreview()"
+        >
+          <header class="qr-image-preview-header">
+            <h2 id="qr-image-preview-title">QR de cobro vigente</h2>
+            <button
+              class="qr-image-preview-close"
+              type="button"
+              aria-label="Cerrar imagen ampliada"
+              (click)="closePreview()"
+            >
+              <mat-icon class="material-symbols-rounded" aria-hidden="true">close</mat-icon>
+            </button>
+          </header>
+          <div class="qr-image-preview-content">
+            <img [src]="url" alt="QR de cobro vigente ampliado" (error)="handleImageLoadError()" />
+          </div>
+        </section>
+      </div>
+    }
+  }
+}

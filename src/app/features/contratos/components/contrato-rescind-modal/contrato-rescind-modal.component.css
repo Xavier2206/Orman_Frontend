@@ -41,6 +41,54 @@
   gap: 0.5rem;
 }
 
+.action-modal-confirmed-period {
+  margin: 0.55rem 0 0;
+  border-left: 2px solid var(--theme-warning-border);
+  padding-left: 0.55rem;
+  color: var(--theme-warning-text);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.action-modal-confirmed-period strong {
+  color: var(--theme-text);
+}
+
+.action-modal-load-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.action-modal-load-error p {
+  margin: 0;
+  color: var(--theme-danger-text);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.action-modal-load-error button {
+  flex: none;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-surface);
+  padding: 0.45rem 0.65rem;
+  color: var(--theme-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.action-modal-load-error button:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.action-modal-load-error button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .action-modal-installment-list li > span {
   color: var(--theme-success-text);
   font-weight: 800;
@@ -67,8 +115,27 @@
 }
 
 .action-modal-subsequent-list li {
-  color: var(--theme-warning-text);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  color: var(--theme-text);
   font-size: 0.75rem;
+}
+
+.action-modal-subsequent-list li > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.action-modal-subsequent-list li span,
+.action-modal-subsequent-list li small {
+  color: var(--theme-text-muted);
+  font-size: 0.68rem;
+}
+
+.action-modal-subsequent-list li small {
+  text-align: right;
 }
 
 .action-modal-guarantee {
@@ -106,5 +173,19 @@
 
   .action-modal-guarantee {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .action-modal-load-error,
+  .action-modal-subsequent-list li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .action-modal-load-error button {
+    width: 100%;
+  }
+
+  .action-modal-subsequent-list li small {
+    text-align: left;
   }
 }

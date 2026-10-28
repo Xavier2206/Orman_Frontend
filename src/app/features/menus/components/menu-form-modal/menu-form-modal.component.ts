@@ -43,6 +43,13 @@ type MenuFormControls = {
 const notBlankValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null =>
   String(control.value ?? '').trim() ? null : { required: true };
 
+function normalizeIconSearch(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
 @Component({
   selector: 'app-menu-form-modal',
   imports: [MatIconModule, ReactiveFormsModule, PersonaModalFocusDirective],
@@ -65,14 +72,19 @@ export class MenuFormModalComponent implements OnChanges {
   protected readonly iconCategory = signal<MenuIconCategory>('Todos');
   protected readonly iconCategories = MENU_ICON_CATEGORIES;
   protected readonly filteredIcons = computed(() => {
-    const search = this.iconSearch().trim().toLowerCase();
+    const search = normalizeIconSearch(this.iconSearch().trim());
     const category = this.iconCategory();
 
-    return MENU_ICON_CATALOG.filter(
-      (icon) =>
+    return MENU_ICON_CATALOG.filter((icon) => {
+      const searchableText = normalizeIconSearch(
+        [icon.label, icon.name, ...(icon.keywords ?? [])].join(' '),
+      );
+
+      return (
         (category === 'Todos' || icon.category === category) &&
-        (!search || icon.name.includes(search)),
-    );
+        (!search || searchableText.includes(search))
+      );
+    });
   });
   protected readonly form = new FormGroup<MenuFormControls>({
     nombre: new FormControl('', {
@@ -123,6 +135,22 @@ export class MenuFormModalComponent implements OnChanges {
 
   protected iconName(icono: string | null): string {
     return icono?.trim() || 'menu';
+  }
+
+  protected iconLabel(icono: string | null): string {
+    if (!icono) {
+      return 'Seleccionar un icono';
+    }
+
+    return MENU_ICON_CATALOG.find((icon) => icon.name === icono)?.label ?? 'Icono actual';
+  }
+
+  protected iconTechnicalName(icono: string | null): string | null {
+    return icono || null;
+  }
+
+  protected isIconOutsideCatalog(icono: string | null): boolean {
+    return !!icono && !MENU_ICON_CATALOG.some((icon) => icon.name === icono);
   }
 
   protected previewName(): string {

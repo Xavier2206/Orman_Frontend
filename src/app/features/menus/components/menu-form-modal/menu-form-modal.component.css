@@ -192,10 +192,24 @@ input:focus {
   line-height: 1;
 }
 
-.selected-icon-label {
+.selected-icon-details {
+  display: flex;
   min-width: 0;
   flex: 1;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.selected-icon-label {
   overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+.selected-icon-technical-name,
+.icon-option-technical-name {
+  color: var(--theme-text-muted);
+  font-size: 0.65rem;
+  line-height: 1.1;
 }
 
 .trigger-chevron {
@@ -301,6 +315,15 @@ input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.icon-option-label {
+  font-weight: 600;
+}
+
+.icon-option-technical-name {
+  font-size: 0.55rem;
+  font-weight: 400;
 }
 
 .selection-check {

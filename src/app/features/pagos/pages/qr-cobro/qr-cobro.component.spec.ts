@@ -67,6 +67,180 @@ describe('QrCobroComponent', () => {
     http.expectNone('/api/v1/qr-cobro/17/imagen');
   });
 
+  it('enables preview and downloads the original Blob only after the image loads', () => {
+    const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qr-current');
+    fixture = startPage();
+    http.expectOne('/api/v1/qr-cobro/vigente').flush(currentQr);
+    http
+      .expectOne('/api/v1/qr-cobro/18/imagen')
+      .flush(new Blob(['original-png-bytes'], { type: 'image/png' }));
+    http.expectOne('/api/v1/qr-cobro').flush([currentQr]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.qr-image-actions')).toBeNull();
+    const image = fixture.nativeElement.querySelector(
+      'img[alt="QR de cobro vigente"]',
+    ) as HTMLImageElement;
+    image.dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+
+    const download = fixture.nativeElement.querySelector(
+      '.qr-image-actions button:last-child',
+    ) as HTMLButtonElement;
+    expect(fixture.nativeElement.querySelector('button.qr-image-action')?.textContent).toContain(
+      'Ampliar',
+    );
+    expect(download.textContent).toContain('Descargar');
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    http.expectNone('/api/v1/qr-cobro/18/imagen');
+  });
+
+  it('downloads the original Blob without revoking the displayed image URL', () => {
+    const originalBlob = new Blob(['original-jpeg-bytes'], { type: 'image/jpeg' });
+    const createObjectUrl = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValueOnce('blob:qr-display')
+      .mockReturnValueOnce('blob:qr-download');
+    const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const clickedLinks: HTMLAnchorElement[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      clickedLinks.push(this);
+    });
+    let revokeDownloadUrl: (() => void) | undefined;
+    vi.spyOn(window, 'setTimeout').mockImplementation(((handler: TimerHandler) => {
+      if (typeof handler === 'function') {
+        revokeDownloadUrl = handler as () => void;
+      }
+
+      return 1;
+    }) as typeof window.setTimeout);
+    fixture = startPage();
+    http.expectOne('/api/v1/qr-cobro/vigente').flush({ ...currentQr, tipoContenido: 'image/jpeg' });
+    http.expectOne('/api/v1/qr-cobro/18/imagen').flush(originalBlob);
+    http.expectOne('/api/v1/qr-cobro').flush([currentQr]);
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('img[alt="QR de cobro vigente"]') as HTMLImageElement
+    ).dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector(
+        '.qr-image-actions button:last-child',
+      ) as HTMLButtonElement
+    ).click();
+
+    expect(createObjectUrl).toHaveBeenNthCalledWith(1, originalBlob);
+    expect(createObjectUrl).toHaveBeenNthCalledWith(2, originalBlob);
+    expect(clickedLinks[0]?.getAttribute('href')).toBe('blob:qr-download');
+    expect(clickedLinks[0]?.getAttribute('download')).toBe('orman-qr-cobro-18.jpg');
+    expect(
+      (fixture.nativeElement.querySelector('img[alt="QR de cobro vigente"]') as HTMLImageElement)
+        .src,
+    ).toContain('blob:qr-display');
+    expect(revokeObjectUrl).not.toHaveBeenCalled();
+    http.expectNone('/api/v1/qr-cobro/18/imagen');
+
+    revokeDownloadUrl?.();
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:qr-download');
+    expect(revokeObjectUrl).not.toHaveBeenCalledWith('blob:qr-display');
+  });
+
+  it('shows a clear download error and keeps the displayed image valid when URL creation fails', () => {
+    vi.spyOn(URL, 'createObjectURL')
+      .mockReturnValueOnce('blob:qr-display')
+      .mockImplementation(() => {
+        throw new Error('URL creation failed');
+      });
+    const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    fixture = startPage();
+    http.expectOne('/api/v1/qr-cobro/vigente').flush(currentQr);
+    http.expectOne('/api/v1/qr-cobro/18/imagen').flush(new Blob(['qr'], { type: 'image/png' }));
+    http.expectOne('/api/v1/qr-cobro').flush([currentQr]);
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('img[alt="QR de cobro vigente"]') as HTMLImageElement
+    ).dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector(
+        '.qr-image-actions button:last-child',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'No fue posible iniciar la descarga del QR. Inténtalo nuevamente.',
+    );
+    expect(
+      (fixture.nativeElement.querySelector('img[alt="QR de cobro vigente"]') as HTMLImageElement)
+        .src,
+    ).toContain('blob:qr-display');
+    expect(revokeObjectUrl).not.toHaveBeenCalledWith('blob:qr-display');
+  });
+
+  it('opens the image modal and returns keyboard focus after Escape', async () => {
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qr-current');
+    fixture = startPage();
+    http.expectOne('/api/v1/qr-cobro/vigente').flush(currentQr);
+    http.expectOne('/api/v1/qr-cobro/18/imagen').flush(new Blob(['qr'], { type: 'image/png' }));
+    http.expectOne('/api/v1/qr-cobro').flush([currentQr]);
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('img[alt="QR de cobro vigente"]') as HTMLImageElement
+    ).dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+    const expandButton = fixture.nativeElement.querySelector(
+      'button.qr-image-action',
+    ) as HTMLButtonElement;
+    expandButton.focus();
+    expandButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = fixture.nativeElement.querySelector('[role="dialog"][aria-modal="true"]');
+    expect(dialog).not.toBeNull();
+    expect(document.activeElement).toBe(
+      fixture.nativeElement.querySelector('.qr-image-preview-close'),
+    );
+    const previewImage = dialog.querySelector(
+      'img[alt="QR de cobro vigente ampliado"]',
+    ) as HTMLImageElement;
+    expect(previewImage.getAttribute('src')).toBe('blob:qr-current');
+
+    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.qr-image-preview-dialog')).toBeNull();
+    expect(document.activeElement).toBe(expandButton);
+  });
+
+  it('closes the image modal with its close button and restores focus', async () => {
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qr-current');
+    fixture = startPage();
+    http.expectOne('/api/v1/qr-cobro/vigente').flush(currentQr);
+    http.expectOne('/api/v1/qr-cobro/18/imagen').flush(new Blob(['qr'], { type: 'image/png' }));
+    http.expectOne('/api/v1/qr-cobro').flush([currentQr]);
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('img[alt="QR de cobro vigente"]') as HTMLImageElement
+    ).dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+    const expandButton = fixture.nativeElement.querySelector(
+      'button.qr-image-action',
+    ) as HTMLButtonElement;
+    expandButton.focus();
+    expandButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    (fixture.nativeElement.querySelector('.qr-image-preview-close') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.qr-image-preview-dialog')).toBeNull();
+    expect(document.activeElement).toBe(expandButton);
+  });
+
   it('keeps current metadata visible after image failure and retries the image request', () => {
     const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:qr-retried');
     const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
@@ -81,6 +255,7 @@ describe('QrCobroComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('qr banco.png');
     expect(fixture.nativeElement.textContent).toContain('No fue posible cargar la imagen del QR.');
+    expect(fixture.nativeElement.querySelector('.qr-image-actions')).toBeNull();
     (fixture.nativeElement.querySelector('.qr-image-error button') as HTMLButtonElement).click();
     fixture.detectChanges();
     http.expectOne('/api/v1/qr-cobro/18/imagen').flush(new Blob(['qr'], { type: 'image/png' }));

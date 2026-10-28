@@ -4,7 +4,73 @@
 }
 
 .notification-panel {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   animation: notification-panel-enter 140ms ease-out both;
+}
+
+.notification-panel-content {
+  scroll-padding-block: 0.75rem;
+}
+
+.notification-item {
+  border-inline-start: 3px solid transparent;
+}
+
+.notification-item--unread {
+  border-inline-start-color: var(--theme-accent);
+  background-color: color-mix(in srgb, var(--theme-accent) 6%, var(--theme-card));
+}
+
+.notification-item--read {
+  color: var(--theme-text-muted);
+}
+
+.notification-focus-target:focus-visible {
+  outline: 2px solid var(--theme-text);
+  outline-offset: -4px;
+  box-shadow: inset 0 0 0 2px var(--theme-focus);
+}
+
+.notification-icon-shell[data-tone='warning'],
+.notification-category[data-tone='warning'] {
+  border-color: var(--theme-warning-border);
+  background-color: var(--theme-warning-bg);
+  color: var(--theme-warning-text);
+}
+
+.notification-icon-shell[data-tone='danger'],
+.notification-category[data-tone='danger'] {
+  border-color: var(--theme-danger-border);
+  background-color: var(--theme-danger-bg);
+  color: var(--theme-danger-text);
+}
+
+.notification-icon-shell[data-tone='info'],
+.notification-category[data-tone='info'] {
+  border-color: var(--theme-info-border);
+  background-color: var(--theme-info-bg);
+  color: var(--theme-info-text);
+}
+
+.notification-icon-shell[data-tone='success'],
+.notification-category[data-tone='success'] {
+  border-color: var(--theme-success-border);
+  background-color: var(--theme-success-bg);
+  color: var(--theme-success-text);
+}
+
+.notification-read-status--unread {
+  color: var(--theme-accent-text);
+}
+
+.notification-read-status--read {
+  color: var(--theme-text-muted);
+}
+
+.notification-title--unread {
+  color: var(--theme-text);
+  font-weight: 700;
 }
 
 @media (max-width: 639px) {
