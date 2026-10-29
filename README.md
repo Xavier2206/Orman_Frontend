@@ -1,7 +1,7 @@
 # ORMAN Frontend
 
 > Trabajo Final · Diplomado en Desarrollo Web y Aplicaciones Móviles · UAJMS 2026<br>
-> Autor: `Xavier Ortega Mancilla` · Tutor: <Nombre del tutor>
+> Autor: `Xavier Ortega Mancilla` 
 
 ## 1. Descripción
 
