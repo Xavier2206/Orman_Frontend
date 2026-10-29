@@ -111,6 +111,8 @@ describe('PagosListComponent notification navigation', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('No se encontró la cuota relacionada.');
+    expect(fixture.nativeElement.textContent).toContain('Mostrando una cuota específica');
+    expect(fixture.nativeElement.textContent).toContain('Quitar filtro');
     expect(fixture.nativeElement.querySelector('app-cuota-table')).toBeNull();
   });
 

@@ -7,6 +7,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { authInterceptor } from '../../../../core/auth/auth.interceptor';
 import { OrmanNotificationService } from '../../../../core/notifications/orman-notification.service';
 import { PagoResponse } from '../../../contratos/models/contrato.model';
+import { CuotaNavigationRefreshService } from '../../../pagos/data/cuota-navigation-refresh.service';
 import { NotificacionResponse, NotificacionesPageResponse } from '../../models/notificacion.model';
 import { NotificacionesBellComponent } from './notificaciones-bell.component';
 
@@ -80,6 +81,22 @@ describe('NotificacionesBellComponent navigation', () => {
     http.expectNone('/api/v1/notificaciones/41/leer');
     http.expectOne('/api/v1/pagos/748').flush(paymentResponse(748, 1894));
     await expectNavigation(1894);
+  });
+
+  it('refreshes the already open cuota without navigating or showing an error', async () => {
+    authenticate(0);
+    await loadNotification(createNotification({ leida: true }));
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/app/pagos/listar?codcuo=1894');
+    const navigate = vi.spyOn(router, 'navigate');
+    const refresh = vi.spyOn(TestBed.inject(CuotaNavigationRefreshService), 'refresh');
+
+    clickNotification();
+    http.expectOne('/api/v1/pagos/748').flush(paymentResponse(748, 1894));
+
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(refresh).toHaveBeenCalledWith(1894);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(notification.error).not.toHaveBeenCalled();
   });
 
   it.each([

@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   EMPTY,
   Observable,
@@ -30,6 +30,7 @@ import { HistorialPagosModalComponent } from '../../components/historial-pagos-m
 import { RegistrarPagoModalComponent } from '../../components/registrar-pago-modal/registrar-pago-modal.component';
 import { RevisarPagoModalComponent } from '../../components/revisar-pago-modal/revisar-pago-modal.component';
 import { CuotaCatalogService } from '../../data/cuota-catalog.service';
+import { CuotaNavigationRefreshService } from '../../data/cuota-navigation-refresh.service';
 import { CuotaListadoApiService } from '../../data/cuota-listado-api.service';
 import { PagoRevisionLookupService } from '../../data/pago-revision-lookup.service';
 import {
@@ -88,6 +89,8 @@ export class PagosListComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly notification = inject(OrmanNotificationService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly cuotaRefresh = inject(CuotaNavigationRefreshService);
   private readonly listRequests$ = new Subject<boolean>();
   private readonly unitRequests$ = new Subject<number | null>();
   private readonly reviewPaymentRequests$ = new Subject<readonly CuotaListado[]>();
@@ -177,6 +180,13 @@ export class PagosListComponent {
   ];
 
   constructor() {
+    this.cuotaRefresh.requests$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((codcuo) => {
+        if (codcuo === this.notificationCodcuo()) {
+          this.requestList(true);
+        }
+      });
     this.listRequests$
       .pipe(
         switchMap((preservePage) => this.loadCuotas(preservePage)),
@@ -286,7 +296,20 @@ export class PagosListComponent {
     this.unitError.set(null);
     this.unitLoading.set(false);
     this.unitRequests$.next(null);
-    this.requestList();
+    if (this.notificationQuotaRequested()) {
+      this.removeQuotaFilter();
+    } else {
+      this.requestList();
+    }
+  }
+
+  protected removeQuotaFilter(): void {
+    this.currentPage.set(0);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { codcuo: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected changePage(page: number): void {

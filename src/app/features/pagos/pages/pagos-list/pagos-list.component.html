@@ -77,7 +77,7 @@
         {{ moreFiltersExpanded() ? 'Menos filtros' : 'Más filtros' }}
       </button>
 
-      @if (hasFilters()) {
+      @if (hasFilters() || notificationQuotaRequested()) {
         <button type="button" class="clear-filters-button" (click)="clearFilters()">
           <mat-icon aria-hidden="true">filter_alt_off</mat-icon>
           Limpiar filtros
@@ -125,6 +125,15 @@
       </div>
     }
   </section>
+
+  @if (notificationQuotaRequested()) {
+    <div class="mt-4 flex flex-wrap items-center gap-3 text-content" role="status">
+      <span>Mostrando una cuota específica</span>
+      <button type="button" class="clear-filters-button" (click)="removeQuotaFilter()">
+        Quitar filtro
+      </button>
+    </div>
+  }
 
   @if (tenantError(); as catalogError) {
     <p class="catalog-message" role="status">{{ catalogError }}</p>

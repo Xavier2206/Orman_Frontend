@@ -436,8 +436,12 @@ describe('NotificacionesBellComponent', () => {
       createNotification({
         codnot: 41 + index,
         tipo,
-        titulo: `Notificación ${index + 1}`,
-        mensaje: `Mensaje de prueba para ${tipo}.`,
+        titulo:
+          tipo === 'COMPROBANTE_RECIBIDO' ? 'Comprobante recibido' : `Notificación ${index + 1}`,
+        mensaje:
+          tipo === 'COMPROBANTE_RECIBIDO'
+            ? 'Juan Pérez presentó un comprobante de Bs 75,00 correspondiente a septiembre de 2026.'
+            : `Mensaje de prueba para ${tipo}.`,
         referenciaTipo:
           tipo === 'CUOTA_PROXIMA_VENCER' || tipo === 'CUOTA_VENCIDA' ? 'CUOTA' : 'PAGO',
         referenciaId: 700 + index,
@@ -473,7 +477,7 @@ describe('NotificacionesBellComponent', () => {
     expect(renderedCategories).toEqual([
       'Cuota próxima a vencer',
       'Cuota vencida',
-      'Comprobante recibido',
+      'Pagos',
       'Pago confirmado',
     ]);
     expect(renderedIcons).toEqual(['event_upcoming', 'event_busy', 'receipt_long', 'task_alt']);
@@ -482,6 +486,12 @@ describe('NotificacionesBellComponent', () => {
     expect(unreadButton.querySelector('.notification-title--unread')).toBeTruthy();
     expect(unreadButton.textContent).toContain('Mensaje de prueba para CUOTA_PROXIMA_VENCER.');
     expect(receiptNotificationButton.textContent).toContain('No leída');
+    expect(
+      receiptNotificationButton.querySelector('.notification-title')?.textContent?.trim(),
+    ).toBe('Comprobante recibido');
+    expect(
+      receiptNotificationButton.querySelector('.notification-message')?.textContent?.trim(),
+    ).toBe('Juan Pérez presentó un comprobante de Bs 75,00 correspondiente a septiembre de 2026.');
     expect(
       receiptNotificationButton.querySelector('.notification-read-status--unread'),
     ).toBeTruthy();

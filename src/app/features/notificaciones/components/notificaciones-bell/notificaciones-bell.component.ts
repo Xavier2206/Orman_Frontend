@@ -36,6 +36,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { OrmanNotificationService } from '../../../../core/notifications/orman-notification.service';
 import { NotificacionRealtimeService } from '../../data/notificacion-realtime.service';
 import { PagoApiService } from '../../../contratos/data/pago-api.service';
+import { CuotaNavigationRefreshService } from '../../../pagos/data/cuota-navigation-refresh.service';
 import { NotificacionesApiService } from '../../data/notificaciones-api.service';
 import { NotificacionResponse, NotificacionesPageResponse } from '../../models/notificacion.model';
 
@@ -73,7 +74,7 @@ const NOTIFICATION_PRESENTATIONS: Readonly<Record<string, NotificationPresentati
     tone: 'danger',
   },
   COMPROBANTE_RECIBIDO: {
-    label: 'Comprobante recibido',
+    label: 'Pagos',
     icon: 'receipt_long',
     tone: 'info',
   },
@@ -101,6 +102,8 @@ export class NotificacionesBellComponent {
   private readonly realtime = inject(NotificacionRealtimeService);
   private readonly pagoApi = inject(PagoApiService);
   private readonly router = inject(Router);
+  private readonly cuotaRefresh = inject(CuotaNavigationRefreshService);
+  private openingSequence = 0;
   private readonly notification = inject(OrmanNotificationService);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
@@ -302,36 +305,44 @@ export class NotificacionesBellComponent {
       return;
     }
 
+    const sequence = ++this.openingSequence;
     let navigationSucceeded = false;
     this.updateOpeningId(notification.codnot, true);
 
     this.markNotificationAsRead(notification)
       .pipe(
+        filter(() => sequence === this.openingSequence),
         tap(() => this.closePanel(false)),
-        switchMap(() => this.resolveQuotaId(notification)),
-        switchMap((codcuo) =>
-          from(
-            this.router.navigate(['/app/pagos/listar'], {
-              queryParams: { codcuo },
-            }),
-          ),
-        ),
+        switchMap(() => this.resolveQuotaId(notification, sequence)),
+        filter(() => sequence === this.openingSequence),
+        switchMap((codcuo) => {
+          const target = this.router.createUrlTree(['/app/pagos/listar'], {
+            queryParams: { codcuo },
+          });
+          if (this.router.url === this.router.serializeUrl(target)) {
+            this.cuotaRefresh.refresh(codcuo);
+            return of(true);
+          }
+          return from(this.router.navigate(['/app/pagos/listar'], { queryParams: { codcuo } }));
+        }),
         tap((navigated) => {
           navigationSucceeded = navigated;
 
-          if (!navigated) {
+          if (!navigated && sequence === this.openingSequence) {
             this.notification.error('No se pudo abrir la cuota relacionada.');
           }
         }),
         catchError(() => {
-          this.notification.error('No se pudo abrir la cuota relacionada.');
+          if (sequence === this.openingSequence) {
+            this.notification.error('No se pudo abrir la cuota relacionada.');
+          }
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.updateOpeningId(notification.codnot, false);
 
-          if (!navigationSucceeded) {
+          if (!navigationSucceeded && sequence === this.openingSequence) {
             queueMicrotask(() => this.triggerButton()?.nativeElement.focus());
           }
         }),
@@ -475,7 +486,7 @@ export class NotificacionesBellComponent {
     );
   }
 
-  private resolveQuotaId(notification: NotificacionResponse) {
+  private resolveQuotaId(notification: NotificacionResponse, sequence: number) {
     if (notification.referenciaTipo === 'CUOTA') {
       return of(notification.referenciaId);
     }
@@ -483,7 +494,9 @@ export class NotificacionesBellComponent {
     return this.pagoApi.getById(notification.referenciaId).pipe(
       map((payment) => payment.codcuo),
       catchError(() => {
-        this.notification.error('No se pudo abrir el pago relacionado.');
+        if (sequence === this.openingSequence) {
+          this.notification.error('No se pudo abrir el pago relacionado.');
+        }
         return EMPTY;
       }),
     );

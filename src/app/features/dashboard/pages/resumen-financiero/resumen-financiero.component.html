@@ -55,7 +55,9 @@
               (change)="selectPropertyFromControl($event)"
             >
               @for (property of data.propiedades; track property.codprop) {
-                <option [value]="property.codprop">{{ property.nombre }}</option>
+                <option class="bg-surface text-content" [value]="property.codprop">
+                  {{ property.nombre }}
+                </option>
               }
             </select>
           </label>
